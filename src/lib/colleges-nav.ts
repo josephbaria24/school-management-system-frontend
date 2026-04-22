@@ -13,7 +13,7 @@ export const collegesNavGroups: CollegesNavGroup[] = [
     items: [
       { label: "Program Curriculums", slug: "program-curriculums" },
       { label: "Program Curriculum - Bulk Tagging", slug: "program-curriculum-bulk-tagging" },
-      { label: "Class Sections...", slug: "class-sections" },
+      { label: "Class Sections", slug: "class-sections" },
       { label: "Class Sectioning (GS/HS)", slug: "class-sectioning-gs-hs" },
       { label: "Class Schedules/Room/Faculty", slug: "class-schedules-room-faculty" },
       { label: "Class Sections (Split/Merge)", slug: "class-sections-split-merge" },

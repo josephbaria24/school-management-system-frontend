@@ -664,6 +664,127 @@ export function BuildingsRoomsModule() {
             <div className="bg-gradient-to-b from-[#ffe9ac] to-[#eecf76] border-b border-[#c9ab56] px-1 py-0.5 text-[11px] font-semibold">
               {rightTitle}
             </div>
+            <div className="flex items-center gap-1 p-1 border-b border-[#79b898] bg-gradient-to-b from-[#e4f8ee] to-[#9ed9c1] flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
+                onClick={() => {
+                  const firstCampus = campusOptions[0];
+                  setBuildingForm({
+                    campus_id: firstCampus?.refId ? String(firstCampus.refId) : "",
+                    building_name: "",
+                    popular_name: "",
+                    acronym: "",
+                    number_of_floors: "1",
+                    lan_ready: false,
+                  });
+                  setBuildingDialogMode("create");
+                  setEditingBuildingId(null);
+                  setAddBuildingOpen(true);
+                }}
+              >
+                <Plus className="h-3 w-3" />
+                Create New Building
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
+                onClick={() => {
+                  const selectedFloor =
+                    activeNode?.kind === "floor" && activeNode.refId ? activeNode : null;
+                  let defaultCampusId = "";
+                  let defaultBuildingId = "";
+                  let defaultFloorId = selectedFloor?.refId ? String(selectedFloor.refId) : "";
+                  if (selectedFloor?.refId) {
+                    const building = campusOptions
+                      .flatMap((c) => c.children || [])
+                      .find((b) => (b.children || []).some((f) => f.refId === selectedFloor.refId));
+                    if (building?.refId) {
+                      defaultBuildingId = String(building.refId);
+                      const campus = campusOptions.find((c) =>
+                        (c.children || []).some((b) => b.refId === building.refId)
+                      );
+                      if (campus?.refId) defaultCampusId = String(campus.refId);
+                    }
+                  }
+                  if (!defaultCampusId) {
+                    const firstCampus = campusOptions[0];
+                    defaultCampusId = firstCampus?.refId ? String(firstCampus.refId) : "";
+                  }
+                  setRoomForm({
+                    campus_id: defaultCampusId,
+                    building_id: defaultBuildingId,
+                    floor_id: defaultFloorId,
+                    room_no: "",
+                    room_name: "",
+                    room_type: "",
+                    capacity: "50",
+                    air_conditioned: false,
+                    fit_to_use: true,
+                    lan_member: false,
+                    night_class_allowed: false,
+                    shared: false,
+                  });
+                  setRoomDialogMode("create");
+                  setEditingRoomId(null);
+                  setAddRoomOpen(true);
+                }}
+              >
+                <Plus className="h-3 w-3" />
+                Create New Room
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
+                onClick={editRoom}
+                disabled={
+                  !(
+                    (activeNode?.kind === "building" && activeNode.refId) ||
+                    (activeNode?.kind === "floor" && activeNode.refId) ||
+                    selectedRoomId
+                  )
+                }
+              >
+                <Pencil className="h-3 w-3" />
+                Edit
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
+                onClick={deleteRoom}
+                disabled={
+                  !(
+                    (activeNode?.kind === "building" && activeNode.refId) ||
+                    (activeNode?.kind === "floor" && activeNode.refId) ||
+                    selectedRoomId
+                  )
+                }
+              >
+                <Trash2 className="h-3 w-3" />
+                Delete
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
+                onClick={async () => {
+                  await loadTree();
+                  await loadRooms();
+                }}
+              >
+                <RefreshCw className="h-3 w-3" />
+                Refresh
+              </Button>
+            </div>
             <div className="overflow-auto h-[482px]">
               <table className="w-full text-[11px] border-collapse min-w-[820px]">
                 <thead>
@@ -742,127 +863,6 @@ export function BuildingsRoomsModule() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 p-1 border-t border-[#79b898] bg-gradient-to-b from-[#e4f8ee] to-[#9ed9c1]">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={() => {
-              const firstCampus = campusOptions[0];
-              setBuildingForm({
-                campus_id: firstCampus?.refId ? String(firstCampus.refId) : "",
-                building_name: "",
-                popular_name: "",
-                acronym: "",
-                number_of_floors: "1",
-                lan_ready: false,
-              });
-              setBuildingDialogMode("create");
-              setEditingBuildingId(null);
-              setAddBuildingOpen(true);
-            }}
-          >
-            <Plus className="h-3 w-3" />
-            Create New Building
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={() => {
-              const selectedFloor =
-                activeNode?.kind === "floor" && activeNode.refId ? activeNode : null;
-              let defaultCampusId = "";
-              let defaultBuildingId = "";
-              let defaultFloorId = selectedFloor?.refId ? String(selectedFloor.refId) : "";
-              if (selectedFloor?.refId) {
-                const building = campusOptions
-                  .flatMap((c) => c.children || [])
-                  .find((b) => (b.children || []).some((f) => f.refId === selectedFloor.refId));
-                if (building?.refId) {
-                  defaultBuildingId = String(building.refId);
-                  const campus = campusOptions.find((c) =>
-                    (c.children || []).some((b) => b.refId === building.refId)
-                  );
-                  if (campus?.refId) defaultCampusId = String(campus.refId);
-                }
-              }
-              if (!defaultCampusId) {
-                const firstCampus = campusOptions[0];
-                defaultCampusId = firstCampus?.refId ? String(firstCampus.refId) : "";
-              }
-              setRoomForm({
-                campus_id: defaultCampusId,
-                building_id: defaultBuildingId,
-                floor_id: defaultFloorId,
-                room_no: "",
-                room_name: "",
-                room_type: "",
-                capacity: "50",
-                air_conditioned: false,
-                fit_to_use: true,
-                lan_member: false,
-                night_class_allowed: false,
-                shared: false,
-              });
-              setRoomDialogMode("create");
-              setEditingRoomId(null);
-              setAddRoomOpen(true);
-            }}
-          >
-            <Plus className="h-3 w-3" />
-            Create New Room
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={editRoom}
-            disabled={
-              !(
-                (activeNode?.kind === "building" && activeNode.refId) ||
-                (activeNode?.kind === "floor" && activeNode.refId) ||
-                selectedRoomId
-              )
-            }
-          >
-            <Pencil className="h-3 w-3" />
-            Edit
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={deleteRoom}
-            disabled={
-              !(
-                (activeNode?.kind === "building" && activeNode.refId) ||
-                (activeNode?.kind === "floor" && activeNode.refId) ||
-                selectedRoomId
-              )
-            }
-          >
-            <Trash2 className="h-3 w-3" />
-            Delete
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={async () => {
-              await loadTree();
-              await loadRooms();
-            }}
-          >
-            <RefreshCw className="h-3 w-3" />
-            Refresh
-          </Button>
-        </div>
       </div>
       <Dialog open={addBuildingOpen} onOpenChange={setAddBuildingOpen}>
         <DialogContent className="max-w-[780px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
@@ -1017,7 +1017,7 @@ export function BuildingsRoomsModule() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Select building</SelectItem>
-                    {buildingOptionsForFloor.map((b) => (
+                    {buildingOptions.map((b) => (
                       <SelectItem key={b.id} value={String(b.refId)}>
                         {b.label}
                       </SelectItem>

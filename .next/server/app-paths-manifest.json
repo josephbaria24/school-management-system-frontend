@@ -1,8 +1,7 @@
 {
-  "/schedule/page": "app/schedule/page.js",
-  "/classes/page": "app/classes/page.js",
+  "/page": "app/page.js",
   "/colleges/[slug]/page": "app/colleges/[slug]/page.js",
-  "/setup/academic-year-terms/page": "app/setup/academic-year-terms/page.js",
-  "/setup/colleges-departments-institutes/page": "app/setup/colleges-departments-institutes/page.js",
-  "/setup/academic-institution/page": "app/setup/academic-institution/page.js"
+  "/setup/buildings-rooms/page": "app/setup/buildings-rooms/page.js",
+  "/setup/faculty-information/page": "app/setup/faculty-information/page.js",
+  "/check/page": "app/check/page.js"
 }

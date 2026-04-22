@@ -3,6 +3,13 @@ import { getCollegesLabelForSlug } from "@/lib/colleges-nav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgramCurriculumsModule } from "@/components/colleges/ProgramCurriculumsModule";
 import { ProgramCurriculumBulkTaggingModule } from "@/components/colleges/ProgramCurriculumBulkTaggingModule";
+import { ClassSectionsModule } from "@/components/colleges/ClassSectionsModule";
+import { ClassSectioningGsHsModule } from "@/components/colleges/ClassSectioningGsHsModule";
+import { ClassSchedulesRoomFacultyModule } from "@/components/colleges/ClassSchedulesRoomFacultyModule";
+import { ClassSectionsSplitMergeModule } from "@/components/colleges/ClassSectionsSplitMergeModule";
+import { ClassSchedulesSplitMergeModule } from "@/components/colleges/ClassSchedulesSplitMergeModule";
+import { ForecastingModule } from "@/components/colleges/ForecastingModule";
+import { ListOfReportsModule } from "@/components/colleges/ListOfReportsModule";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -17,6 +24,27 @@ export default async function CollegesPage({ params }: Props) {
   }
   if (slug === "program-curriculum-bulk-tagging") {
     return <ProgramCurriculumBulkTaggingModule />;
+  }
+  if (slug === "class-sections") {
+    return <ClassSectionsModule />;
+  }
+  if (slug === "class-sectioning-gs-hs") {
+    return <ClassSectioningGsHsModule />;
+  }
+  if (slug === "class-schedules-room-faculty") {
+    return <ClassSchedulesRoomFacultyModule />;
+  }
+  if (slug === "class-sections-split-merge") {
+    return <ClassSectionsSplitMergeModule />;
+  }
+  if (slug === "class-schedules-split-merge") {
+    return <ClassSchedulesSplitMergeModule />;
+  }
+  if (slug === "forecasting") {
+    return <ForecastingModule />;
+  }
+  if (slug === "list-of-reports") {
+    return <ListOfReportsModule />;
   }
 
   return (
