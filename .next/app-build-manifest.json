@@ -6,30 +6,15 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
+    "/setup/school-calendar/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/setup/school-calendar/page.js"
     ],
-    "/colleges/[slug]/page": [
+    "/setup/colleges-departments-institutes/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/colleges/[slug]/page.js"
-    ],
-    "/setup/buildings-rooms/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/setup/buildings-rooms/page.js"
-    ],
-    "/setup/faculty-information/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/setup/faculty-information/page.js"
-    ],
-    "/check/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/check/page.js"
+      "static/chunks/app/setup/colleges-departments-institutes/page.js"
     ]
   }
 }
