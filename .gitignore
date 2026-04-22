@@ -3,7 +3,7 @@ node_modules/
 
 # Next.js
 .next/
-.out/
+out/
 .next-dev-*/
 .vercel/
 
@@ -23,11 +23,11 @@ node_modules/
 !.yarn/versions
 
 # Logs & debug
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-*.log
 
 # Tests / coverage
 coverage/

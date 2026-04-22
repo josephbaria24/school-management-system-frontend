@@ -38,6 +38,11 @@ type TermRow = {
 };
 
 type TermPayload = Omit<TermRow, "id">;
+type CampusRow = {
+  id: number;
+  acronym: string;
+  campus_name: string | null;
+};
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const emptyForm: TermPayload = {
@@ -68,6 +73,7 @@ const emptyForm: TermPayload = {
 
 export default function AcademicYearAndTermsPage() {
   const [rows, setRows] = useState<TermRow[]>([]);
+  const [campuses, setCampuses] = useState<CampusRow[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [formData, setFormData] = useState<TermPayload>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -100,8 +106,24 @@ export default function AcademicYearAndTermsPage() {
     }
   };
 
+  const fetchCampuses = async () => {
+    try {
+      const res = await fetch(`${API}/api/campuses`);
+      if (!res.ok) throw new Error("Failed to fetch campuses");
+      const data: CampusRow[] = await res.json();
+      setCampuses(data);
+      setFormData((prev) => {
+        if (prev.campus?.trim()) return prev;
+        return { ...prev, campus: data[0]?.acronym || prev.campus };
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchRows();
+    fetchCampuses();
   }, []);
 
   const toInputDate = (value?: string | null) => (value ? String(value).slice(0, 10) : "");
@@ -138,6 +160,13 @@ export default function AcademicYearAndTermsPage() {
   const updateForm = (patch: Partial<TermPayload>) => {
     setFormData((prev) => ({ ...prev, ...patch }));
   };
+
+  const campusOptionValues = useMemo(() => {
+    const values = campuses.map((c) => c.acronym);
+    const current = formData.campus?.trim();
+    if (current && !values.includes(current)) values.unshift(current);
+    return values;
+  }, [campuses, formData.campus]);
 
   const handleNew = () => {
     setSelectedId(null);
@@ -238,15 +267,22 @@ export default function AcademicYearAndTermsPage() {
                   <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Select the Campus</div>
                   <div className="p-2">
                     <Select
-                      value={formData.campus || "PSU Narra"}
-                      onValueChange={(v) => updateForm({ campus: v })}
+                      value={formData.campus?.trim() || "__none__"}
+                      onValueChange={(v) => updateForm({ campus: v === "__none__" ? "" : v })}
                     >
                       <SelectTrigger className="h-7 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="psu-narra">PSU Narra</SelectItem>
-                        <SelectItem value="psu-main">PSU Main</SelectItem>
+                        <SelectItem value="__none__">Select campus</SelectItem>
+                        {campusOptionValues.map((acronym) => (
+                          <SelectItem key={acronym} value={acronym}>
+                            {(() => {
+                              const c = campuses.find((row) => row.acronym === acronym);
+                              return c?.campus_name ? `${c.acronym} - ${c.campus_name}` : acronym;
+                            })()}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

@@ -62,6 +62,17 @@ import {
   SplitSquareHorizontal,
   TrendingUp,
   FileText,
+  UserPlus,
+  FolderOpen,
+  ClipboardCheck,
+  CalendarCheck2,
+  ListChecks,
+  Stethoscope,
+  ChartNoAxesCombined,
+  ClipboardList as ClipboardListIcon,
+  FileBarChart,
+  SlidersHorizontal,
+  ArrowLeftRight,
 } from "lucide-react";
 
 interface NavItem {
@@ -80,6 +91,58 @@ const navItems: NavItem[] = [
   { label: "Schedule", icon: Calendar, href: "/schedule" },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
+
+type AdmissionNavItem = {
+  label: string;
+  slug?: string;
+  items?: Array<{ label: string; slug: string }>;
+};
+
+const admissionNavItems: AdmissionNavItem[] = [
+  {
+    label: "Applications",
+    items: [
+      { label: "Applicant's Profile...", slug: "applications/applicant-profile" },
+      { label: "List of Applications...", slug: "applications/list-of-applications" },
+      { label: "Admit New Student", slug: "applications/admit-new-student" },
+      { label: "Deny an Applicant", slug: "applications/deny-an-applicant" },
+      {
+        label: "Cancel Admit/Deny of Applicant",
+        slug: "applications/cancel-admit-deny-of-applicant",
+      },
+      {
+        label: "College Entrance Test Result Ranking",
+        slug: "applications/college-entrance-test-result-ranking",
+      },
+    ],
+  },
+  { label: "Admission Test Scores", slug: "admission-test-scores" },
+  { label: "Testing Schedules", slug: "testing-schedules" },
+  { label: "List of Examinees for Testing", slug: "list-of-examinees-for-testing" },
+  { label: "List of Examinees for Medical", slug: "list-of-examinees-for-medical" },
+  { label: "Admission Statistics...", slug: "admission-statistics" },
+  { label: "Admission Test Results", slug: "admission-test-results" },
+  { label: "Admission Reports", slug: "admission-reports" },
+  { label: "Configuration of Admission Limits...", slug: "configuration-of-admission-limits" },
+];
+
+const admissionIconBySlug: Record<string, React.ElementType> = {
+  "applications/applicant-profile": UserPlus,
+  "applications/list-of-applications": FolderOpen,
+  "applications/admit-new-student": UserPlus,
+  "applications/deny-an-applicant": X,
+  "applications/cancel-admit-deny-of-applicant": ArrowLeftRight,
+  "applications/college-entrance-test-result-ranking": BarChart3,
+  applications: FolderOpen,
+  "admission-test-scores": ClipboardCheck,
+  "testing-schedules": CalendarCheck2,
+  "list-of-examinees-for-testing": ListChecks,
+  "list-of-examinees-for-medical": Stethoscope,
+  "admission-statistics": ChartNoAxesCombined,
+  "admission-test-results": ClipboardListIcon,
+  "admission-reports": FileBarChart,
+  "configuration-of-admission-limits": SlidersHorizontal,
+};
 
 const setupIconBySlug: Record<string, React.ElementType> = {
   "academic-institution": School2,
@@ -114,12 +177,16 @@ const collegesIconBySlug: Record<string, React.ElementType> = {
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [admissionOpen, setAdmissionOpen] = useState(false);
+  const [admissionApplicationsOpen, setAdmissionApplicationsOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [collegesOpen, setCollegesOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
 
   useEffect(() => {
+    if (pathname.startsWith("/admission/")) setAdmissionOpen(true);
+    if (pathname.startsWith("/admission/applications/")) setAdmissionApplicationsOpen(true);
     if (pathname.startsWith("/setup/")) setSetupOpen(true);
     if (pathname.startsWith("/colleges/")) setCollegesOpen(true);
   }, [pathname]);
@@ -217,6 +284,76 @@ export function Sidebar() {
                     variant="ghost"
                     className={cn(
                       "w-full h-9 px-3 justify-start gap-3 rounded-md text-sm font-medium",
+                      pathname.startsWith("/admission/")
+                        ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <UserPlus className="h-4 w-4 shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="right">Admission</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent side="right" align="start" className="w-64 max-h-[min(70vh,28rem)] overflow-y-auto">
+              <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
+                Admission
+              </DropdownMenuLabel>
+              {admissionNavItems.map((item) => {
+                if (item.items?.length) {
+                  return (
+                    <div key={item.label}>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">
+                        {item.label}
+                      </DropdownMenuLabel>
+                      {item.items.map((sub) => (
+                        <DropdownMenuItem key={sub.slug} asChild>
+                          <Link
+                            href={`/admission/${sub.slug}`}
+                            scroll={false}
+                            onClick={() => setMobileOpen(false)}
+                            className="cursor-pointer flex items-center gap-2"
+                          >
+                            {(() => {
+                              const Icon = admissionIconBySlug[sub.slug] ?? FolderOpen;
+                              return <Icon className="h-3.5 w-3.5 text-muted-foreground" />;
+                            })()}
+                            {sub.label}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                  );
+                }
+                if (!item.slug) return null;
+                return (
+                  <DropdownMenuItem key={item.slug} asChild>
+                    <Link
+                      href={`/admission/${item.slug}`}
+                      scroll={false}
+                      onClick={() => setMobileOpen(false)}
+                      className="cursor-pointer flex items-center gap-2"
+                    >
+                      {(() => {
+                        const Icon = admissionIconBySlug[item.slug!] ?? UserPlus;
+                        return <Icon className="h-3.5 w-3.5 text-muted-foreground" />;
+                      })()}
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full h-9 px-3 justify-start gap-3 rounded-md text-sm font-medium",
                       pathname.startsWith("/setup/")
                         ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -304,6 +441,109 @@ export function Sidebar() {
           </>
         ) : (
           <>
+          <Collapsible open={admissionOpen} onOpenChange={setAdmissionOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full h-9 px-3 justify-start gap-3 rounded-md text-sm font-medium",
+                  pathname.startsWith("/admission/")
+                    ? "bg-primary/15 text-sidebar-foreground hover:bg-primary/20"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <UserPlus className="h-4 w-4 shrink-0" />
+                <span className="truncate flex-1 text-left">Admission</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 shrink-0 opacity-60 transition-transform",
+                    admissionOpen && "rotate-180"
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-0 pt-0.5 pb-1">
+              {admissionNavItems.map((item) => {
+                if (item.items?.length) {
+                  return (
+                    <Collapsible
+                      key={item.label}
+                      open={admissionApplicationsOpen}
+                      onOpenChange={setAdmissionApplicationsOpen}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            "w-full h-8 pl-7 pr-3 justify-start gap-2 rounded-md text-xs font-medium",
+                            pathname.startsWith("/admission/applications/")
+                              ? "bg-primary/15 text-sidebar-foreground hover:bg-primary/20"
+                              : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          )}
+                        >
+                          <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                          <span className="truncate flex-1 text-left">{item.label}</span>
+                          <ChevronDown
+                            className={cn(
+                              "h-3.5 w-3.5 shrink-0 opacity-60 transition-transform",
+                              admissionApplicationsOpen && "rotate-180"
+                            )}
+                          />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-0.5 pt-0.5">
+                        {item.items.map((sub) => {
+                          const href = `/admission/${sub.slug}`;
+                          const active = pathname === href;
+                          const Icon = admissionIconBySlug[sub.slug] ?? FolderOpen;
+                          return (
+                            <Link
+                              key={sub.slug}
+                              href={href}
+                              scroll={false}
+                              onClick={() => setMobileOpen(false)}
+                              className={cn(
+                                "flex items-center gap-2 pl-11 pr-3 py-1.5 rounded-md text-[11px] font-medium transition-colors",
+                                "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                active
+                                  ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                              <span className="truncate">{sub.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  );
+                }
+                if (!item.slug) return null;
+                const href = `/admission/${item.slug}`;
+                const active = pathname === href;
+                const Icon = admissionIconBySlug[item.slug] ?? UserPlus;
+                return (
+                  <Link
+                    key={item.slug}
+                    href={href}
+                    scroll={false}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-2 pl-7 pr-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      active
+                        ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
           <Collapsible open={setupOpen} onOpenChange={setSetupOpen}>
             <CollapsibleTrigger asChild>
               <Button
