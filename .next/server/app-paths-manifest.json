@@ -1,7 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/colleges/[slug]/page": "app/colleges/[slug]/page.js",
-  "/setup/buildings-rooms/page": "app/setup/buildings-rooms/page.js",
-  "/setup/faculty-information/page": "app/setup/faculty-information/page.js",
-  "/check/page": "app/check/page.js"
-}

@@ -1,10 +1,13 @@
 {
-  "extends": "../../tsconfig.base.json",
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next-dev-*/types/**/*.ts",
+    ".next-dev-3001/types/**/*.ts",
+    ".next-dev-3003/types/**/*.ts",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    ".next-dev-3004/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
@@ -37,6 +40,10 @@
     "strict": false,
     "incremental": true,
     "esModuleInterop": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "target": "ES2017",
+    "skipLibCheck": true,
+    "module": "esnext",
+    "isolatedModules": true
   }
 }
