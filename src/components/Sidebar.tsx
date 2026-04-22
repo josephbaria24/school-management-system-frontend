@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -181,14 +181,84 @@ export function Sidebar() {
   const [admissionApplicationsOpen, setAdmissionApplicationsOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [collegesOpen, setCollegesOpen] = useState(false);
+  const navScrollRef = useRef<HTMLElement | null>(null);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+
+  const persistSidebarScroll = () => {
+    const navEl = navScrollRef.current;
+    if (!navEl) return;
+    sessionStorage.setItem("sidebar:scrollTop", String(navEl.scrollTop));
+  };
+
+  const handleNavItemClick = () => {
+    persistSidebarScroll();
+    setMobileOpen(false);
+  };
+
+  useEffect(() => {
+    const readBool = (key: string) => localStorage.getItem(key) === "1";
+    setCollapsed(readBool("sidebar:collapsed"));
+    setAdmissionOpen(readBool("sidebar:admissionOpen"));
+    setAdmissionApplicationsOpen(readBool("sidebar:admissionApplicationsOpen"));
+    setSetupOpen(readBool("sidebar:setupOpen"));
+    setCollegesOpen(readBool("sidebar:collegesOpen"));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar:collapsed", collapsed ? "1" : "0");
+  }, [collapsed]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar:admissionOpen", admissionOpen ? "1" : "0");
+  }, [admissionOpen]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "sidebar:admissionApplicationsOpen",
+      admissionApplicationsOpen ? "1" : "0"
+    );
+  }, [admissionApplicationsOpen]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar:setupOpen", setupOpen ? "1" : "0");
+  }, [setupOpen]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar:collegesOpen", collegesOpen ? "1" : "0");
+  }, [collegesOpen]);
 
   useEffect(() => {
     if (pathname.startsWith("/admission/")) setAdmissionOpen(true);
     if (pathname.startsWith("/admission/applications/")) setAdmissionApplicationsOpen(true);
     if (pathname.startsWith("/setup/")) setSetupOpen(true);
     if (pathname.startsWith("/colleges/")) setCollegesOpen(true);
+  }, [pathname]);
+
+  useLayoutEffect(() => {
+    const navEl = navScrollRef.current;
+    if (!navEl) return;
+    const saved = sessionStorage.getItem("sidebar:scrollTop");
+    if (saved === null) return;
+    const parsed = Number(saved);
+    if (!Number.isFinite(parsed)) return;
+    requestAnimationFrame(() => {
+      navEl.scrollTop = parsed;
+    });
+    const timeoutId = window.setTimeout(() => {
+      navEl.scrollTop = parsed;
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [pathname]);
+
+  useEffect(() => {
+    const navEl = navScrollRef.current;
+    if (!navEl) return;
+    const handleScroll = () => {
+      sessionStorage.setItem("sidebar:scrollTop", String(navEl.scrollTop));
+    };
+    navEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => navEl.removeEventListener("scroll", handleScroll);
   }, [pathname]);
 
   const NavLink = ({ item }: { item: NavItem }) => {
@@ -199,7 +269,7 @@ export function Sidebar() {
       <Link
         href={item.href}
         scroll={false}
-        onClick={() => setMobileOpen(false)}
+        onClick={handleNavItemClick}
         className={cn(
           "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
           "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -269,7 +339,10 @@ export function Sidebar() {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+      <nav
+        ref={navScrollRef}
+        className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5"
+      >
         {navItems.map((item) => (
           <NavLink key={item.href} item={item} />
         ))}
@@ -312,7 +385,7 @@ export function Sidebar() {
                           <Link
                             href={`/admission/${sub.slug}`}
                             scroll={false}
-                            onClick={() => setMobileOpen(false)}
+                            onClick={handleNavItemClick}
                             className="cursor-pointer flex items-center gap-2"
                           >
                             {(() => {
@@ -332,7 +405,7 @@ export function Sidebar() {
                     <Link
                       href={`/admission/${item.slug}`}
                       scroll={false}
-                      onClick={() => setMobileOpen(false)}
+                      onClick={handleNavItemClick}
                       className="cursor-pointer flex items-center gap-2"
                     >
                       {(() => {
@@ -377,7 +450,7 @@ export function Sidebar() {
                       <Link
                         href={`/setup/${item.slug}`}
                         scroll={false}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={handleNavItemClick}
                         className="cursor-pointer flex items-center gap-2"
                       >
                         {(() => {
@@ -423,7 +496,7 @@ export function Sidebar() {
                       <Link
                         href={`/colleges/${item.slug}`}
                         scroll={false}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={handleNavItemClick}
                         className="cursor-pointer flex items-center gap-2"
                       >
                         {(() => {
@@ -501,7 +574,7 @@ export function Sidebar() {
                               key={sub.slug}
                               href={href}
                               scroll={false}
-                              onClick={() => setMobileOpen(false)}
+                              onClick={handleNavItemClick}
                               className={cn(
                                 "flex items-center gap-2 pl-11 pr-3 py-1.5 rounded-md text-[11px] font-medium transition-colors",
                                 "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -528,7 +601,7 @@ export function Sidebar() {
                     key={item.slug}
                     href={href}
                     scroll={false}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={handleNavItemClick}
                     className={cn(
                       "flex items-center gap-2 pl-7 pr-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                       "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -580,7 +653,7 @@ export function Sidebar() {
                         key={item.slug}
                         href={href}
                         scroll={false}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={handleNavItemClick}
                         className={cn(
                           "flex items-center gap-2 pl-7 pr-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                           "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -634,7 +707,7 @@ export function Sidebar() {
                         key={item.slug}
                         href={href}
                         scroll={false}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={handleNavItemClick}
                         className={cn(
                           "flex items-center gap-2 pl-7 pr-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                           "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",

@@ -439,12 +439,12 @@ export function AcademicProgramsTab() {
     label: string,
     key: keyof ReturnType<typeof emptyForm>
   ) => (
-    <div className="space-y-1">
-      <Label className="text-[10px] leading-tight">{label}</Label>
+    <div className="space-y-0.5">
+      <Label className="text-[9px] leading-tight">{label}</Label>
       <Input
         type="number"
         step="any"
-        className="h-7 text-xs"
+        className="h-5.5 text-[10px]"
         value={String(form[key] ?? "")}
         onChange={(e) =>
           setForm((f) => ({ ...f, [key]: e.target.value } as typeof f))
@@ -467,14 +467,15 @@ export function AcademicProgramsTab() {
           {message}
         </div>
       )}
-      <div className="grid grid-cols-12 gap-3 min-h-[560px]">
-        <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background max-h-[720px] min-h-[560px]">
-          <div className="bg-amber-600 dark:bg-amber-800 text-white px-2 py-1.5 text-[10px] font-bold uppercase shrink-0">
+      <div className="grid grid-cols-12 gap-3">
+        <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background">
+          <div className="bg-amber-600 dark:bg-amber-800 text-white px-2 py-1 text-[9px] font-bold uppercase shrink-0">
             Academic program information
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
-            <div className="space-y-1">
-              <Label className="text-xs">Campus</Label>
+          <div className="p-2 space-y-1.5">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-0.5">
+              <Label className="text-[10px]">Campus</Label>
               <Select
                 value={form.campus_id ? String(form.campus_id) : ""}
                 onValueChange={(v) => {
@@ -485,7 +486,7 @@ export function AcademicProgramsTab() {
               >
                 <SelectTrigger
                   className={cn(
-                    "h-8 text-xs",
+                    "h-6 text-[10px]",
                     fieldErrors.campus_id &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -505,9 +506,9 @@ export function AcademicProgramsTab() {
                   {fieldErrors.campus_id}
                 </p>
               )}
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">College</Label>
+              </div>
+              <div className="space-y-0.5">
+              <Label className="text-[10px]">College</Label>
               <Select
                 value={form.college_id ? String(form.college_id) : ""}
                 onValueChange={(v) => {
@@ -518,7 +519,7 @@ export function AcademicProgramsTab() {
               >
                 <SelectTrigger
                   className={cn(
-                    "h-8 text-xs",
+                    "h-6 text-[10px]",
                     fieldErrors.college_id &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -538,13 +539,14 @@ export function AcademicProgramsTab() {
                   {fieldErrors.college_id}
                 </p>
               )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2 items-end">
-              <div className="space-y-1 flex-1 min-w-[120px]">
-                <Label className="text-xs">Program code</Label>
+            <div className="grid grid-cols-[1.1fr_auto_auto_auto] gap-2 items-end">
+              <div className="space-y-0.5 min-w-[120px]">
+                <Label className="text-[10px]">Program code</Label>
                 <Input
                   className={cn(
-                    "h-8 text-sm font-mono",
+                    "h-6 text-[10px] font-mono",
                     fieldErrors.program_code &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -564,7 +566,7 @@ export function AcademicProgramsTab() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-8 text-[10px]"
+                className="h-6 px-2 text-[9px]"
                 onClick={() => {
                   setSelectedId(null);
                   setFieldErrors({});
@@ -582,20 +584,18 @@ export function AcademicProgramsTab() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-8 text-[10px]"
+                className="h-6 px-2 text-[9px]"
                 onClick={resetNew}
               >
                 Save as
               </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs">Status</Label>
+              <div className="space-y-0.5 min-w-[110px]">
+                <Label className="text-[10px]">Status</Label>
                 <Select
                   value={form.status}
                   onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}
                 >
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-6 text-[10px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -604,22 +604,12 @@ export function AcademicProgramsTab() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Term</Label>
-                <Input
-                  className="h-8 text-xs"
-                  value={form.term}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, term: e.target.value }))
-                  }
-                />
-              </div>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Program name</Label>
+            <div className="space-y-0.5">
+              <Label className="text-[10px]">Program name</Label>
               <Input
                 className={cn(
-                  "h-8 text-sm",
+                  "h-6 text-[10px]",
                   fieldErrors.program_name &&
                     "border-destructive ring-1 ring-destructive/30"
                 )}
@@ -635,27 +625,37 @@ export function AcademicProgramsTab() {
                 </p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs">Short name</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Short name</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-6 text-[10px]"
                   value={form.short_name}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, short_name: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Admission no. code</Label>
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Admission no. code</Label>
                 <Input
-                  className="h-8 text-xs font-mono"
+                  className="h-6 text-[10px] font-mono"
                   value={form.admission_number_code}
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
                       admission_number_code: e.target.value,
                     }))
+                  }
+                />
+              </div>
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Term</Label>
+                <Input
+                  className="h-6 text-[10px]"
+                  value={form.term}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, term: e.target.value }))
                   }
                 />
               </div>
@@ -668,12 +668,12 @@ export function AcademicProgramsTab() {
                   setForm((f) => ({ ...f, program_alias: !!v }))
                 }
               />
-              <Label htmlFor="palias" className="text-xs flex items-center gap-1 cursor-pointer">
-                <Globe className="h-3.5 w-3.5 text-primary" />
+              <Label htmlFor="palias" className="text-[10px] flex items-center gap-1 cursor-pointer">
+                <Globe className="h-3 w-3 text-primary" />
                 Program alias
               </Label>
             </div>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-2">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
               {numField("No. of years", "no_of_years")}
               {numField("Total GE units", "total_ge_units")}
               {numField("Maximum residency", "max_residency")}
@@ -688,34 +688,34 @@ export function AcademicProgramsTab() {
           </div>
 
           <div className="border-t border-border bg-muted/20 shrink-0">
-            <div className="px-2 py-1 text-[10px] font-bold uppercase text-amber-900 dark:text-amber-200 bg-amber-100/80 dark:bg-amber-950/50">
+            <div className="px-2 py-1 text-[9px] font-bold uppercase text-amber-900 dark:text-amber-200 bg-amber-100/80 dark:bg-amber-950/50">
               Other information
             </div>
-            <div className="p-3 space-y-2 border-t border-border/60">
-              <div className="space-y-1">
-                <Label className="text-xs">Classification</Label>
+            <div className="p-2 space-y-1 border-t border-border/60">
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Classification</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-6 text-[10px]"
                   value={form.classification}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, classification: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Thesis option</Label>
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Thesis option</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-6 text-[10px]"
                   value={form.thesis_option}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, thesis_option: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Board exam</Label>
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Board exam</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-6 text-[10px]"
                   value={form.board_exam}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, board_exam: e.target.value }))
@@ -725,20 +725,20 @@ export function AcademicProgramsTab() {
               <p className="text-[10px] text-muted-foreground leading-snug">
                 If this program is ladderized, indicate the position in the ladder.
               </p>
-              <div className="space-y-1">
-                <Label className="text-xs">Ladder</Label>
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Ladder</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-6 text-[10px]"
                   value={form.ladder}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, ladder: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Parent</Label>
+              <div className="space-y-0.5">
+                <Label className="text-[10px]">Parent</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-6 text-[10px]"
                   value={form.parent_program}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, parent_program: e.target.value }))
@@ -746,11 +746,11 @@ export function AcademicProgramsTab() {
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <Label className="text-xs">Date recognized</Label>
+                <div className="space-y-0.5">
+                  <Label className="text-[10px]">Date recognized</Label>
                   <Input
                     type="date"
-                    className="h-8 text-xs"
+                    className="h-6 text-[10px]"
                     value={form.date_recognized}
                     onChange={(e) =>
                       setForm((f) => ({
@@ -760,11 +760,11 @@ export function AcademicProgramsTab() {
                     }
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Date revise</Label>
+                <div className="space-y-0.5">
+                  <Label className="text-[10px]">Date revise</Label>
                   <Input
                     type="date"
-                    className="h-8 text-xs"
+                    className="h-6 text-[10px]"
                     value={form.date_revised}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, date_revised: e.target.value }))
@@ -780,7 +780,7 @@ export function AcademicProgramsTab() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1"
+              className="h-6 text-[9px] gap-1"
               disabled={saving}
               onClick={resetNew}
             >
@@ -791,7 +791,7 @@ export function AcademicProgramsTab() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1"
+              className="h-6 text-[9px] gap-1"
               disabled={saving}
               onClick={handleSave}
             >
@@ -802,7 +802,7 @@ export function AcademicProgramsTab() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1 text-destructive"
+              className="h-6 text-[9px] gap-1 text-destructive"
               disabled={saving || !selectedId}
               onClick={handleDelete}
             >
@@ -812,7 +812,7 @@ export function AcademicProgramsTab() {
           </div>
         </div>
 
-        <div className="col-span-7 flex flex-col gap-2 min-h-[560px]">
+        <div className="col-span-7 flex flex-col gap-2">
           <div className="flex-1 flex flex-col border border-border rounded-sm overflow-hidden bg-background min-h-0">
             <div className="grid grid-cols-12 bg-amber-600 dark:bg-amber-800 text-white text-[10px] font-bold uppercase shrink-0">
               <div className="col-span-2 px-2 py-1 border-r border-white/30 font-mono">

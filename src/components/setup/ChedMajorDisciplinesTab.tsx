@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +31,58 @@ const empty = {
   major_discipline: "",
   major_group_id: "" as string | number,
 };
+
+type TableRowEntry = {
+  row: ChedRow;
+  groupLabel: string;
+  groupRowspan: number;
+  showGroup: boolean;
+};
+
+const ChedDisciplineTableRow = memo(function ChedDisciplineTableRow({
+  entry,
+  isSelected,
+  onSelect,
+}: {
+  entry: TableRowEntry;
+  isSelected: boolean;
+  onSelect: (id: number) => void;
+}) {
+  const { row, groupLabel, groupRowspan, showGroup } = entry;
+
+  return (
+    <tr>
+      {showGroup ? (
+        <td
+          rowSpan={groupRowspan}
+          className="align-top px-2 py-1.5 border-b border-border/60 border-r border-border/40 bg-emerald-50/80 dark:bg-emerald-950/30 text-[11px] leading-snug"
+        >
+          {groupLabel}
+        </td>
+      ) : null}
+      <td
+        className={cn(
+          "px-2 py-1.5 border-b border-border/60 border-l border-border/40 font-mono",
+          isSelected && "bg-emerald-600 text-white dark:bg-emerald-700"
+        )}
+      >
+        <button type="button" className="w-full text-left" onClick={() => onSelect(row.id)}>
+          {row.major_code}
+        </button>
+      </td>
+      <td
+        className={cn(
+          "px-2 py-1.5 border-b border-border/60 border-l border-border/40",
+          isSelected && "bg-emerald-600 text-white dark:bg-emerald-700"
+        )}
+      >
+        <button type="button" className="w-full text-left" onClick={() => onSelect(row.id)}>
+          {row.major_discipline}
+        </button>
+      </td>
+    </tr>
+  );
+});
 
 export function ChedMajorDisciplinesTab() {
   const [groups, setGroups] = useState<MajorGroupRow[]>([]);
@@ -92,12 +144,7 @@ export function ChedMajorDisciplinesTab() {
   }, [selected]);
 
   const tableRows = useMemo(() => {
-    const out: {
-      row: ChedRow;
-      groupLabel: string;
-      groupRowspan: number;
-      showGroup: boolean;
-    }[] = [];
+    const out: TableRowEntry[] = [];
     let i = 0;
     while (i < rows.length) {
       const label = rows[i].group_description;
@@ -365,50 +412,14 @@ export function ChedMajorDisciplinesTab() {
                     </td>
                   </tr>
                 ) : (
-                  tableRows.map(
-                    ({ row, groupLabel, groupRowspan, showGroup }) => (
-                      <tr key={row.id}>
-                        {showGroup ? (
-                          <td
-                            rowSpan={groupRowspan}
-                            className="align-top px-2 py-1.5 border-b border-border/60 border-r border-border/40 bg-emerald-50/80 dark:bg-emerald-950/30 text-[11px] leading-snug"
-                          >
-                            {groupLabel}
-                          </td>
-                        ) : null}
-                        <td
-                          className={cn(
-                            "px-2 py-1.5 border-b border-border/60 border-l border-border/40 font-mono",
-                            selectedId === row.id &&
-                              "bg-emerald-600 text-white dark:bg-emerald-700"
-                          )}
-                        >
-                          <button
-                            type="button"
-                            className="w-full text-left"
-                            onClick={() => setSelectedId(row.id)}
-                          >
-                            {row.major_code}
-                          </button>
-                        </td>
-                        <td
-                          className={cn(
-                            "px-2 py-1.5 border-b border-border/60 border-l border-border/40",
-                            selectedId === row.id &&
-                              "bg-emerald-600 text-white dark:bg-emerald-700"
-                          )}
-                        >
-                          <button
-                            type="button"
-                            className="w-full text-left"
-                            onClick={() => setSelectedId(row.id)}
-                          >
-                            {row.major_discipline}
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  )
+                  tableRows.map((entry) => (
+                    <ChedDisciplineTableRow
+                      key={entry.row.id}
+                      entry={entry}
+                      isSelected={selectedId === entry.row.id}
+                      onSelect={setSelectedId}
+                    />
+                  ))
                 )}
               </tbody>
             </table>
