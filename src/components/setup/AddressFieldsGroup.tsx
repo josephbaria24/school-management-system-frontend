@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface Props {
   formData: any;
@@ -9,40 +10,84 @@ interface Props {
   errors: Record<string, string>;
 }
 
-export function AddressFieldsGroup({ formData, onChange, errors }: Props) {
-  const fields = [
-    { name: "address_street", label: "(street)", className: "flex-[2]" },
-    { name: "address_municipality", label: "(municipality)", className: "flex-[1.5]" },
-    { name: "address_province_city", label: "(province/city)", className: "flex-[1.5]" },
-    { name: "address_region", label: "(region)", className: "flex-[1]" },
-    { name: "address_zip_code", label: "(Zip Code)", className: "flex-[0.8]" }
-  ];
-
+function Field({
+  label,
+  name,
+  formData,
+  onChange,
+  errors,
+  className,
+}: {
+  label: string;
+  name: string;
+  formData: any;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  errors: Record<string, string>;
+  className?: string;
+}) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <Label className="w-48 text-right font-medium text-muted-foreground shrink-0 pr-4">
-          Institutional Address
-        </Label>
-        
-        <div className="flex-1 flex gap-2 overflow-hidden">
-          {fields.map((field) => (
-            <div key={field.name} className={`${field.className} min-w-0 transition-all duration-300`}>
-              <div className="relative">
-                <Input
-                  name={field.name}
-                  value={formData[field.name] || ""}
-                  onChange={onChange}
-                  className={`h-9 px-2 rounded-sm border-muted-foreground/30 focus-visible:ring-primary/20 transition-all ${errors[field.name] ? "border-destructive/50 ring-destructive/20" : "hover:border-primary/40 focus:border-primary"}`}
-                />
-              </div>
-              <p className="text-[10px] text-center text-muted-foreground mt-1 whitespace-nowrap overflow-hidden text-ellipsis italic">
-                {field.label}
-              </p>
-              {errors[field.name] && <p className="text-[10px] font-medium text-destructive mt-0.5">{errors[field.name]}</p>}
-            </div>
-          ))}
-        </div>
+    <div className={cn("space-y-1", className)}>
+      <Label className="text-[11px] text-muted-foreground font-medium pl-0.5">
+        {label}
+      </Label>
+      <Input
+        name={name}
+        value={formData[name] || ""}
+        onChange={onChange}
+        className={cn(
+          "h-9 rounded-xl border-border/60 bg-background shadow-sm",
+          errors[name] && "border-destructive ring-1 ring-destructive/30"
+        )}
+      />
+      {errors[name] && (
+        <p className="text-[11px] text-destructive font-medium mt-1">
+          {errors[name]}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function AddressFieldsGroup({ formData, onChange, errors }: Props) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Field
+          label="Street / Building"
+          name="address_street"
+          formData={formData}
+          onChange={onChange}
+          errors={errors}
+          className="md:col-span-2"
+        />
+        <Field
+          label="Municipality / City"
+          name="address_municipality"
+          formData={formData}
+          onChange={onChange}
+          errors={errors}
+        />
+        <Field
+          label="Province"
+          name="address_province_city"
+          formData={formData}
+          onChange={onChange}
+          errors={errors}
+        />
+        <Field
+          label="Region"
+          name="address_region"
+          formData={formData}
+          onChange={onChange}
+          errors={errors}
+        />
+        <Field
+          label="Zip Code"
+          name="address_zip_code"
+          formData={formData}
+          onChange={onChange}
+          errors={errors}
+        />
       </div>
     </div>
   );

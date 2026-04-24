@@ -5,6 +5,7 @@ import { InstitutionClassification } from "@/types/institution";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { 
   Select, 
   SelectContent, 
@@ -159,61 +160,71 @@ export function InstitutionClassificationSelect({ value, onChange, error }: Prop
   };
 
   return (
-    <div className="space-y-2">
-      <Label className={error ? "text-destructive" : ""}>Institution Classification</Label>
-      <div className="flex items-center gap-2">
+    <div className="space-y-1.5 w-full">
+      <div className="flex items-center gap-1.5">
         <Select value={value} onValueChange={onChange} disabled={loading || working}>
-          <SelectTrigger className={`bg-background/50 backdrop-blur-sm border-2 transition-all ${error ? "border-destructive/50 ring-destructive/20" : "hover:border-primary/30"}`}>
-            <SelectValue placeholder={loading ? "Loading..." : "Select classification"} />
+          <SelectTrigger className={cn(
+            "h-9 bg-background/50 border-border/60 hover:border-emerald-500/50 transition-all rounded-xl shadow-sm",
+            error && "border-destructive/50 ring-destructive/10"
+          )}>
+            <SelectValue placeholder={loading ? "Loading..." : "Select Classification"} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-xl border-border/60 shadow-xl">
             {classifications.map((item) => (
-              <SelectItem key={item.id} value={item.id.toString()}>
+              <SelectItem key={item.id} value={item.id.toString()} className="text-xs">
                 {item.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            setActionError(null);
-            setNewClassificationName("");
-            setAddOpen(true);
-          }}
-          disabled={working}
-        >
-          <Plus className="h-3.5 w-3.5 mr-1" />
-          Add
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          onClick={() => {
-            if (!selectedClassification) return;
-            setActionError(null);
-            setEditClassificationName(selectedClassification.name);
-            setEditOpen(true);
-          }}
-          disabled={!selectedClassification || working}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          onClick={() => {
-            setActionError(null);
-            setDeleteOpen(true);
-          }}
-          disabled={!selectedClassification || working}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        
+        <div className="flex items-center gap-1 bg-muted/20 p-1 rounded-xl border border-border/40">
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
+            onClick={() => {
+              setActionError(null);
+              setNewClassificationName("");
+              setAddOpen(true);
+            }}
+            disabled={working}
+            title="Add Classification"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
+            onClick={() => {
+              if (!selectedClassification) return;
+              setActionError(null);
+              setEditClassificationName(selectedClassification.name);
+              setEditOpen(true);
+            }}
+            disabled={!selectedClassification || working}
+            title="Edit Selection"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors"
+            onClick={() => {
+              setActionError(null);
+              setDeleteOpen(true);
+            }}
+            disabled={!selectedClassification || working}
+            title="Delete Selection"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
       {(loading || working) && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground animate-pulse">

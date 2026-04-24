@@ -5,6 +5,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -23,21 +27,25 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { Building2, ChevronDown, ChevronRight, School, BookOpen } from "lucide-react";
+import {
+  Building2, ChevronDown, ChevronRight, School, BookOpen,
+  LayoutList, Plus, Pencil, Trash2, UserCheck, Home, BookPlus, RefreshCw,
+  GraduationCap, Save, Search, HelpCircle, X, Users,
+} from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 type ClassSectionTab = {
   key:
-    | "list-all"
-    | "create-block-section"
-    | "create-free-section"
-    | "rename-class-section"
-    | "delete-class-section"
-    | "assign-adviser"
-    | "assign-default-classroom"
-    | "add-subject"
-    | "replace-subject";
+  | "list-all"
+  | "create-block-section"
+  | "create-free-section"
+  | "rename-class-section"
+  | "delete-class-section"
+  | "assign-adviser"
+  | "assign-default-classroom"
+  | "add-subject"
+  | "replace-subject";
   label: string;
 };
 
@@ -618,481 +626,525 @@ export function ClassSectionsModule() {
   const totalLabUnits = blockSubjects.reduce((sum, s) => sum + Number(s.lab_unit ?? 0), 0);
 
   return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="w-full border border-[#79b898] bg-white">
-        <div className="bg-gradient-to-b from-[#def8ea] to-[#9fdbbc] border-b border-[#79b898] px-2 py-1">
-          <h1 className="text-[34px] leading-none text-[#1f5e45] font-semibold">Class Sections</h1>
-          <p className="text-[12px] text-[#35684f]">
-            Use this module to manage class sections and related assignments.
-          </p>
-        </div>
-
-        <div className="px-2 pt-1.5 border-b border-[#9ed9c1] bg-[#f2fbf7]">
-          <div className="flex flex-wrap gap-1">
+    <div className="p-5 space-y-4">
+      {/* Page header card */}
+      <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+        <CardHeader className="pb-3 border-b border-border/40">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-base font-semibold tracking-tight">Class Sections</CardTitle>
+              <p className="text-xs text-muted-foreground">Manage class sections and related assignments</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-3">
+          <div className="flex flex-wrap gap-1.5">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
                 className={cn(
-                  "px-2 py-0.5 text-[12px] border border-[#79b898]",
+                  "px-3 py-1.5 text-xs rounded-lg font-medium transition-colors border",
                   activeTab === tab.key
-                    ? "bg-[#d9f3e5] text-[#1f5e45] font-semibold"
-                    : "bg-white text-[#35684f]"
+                    ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                    : "bg-background text-muted-foreground border-border/60 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
                 )}
               >
                 {tab.label}
               </button>
             ))}
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <div className="p-2 min-h-[620px] bg-[#f2fbf7]">
-          {activeTab === "list-all" ? (
-            <div className="h-full border border-[#79b898] bg-white">
-              <div className="grid grid-cols-12 border-b border-[#9ed9c1] bg-[#f8fdf9] px-2 py-1 text-[12px] items-center gap-2">
-                <div className="col-span-4 font-semibold text-[#1f5e45]">
-                  Please select the Academic Year and Term
-                </div>
-                <div className="col-span-4">
-                  <Select value={selectedYearTermId} onValueChange={setSelectedYearTermId}>
+      {/* Tab content */}
+      <div className="min-h-[600px]">
+        {activeTab === "list-all" ? (
+          <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+            {/* Year/Term filter bar */}
+            <div className="flex items-center gap-3 border-b border-border/40 px-4 py-3 bg-muted/20 flex-wrap">
+              <span className="text-xs font-medium text-muted-foreground shrink-0">Academic Year &amp; Term</span>
+              <Select value={selectedYearTermId} onValueChange={setSelectedYearTermId}>
+                <SelectTrigger className="h-9 rounded-xl border-border/60 text-xs shadow-sm w-60">
+                  <SelectValue placeholder="Select Academic Year/Term" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {yearTerms.map((yt) => (
+                    <SelectItem key={yt.id} value={String(yt.id)} className="text-xs">
+                      {yt.academic_year} {yt.term}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedYearTermLabel && (
+                <Badge className="bg-emerald-100 text-emerald-700 border-0 rounded-lg text-xs ml-auto">
+                  {selectedYearTermLabel}
+                </Badge>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[18rem_1fr] min-h-[560px]">
+              {/* Sidebar tree */}
+              <div className="border-r border-border/40 bg-muted/10">
+                <div className="p-3 space-y-2 border-b border-border/40">
+                  <Select
+                    value={selectedCampusId}
+                    onValueChange={(v) => {
+                      setSelectedCampusId(v);
+                      setSelectedCollegeId("");
+                    }}
+                  >
                     <SelectTrigger className="h-7 text-[12px]">
-                      <SelectValue placeholder="Select Academic Year/Term" />
+                      <SelectValue placeholder="Select Campus" />
                     </SelectTrigger>
                     <SelectContent>
-                      {yearTerms.map((yt) => (
-                        <SelectItem key={yt.id} value={String(yt.id)}>
-                          {yt.academic_year} {yt.term}
+                      {campuses.map((c) => (
+                        <SelectItem key={c.id} value={String(c.id)}>
+                          {c.acronym}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedCollegeId} onValueChange={setSelectedCollegeId}>
+                    <SelectTrigger className="h-7 text-[12px]">
+                      <SelectValue placeholder="Select College" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedCampusColleges.map((college) => (
+                        <SelectItem key={college.id} value={String(college.id)}>
+                          {college.college_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="col-span-4 text-right text-[#35684f] text-[11px]">
-                  {selectedYearTermLabel || "No Academic Year/Term selected"}
-                </div>
+
+                <ScrollArea className="h-[500px] p-2 text-xs">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 font-semibold text-foreground">
+                    <School className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Palawan State University</span>
+                  </div>
+                  {campuses.map((campus) => {
+                    const expanded = expandedCampusIds.includes(campus.id);
+                    const campusColleges = colleges.filter((x) => x.campus_id === campus.id);
+                    return (
+                      <div key={campus.id} className="ml-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleCampus(campus.id);
+                            setSelectedCampusId(String(campus.id));
+                            setSelectedCollegeId("");
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left transition-colors hover:bg-emerald-50",
+                            selectedCampusId === String(campus.id) && "bg-emerald-50 text-emerald-700 font-semibold"
+                          )}
+                        >
+                          {expanded ? <ChevronDown className="h-3 w-3 shrink-0" /> : <ChevronRight className="h-3 w-3 shrink-0" />}
+                          <School className="h-3 w-3 shrink-0 text-emerald-600" />
+                          <span>{campus.acronym}</span>
+                        </button>
+                        {expanded && (
+                          <div className="ml-4 border-l border-border/40 pl-1">
+                            {campusColleges.map((college) => (
+                              <div key={college.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const cp = programsByCollege.get(college.id) ?? [];
+                                    setSelectedCampusId(String(campus.id));
+                                    setSelectedCollegeId(String(college.id));
+                                    setSelectedProgramNodeId("");
+                                    if (cp.length > 0 && !expandedCollegeIds.includes(college.id))
+                                      setExpandedCollegeIds((prev) => [...prev, college.id]);
+                                  }}
+                                  className={cn(
+                                    "w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left transition-colors hover:bg-emerald-50",
+                                    selectedCollegeId === String(college.id) && "bg-emerald-50 text-emerald-700 font-semibold"
+                                  )}
+                                >
+                                  {(() => {
+                                    const cp = programsByCollege.get(college.id) ?? [];
+                                    if (cp.length === 0) return <span className="w-3" />;
+                                    return expandedCollegeIds.includes(college.id) ? <ChevronDown className="h-3 w-3 shrink-0" /> : <ChevronRight className="h-3 w-3 shrink-0" />;
+                                  })()}
+                                  <Building2 className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                  <span className="truncate">{college.college_name}</span>
+                                </button>
+                                {expandedCollegeIds.includes(college.id) && (
+                                  <div className="ml-4 border-l border-border/30 pl-1">
+                                    {(programsByCollege.get(college.id) ?? []).map((program) => {
+                                      const programSections = freeSectionsByProgram.get(program.id) ?? [];
+                                      const isProgramExpanded = expandedProgramIds.includes(program.id);
+                                      return (
+                                        <div key={program.id}>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setSelectedCampusId(String(campus.id));
+                                              setSelectedCollegeId(String(college.id));
+                                              setSelectedProgramNodeId(String(program.id));
+                                              if (programSections.length > 0 && !isProgramExpanded) {
+                                                setExpandedProgramIds((prev) => [...prev, program.id]);
+                                              }
+                                            }}
+                                            className={cn(
+                                              "w-full flex items-center gap-1 px-1 py-0.5 text-left hover:bg-[#e7f8ef]",
+                                              selectedProgramNodeId === String(program.id) &&
+                                              "bg-[#d9f3e5] text-[#1f5e45] font-semibold"
+                                            )}
+                                          >
+                                            {programSections.length > 0 ? (
+                                              isProgramExpanded ? (
+                                                <ChevronDown className="h-3 w-3 shrink-0" />
+                                              ) : (
+                                                <ChevronRight className="h-3 w-3 shrink-0" />
+                                              )
+                                            ) : (
+                                              <span className="w-3" />
+                                            )}
+                                            <BookOpen className="h-3 w-3 shrink-0 text-[#7f6a33]" />
+                                            <span className="truncate">{program.program_name}</span>
+                                          </button>
+
+                                          {isProgramExpanded && (
+                                            <div className="ml-4 border-l border-[#e3eee8] pl-1">
+                                              {programSections.map((section) => (
+                                                <div key={section.id}>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                      setExpandedFreeSectionIds((prev) =>
+                                                        prev.includes(section.id)
+                                                          ? prev.filter((x) => x !== section.id)
+                                                          : [...prev, section.id]
+                                                      )
+                                                    }
+                                                    className="w-full flex items-center gap-1 px-1 py-0.5 text-left hover:bg-[#e7f8ef]"
+                                                  >
+                                                    {expandedFreeSectionIds.includes(section.id) ? (
+                                                      <ChevronDown className="h-3 w-3 shrink-0" />
+                                                    ) : (
+                                                      <ChevronRight className="h-3 w-3 shrink-0" />
+                                                    )}
+                                                    <Building2 className="h-3 w-3 shrink-0 text-[#8b5f3b]" />
+                                                    <span className="truncate">{section.name}</span>
+                                                  </button>
+
+                                                  {expandedFreeSectionIds.includes(section.id) && (
+                                                    <div className="ml-4 border-l border-[#edf5f0] pl-1">
+                                                      {section.subjects.map((subject) => (
+                                                        <div
+                                                          key={`${section.id}-${subject.course_code}`}
+                                                          className="flex items-center gap-1 px-1 py-0.5"
+                                                        >
+                                                          <BookOpen className="h-3 w-3 shrink-0 text-[#9b8a43]" />
+                                                          <span className="truncate">{subject.course_title} (0)</span>
+                                                        </div>
+                                                      ))}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </ScrollArea>
               </div>
 
-              <div className="grid grid-cols-12 min-h-[560px]">
-                <div className="col-span-12 lg:col-span-3 border-r border-[#9ed9c1] bg-[#f6fcf9]">
-                  <div className="border-b border-[#9ed9c1] p-1 space-y-1">
-                    <Select
-                      value={selectedCampusId}
-                      onValueChange={(v) => {
-                        setSelectedCampusId(v);
-                        setSelectedCollegeId("");
-                      }}
-                    >
-                      <SelectTrigger className="h-7 text-[12px]">
-                        <SelectValue placeholder="Select Campus" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {campuses.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.acronym}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={selectedCollegeId} onValueChange={setSelectedCollegeId}>
-                      <SelectTrigger className="h-7 text-[12px]">
-                        <SelectValue placeholder="Select College" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {selectedCampusColleges.map((college) => (
-                          <SelectItem key={college.id} value={String(college.id)}>
-                            {college.college_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="h-[520px] overflow-auto p-1 text-[12px]">
-                    <div className="flex items-center gap-1 px-1 py-0.5 font-semibold text-[#1f5e45]">
-                      <School className="h-3.5 w-3.5" />
-                      <span>Palawan State University</span>
+              {/* Main panel */}
+              <div className="flex flex-col">
+                {selectedCollege ? (
+                  <>
+                    <div className="grid grid-cols-12 border-b border-border/40 bg-muted/30">
+                      <div className="col-span-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Prog.Code</div>
+                      <div className="col-span-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Program Name</div>
+                      <div className="col-span-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40 text-center">Years</div>
+                      <div className="col-span-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40 text-center">Semesters</div>
+                      <div className="col-span-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40 text-center">Max.Residency</div>
+                      <div className="col-span-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Classification</div>
+                      <div className="col-span-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Study Discipline</div>
                     </div>
-                    {campuses.map((campus) => {
-                      const expanded = expandedCampusIds.includes(campus.id);
-                      const campusColleges = colleges.filter((x) => x.campus_id === campus.id);
-                      return (
-                        <div key={campus.id} className="ml-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              toggleCampus(campus.id);
-                              setSelectedCampusId(String(campus.id));
-                              setSelectedCollegeId("");
-                            }}
-                            className={cn(
-                              "w-full flex items-center gap-1 px-1 py-0.5 text-left hover:bg-[#e7f8ef]",
-                              selectedCampusId === String(campus.id) && "bg-[#d9f3e5] text-[#1f5e45] font-semibold"
-                            )}
-                          >
-                            {expanded ? (
-                              <ChevronDown className="h-3 w-3 shrink-0" />
-                            ) : (
-                              <ChevronRight className="h-3 w-3 shrink-0" />
-                            )}
-                            <School className="h-3 w-3 shrink-0 text-[#2f9b68]" />
-                            <span>{campus.acronym}</span>
-                          </button>
-                          {expanded && (
-                            <div className="ml-4 border-l border-[#cfe6da] pl-1">
-                              {campusColleges.map((college) => (
-                                <div key={college.id}>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const collegePrograms = programsByCollege.get(college.id) ?? [];
-                                      setSelectedCampusId(String(campus.id));
-                                      setSelectedCollegeId(String(college.id));
-                                      setSelectedProgramNodeId("");
-                                    if (collegePrograms.length > 0 && !expandedCollegeIds.includes(college.id)) {
-                                      setExpandedCollegeIds((prev) => [...prev, college.id]);
-                                    }
-                                    }}
-                                    className={cn(
-                                      "w-full flex items-center gap-1 px-1 py-0.5 text-left hover:bg-[#e7f8ef]",
-                                      selectedCollegeId === String(college.id) &&
-                                        "bg-[#d9f3e5] text-[#1f5e45] font-semibold"
-                                    )}
-                                  >
-                                    {(() => {
-                                      const collegePrograms = programsByCollege.get(college.id) ?? [];
-                                      if (collegePrograms.length === 0) return <span className="w-3" />;
-                                      return expandedCollegeIds.includes(college.id) ? (
-                                        <ChevronDown className="h-3 w-3 shrink-0" />
-                                      ) : (
-                                        <ChevronRight className="h-3 w-3 shrink-0" />
-                                      );
-                                    })()}
-                                    <Building2 className="h-3 w-3 shrink-0 text-[#6a8f7c]" />
-                                    <span className="truncate">{college.college_name}</span>
-                                  </button>
-                                  {expandedCollegeIds.includes(college.id) && (
-                                    <div className="ml-4 border-l border-[#d9e9df] pl-1">
-                                      {(programsByCollege.get(college.id) ?? []).map((program) => {
-                                        const programSections = freeSectionsByProgram.get(program.id) ?? [];
-                                        const isProgramExpanded = expandedProgramIds.includes(program.id);
-                                        return (
-                                          <div key={program.id}>
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                setSelectedCampusId(String(campus.id));
-                                                setSelectedCollegeId(String(college.id));
-                                                setSelectedProgramNodeId(String(program.id));
-                                                if (programSections.length > 0 && !isProgramExpanded) {
-                                                  setExpandedProgramIds((prev) => [...prev, program.id]);
-                                                }
-                                              }}
-                                              className={cn(
-                                                "w-full flex items-center gap-1 px-1 py-0.5 text-left hover:bg-[#e7f8ef]",
-                                                selectedProgramNodeId === String(program.id) &&
-                                                  "bg-[#d9f3e5] text-[#1f5e45] font-semibold"
-                                              )}
-                                            >
-                                              {programSections.length > 0 ? (
-                                                isProgramExpanded ? (
-                                                  <ChevronDown className="h-3 w-3 shrink-0" />
-                                                ) : (
-                                                  <ChevronRight className="h-3 w-3 shrink-0" />
-                                                )
-                                              ) : (
-                                                <span className="w-3" />
-                                              )}
-                                              <BookOpen className="h-3 w-3 shrink-0 text-[#7f6a33]" />
-                                              <span className="truncate">{program.program_name}</span>
-                                            </button>
-
-                                            {isProgramExpanded && (
-                                              <div className="ml-4 border-l border-[#e3eee8] pl-1">
-                                                {programSections.map((section) => (
-                                                  <div key={section.id}>
-                                                    <button
-                                                      type="button"
-                                                      onClick={() =>
-                                                        setExpandedFreeSectionIds((prev) =>
-                                                          prev.includes(section.id)
-                                                            ? prev.filter((x) => x !== section.id)
-                                                            : [...prev, section.id]
-                                                        )
-                                                      }
-                                                      className="w-full flex items-center gap-1 px-1 py-0.5 text-left hover:bg-[#e7f8ef]"
-                                                    >
-                                                      {expandedFreeSectionIds.includes(section.id) ? (
-                                                        <ChevronDown className="h-3 w-3 shrink-0" />
-                                                      ) : (
-                                                        <ChevronRight className="h-3 w-3 shrink-0" />
-                                                      )}
-                                                      <Building2 className="h-3 w-3 shrink-0 text-[#8b5f3b]" />
-                                                      <span className="truncate">{section.name}</span>
-                                                    </button>
-
-                                                    {expandedFreeSectionIds.includes(section.id) && (
-                                                      <div className="ml-4 border-l border-[#edf5f0] pl-1">
-                                                        {section.subjects.map((subject) => (
-                                                          <div
-                                                            key={`${section.id}-${subject.course_code}`}
-                                                            className="flex items-center gap-1 px-1 py-0.5"
-                                                          >
-                                                            <BookOpen className="h-3 w-3 shrink-0 text-[#9b8a43]" />
-                                                            <span className="truncate">{subject.course_title} (0)</span>
-                                                          </div>
-                                                        ))}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                ))}
-                                              </div>
-                                            )}
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                    <ScrollArea className="flex-1 h-[480px]">
+                      {selectedCollegePrograms.map((p) => (
+                        <div key={p.id} className="grid grid-cols-12 border-b border-border/30 hover:bg-emerald-50 transition-colors">
+                          <div className="col-span-1 px-3 py-2.5 text-xs font-mono font-semibold text-emerald-700 border-r border-border/30">{p.program_code}</div>
+                          <div className="col-span-4 px-3 py-2.5 text-xs border-r border-border/30">{p.program_name}</div>
+                          <div className="col-span-1 px-3 py-2.5 text-xs text-center border-r border-border/30">{p.no_of_years ?? ""}</div>
+                          <div className="col-span-1 px-3 py-2.5 text-xs text-center border-r border-border/30">{p.no_of_years ? p.no_of_years * 2 : ""}</div>
+                          <div className="col-span-1 px-3 py-2.5 text-xs text-center border-r border-border/30">{p.max_residency ?? ""}</div>
+                          <div className="col-span-2 px-3 py-2.5 text-xs truncate border-r border-border/30">{p.classification || "Baccalaureate Degree"}</div>
+                          <div className="col-span-2 px-3 py-2.5 text-xs truncate">{p.thesis_option || "General"}</div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="col-span-12 lg:col-span-9 bg-white">
-                  {selectedCollege ? (
-                    <>
-                      <div className="grid grid-cols-12 bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[11px] font-bold uppercase">
-                        <div className="col-span-1 px-2 py-1 border-r border-white/30">Prog.Code</div>
-                        <div className="col-span-4 px-2 py-1 border-r border-white/30">Program Name</div>
-                        <div className="col-span-1 px-2 py-1 border-r border-white/30 text-center">Years</div>
-                        <div className="col-span-1 px-2 py-1 border-r border-white/30 text-center">Semesters</div>
-                        <div className="col-span-1 px-2 py-1 border-r border-white/30 text-center">Max.Residency</div>
-                        <div className="col-span-2 px-2 py-1 border-r border-white/30">Program Classification</div>
-                        <div className="col-span-2 px-2 py-1">Study Discipline</div>
-                      </div>
-                      <div className="h-[520px] overflow-auto">
-                        {selectedCollegePrograms.map((p) => (
-                          <div
-                            key={p.id}
-                            className="grid grid-cols-12 border-b border-[#d4e8dc] text-[12px] hover:bg-[#e7f8ef]"
-                          >
-                            <div className="col-span-1 px-2 py-1 border-r border-[#d4e8dc]">{p.program_code}</div>
-                            <div className="col-span-4 px-2 py-1 border-r border-[#d4e8dc]">{p.program_name}</div>
-                            <div className="col-span-1 px-2 py-1 border-r border-[#d4e8dc] text-center">
-                              {p.no_of_years ?? ""}
-                            </div>
-                            <div className="col-span-1 px-2 py-1 border-r border-[#d4e8dc] text-center">
-                              {p.no_of_years ? p.no_of_years * 2 : ""}
-                            </div>
-                            <div className="col-span-1 px-2 py-1 border-r border-[#d4e8dc] text-center">
-                              {p.max_residency ?? ""}
-                            </div>
-                            <div className="col-span-2 px-2 py-1 border-r border-[#d4e8dc] truncate">
-                              {p.classification || "Baccalaureate Degree"}
-                            </div>
-                            <div className="col-span-2 px-2 py-1 truncate">{p.thesis_option || "General"}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="grid grid-cols-12 bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[11px] font-bold uppercase">
-                        <div className="col-span-2 px-2 py-1 border-r border-white/30">College Code</div>
-                        <div className="col-span-5 px-2 py-1 border-r border-white/30">The College</div>
-                        <div className="col-span-2 px-2 py-1 border-r border-white/30 text-center">No. of Programs</div>
-                        <div className="col-span-2 px-2 py-1 border-r border-white/30">College Dean</div>
-                        <div className="col-span-1 px-2 py-1 text-center">College Logo</div>
-                      </div>
-                      <div className="h-[520px] overflow-auto">
-                        {selectedCampusColleges.map((college) => (
-                          <div
-                            key={college.id}
-                            className="grid grid-cols-12 border-b border-[#d4e8dc] text-[12px] hover:bg-[#e7f8ef]"
-                          >
-                            <div className="col-span-2 px-2 py-1 border-r border-[#d4e8dc]">{college.college_code}</div>
-                            <div className="col-span-5 px-2 py-1 border-r border-[#d4e8dc]">{college.college_name}</div>
-                            <div className="col-span-2 px-2 py-1 border-r border-[#d4e8dc] text-center">
-                              {programCountByCollege.get(college.id) ?? 0}
-                            </div>
-                            <div className="col-span-2 px-2 py-1 border-r border-[#d4e8dc] truncate">
-                              {college.dean_name || ""}
-                            </div>
-                            <div className="col-span-1 px-2 py-1 text-center truncate">
-                              {college.logo_url ? "OK" : "NULL"}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
+                      ))}
+                    </ScrollArea>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-12 border-b border-border/40 bg-muted/30">
+                      <div className="col-span-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">College Code</div>
+                      <div className="col-span-5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">The College</div>
+                      <div className="col-span-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40 text-center">No. of Programs</div>
+                      <div className="col-span-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">College Dean</div>
+                      <div className="col-span-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center">Logo</div>
+                    </div>
+                    <ScrollArea className="flex-1 h-[480px]">
+                      {selectedCampusColleges.map((college) => (
+                        <div key={college.id} className="grid grid-cols-12 border-b border-border/30 hover:bg-emerald-50 transition-colors">
+                          <div className="col-span-2 px-3 py-2.5 text-xs font-mono font-semibold text-emerald-700 border-r border-border/30">{college.college_code}</div>
+                          <div className="col-span-5 px-3 py-2.5 text-xs border-r border-border/30">{college.college_name}</div>
+                          <div className="col-span-2 px-3 py-2.5 text-xs text-center border-r border-border/30">{programCountByCollege.get(college.id) ?? 0}</div>
+                          <div className="col-span-2 px-3 py-2.5 text-xs truncate border-r border-border/30">{college.dean_name || ""}</div>
+                          <div className="col-span-1 px-3 py-2.5 text-xs text-center">{college.logo_url ? "✓" : "—"}</div>
+                        </div>
+                      ))}
+                    </ScrollArea>
+                  </>
+                )}
               </div>
             </div>
-          ) : activeTab === "create-block-section" ? (
-            <div className="h-full border border-[#79b898] bg-[#dbeff5] p-1.5 space-y-1.5">
-              <div className="border border-[#79b898] bg-white">
-                <div className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] px-2 py-1 text-white">
-                  <div className="text-[22px] leading-none font-semibold">
-                    BLOCK SECTION - Curriculum Code: {selectedBlockCurriculum?.curriculum_code || "--"}
+          </Card>
+        ) : activeTab === "create-block-section" ? (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <CardTitle className="text-sm font-semibold tracking-tight">
+                      Create Block Section
+                      {selectedBlockCurriculum && (
+                        <Badge className="ml-2 bg-emerald-100 text-emerald-700 border-0 rounded-lg text-xs">
+                          {selectedBlockCurriculum.curriculum_code}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">Create a block section based on selected curriculum</p>
                   </div>
-                  <div className="text-[11px] opacity-95">Create a block section based on selected curriculum.</div>
                 </div>
-
-                <div className="grid grid-cols-12 gap-1 p-1">
-                  <div className="col-span-12 lg:col-span-9 border border-[#9ed9c1]">
-                    <div className="grid grid-cols-12 bg-[#f8fdf9] text-[11px] font-semibold text-[#1f5e45] border-b border-[#d4e8dc]">
-                      <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc]">College Code</div>
-                      <div className="col-span-3 px-1 py-1 border-r border-[#d4e8dc]">Curriculum Code</div>
-                      <div className="col-span-5 px-1 py-1 border-r border-[#d4e8dc]">Implementation</div>
-                      <div className="col-span-3 px-1 py-1">YearTermDesc</div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_14rem] gap-4">
+                  {/* Curriculum table */}
+                  <div className="border border-border/40 rounded-xl overflow-hidden">
+                    <div className="grid grid-cols-12 border-b border-border/40 bg-muted/30">
+                      <div className="col-span-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Code</div>
+                      <div className="col-span-3 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Curriculum Code</div>
+                      <div className="col-span-5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Implementation</div>
+                      <div className="col-span-3 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Year / Term</div>
                     </div>
-                    <div className="h-[150px] overflow-auto text-[12px]">
+                    <ScrollArea className="h-[150px]">
                       {filteredBlockCurriculums.map((c) => (
                         <button
                           key={c.id}
                           type="button"
                           onClick={() => setSelectedBlockCurriculumId(String(c.id))}
                           className={cn(
-                            "w-full grid grid-cols-12 text-left border-b border-[#d4e8dc] hover:bg-[#e7f8ef]",
-                            selectedBlockCurriculumId === String(c.id) && "bg-[#d9f3e5]"
+                            "w-full grid grid-cols-12 text-left border-b border-border/30 text-xs transition-colors hover:bg-emerald-50",
+                            selectedBlockCurriculumId === String(c.id) && "bg-emerald-50 font-medium"
                           )}
                         >
-                          <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc]">{selectedCollege?.college_code || "-"}</div>
-                          <div className="col-span-3 px-1 py-1 border-r border-[#d4e8dc] truncate">{c.curriculum_code}</div>
-                          <div className="col-span-5 px-1 py-1 border-r border-[#d4e8dc] truncate">{c.description || "-"}</div>
-                          <div className="col-span-3 px-1 py-1 truncate">
-                            {(c.no_of_years ? `${c.no_of_years} Year` : "")} - {prettyTerm(c.term_label)}
+                          <div className="col-span-1 px-3 py-2 border-r border-border/30 text-emerald-700 font-mono">{selectedCollege?.college_code || "-"}</div>
+                          <div className="col-span-3 px-3 py-2 border-r border-border/30 truncate font-medium">{c.curriculum_code}</div>
+                          <div className="col-span-5 px-3 py-2 border-r border-border/30 truncate text-muted-foreground">{c.description || "-"}</div>
+                          <div className="col-span-3 px-3 py-2 text-muted-foreground truncate">
+                            {c.no_of_years ? `${c.no_of_years} Year` : ""} — {prettyTerm(c.term_label)}
                           </div>
                         </button>
                       ))}
-                    </div>
+                    </ScrollArea>
                   </div>
 
-                  <div className="col-span-12 lg:col-span-3 border border-[#9ed9c1] p-1 space-y-1 text-[11px]">
+                  {/* Sidebar filters */}
+                  <div className="space-y-2">
                     <Select value={blockProgramId} onValueChange={setBlockProgramId}>
-                      <SelectTrigger className="h-7 text-[12px]">
+                      <SelectTrigger className="h-9 rounded-xl border-border/60 text-xs shadow-sm">
                         <SelectValue placeholder="Program" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-xl">
                         {availableProgramsForBlock.map((p) => (
-                          <SelectItem key={p.id} value={String(p.id)}>
-                            {p.program_code} - {p.program_name}
+                          <SelectItem key={p.id} value={String(p.id)} className="text-xs">
+                            {p.program_code} — {p.program_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <Input
-                      className="h-7 text-[12px]"
-                      placeholder="Search curriculum..."
-                      value={searchText}
-                      onChange={(e) => setSearchText(e.target.value)}
-                    />
-                    <Input
-                      className="h-7 text-[12px]"
-                      placeholder="Filter year/term..."
-                      value={yearTermText}
-                      onChange={(e) => setYearTermText(e.target.value)}
-                    />
-                    <div className="flex gap-1">
-                      <Button className="h-7 text-[11px] flex-1" onClick={handleSearch}>Search</Button>
-                      <Button className="h-7 text-[11px] flex-1" variant="outline" onClick={handleFilter}>Filter</Button>
+                    <Input className="h-9 text-xs rounded-xl border-border/60 shadow-sm" placeholder="Search curriculum..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+                    <Input className="h-9 text-xs rounded-xl border-border/60 shadow-sm" placeholder="Filter year/term..." value={yearTermText} onChange={(e) => setYearTermText(e.target.value)} />
+                    <div className="flex gap-2">
+                      <Button className="h-9 text-xs flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700" onClick={handleSearch}><Search className="h-3.5 w-3.5 mr-1" />Search</Button>
+                      <Button className="h-9 text-xs flex-1 rounded-xl" variant="outline" onClick={handleFilter}>Filter</Button>
                     </div>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="border border-[#79b898] bg-white">
-                <div className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[11px] font-bold px-2 py-1 uppercase">
-                  List of Subjects under the Curriculum Code {selectedBlockCurriculum?.curriculum_code || "--"}
+            <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40">
+                <CardTitle className="text-xs font-semibold tracking-tight text-muted-foreground uppercase">
+                  Subjects — Curriculum {selectedBlockCurriculum?.curriculum_code || "--"}
+                </CardTitle>
+              </CardHeader>
+              <div className="grid grid-cols-12 border-b border-border/40 bg-muted/30">
+                {["Subject Code", "Descriptive Title", "Credit Units", "Lecture Hrs.", "Lab Units", "Lab Hrs.", "Gen. Ed", "Min. Size"].map((h, i) => (
+                  <div key={i} className={cn("px-2 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r last:border-r-0 border-border/40", i === 0 ? "col-span-2" : i === 1 ? "col-span-3" : "col-span-1")}>{h}</div>
+                ))}
+              </div>
+              <ScrollArea className="h-[220px]">
+                {blockSubjects.map((s) => {
+                  const cm = courseMasterByCode.get(normCode(s.subject_code));
+                  return (
+                    <div key={s.id} className="grid grid-cols-12 border-b border-border/30 hover:bg-emerald-50 transition-colors text-xs">
+                      <div className="col-span-2 px-2 py-2 border-r border-border/30 font-mono text-emerald-700">{s.subject_code}</div>
+                      <div className="col-span-3 px-2 py-2 border-r border-border/30 truncate">{s.descriptive_title}</div>
+                      <div className="col-span-1 px-2 py-2 border-r border-border/30 text-right">{Number(s.credit_unit ?? 0).toFixed(2)}</div>
+                      <div className="col-span-1 px-2 py-2 border-r border-border/30 text-right">{Number(s.lecture_hour ?? 0).toFixed(2)}</div>
+                      <div className="col-span-1 px-2 py-2 border-r border-border/30 text-right">{Number(s.lab_unit ?? 0).toFixed(2)}</div>
+                      <div className="col-span-1 px-2 py-2 border-r border-border/30 text-right">{Number(s.laboratory_hour ?? 0).toFixed(2)}</div>
+                      <div className="col-span-1 px-2 py-2 border-r border-border/30 flex items-center justify-center">
+                        <Checkbox checked={!!cm?.general_education} onCheckedChange={() => { }} />
+                      </div>
+                      <div className="col-span-2 px-2 py-2 text-right">{cm?.default_min_class_limit ?? 15}</div>
+                    </div>
+                  );
+                })}
+              </ScrollArea>
+              <div className="flex items-center justify-between border-t border-border/40 bg-muted/20 px-4 py-2.5">
+                <div className="flex gap-4 text-xs text-muted-foreground">
+                  <span>Subjects: <strong className="text-foreground">{blockSubjects.length}</strong></span>
+                  <span>Units: <strong className="text-foreground">{totalUnits.toFixed(1)}</strong></span>
+                  <span>Lecture Hrs: <strong className="text-foreground">{totalLecture.toFixed(1)}</strong></span>
+                  <span>Lab Units: <strong className="text-foreground">{totalLabUnits.toFixed(1)}</strong></span>
                 </div>
-                <div className="grid grid-cols-12 bg-[#f8fdf9] text-[11px] font-semibold text-[#1f5e45] border-b border-[#d4e8dc]">
-                  <div className="col-span-2 px-1 py-1 border-r border-[#d4e8dc]">Subject Code</div>
-                  <div className="col-span-3 px-1 py-1 border-r border-[#d4e8dc]">Descriptive Title</div>
-                  <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Credit Units</div>
-                  <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Lecture Hrs.</div>
-                  <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Lab Units</div>
-                  <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Lab Hrs.</div>
-                  <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Gen. Ed</div>
-                  <div className="col-span-2 px-1 py-1 text-center">Min. Size</div>
+                <div className="flex gap-2">
+                  <Button className="h-9 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700" onClick={handleSaveBlockSection}><Save className="h-3.5 w-3.5 mr-1" />Save</Button>
+                  <Button className="h-9 text-xs rounded-xl" variant="outline" onClick={() => setHelpOpen(true)}><HelpCircle className="h-3.5 w-3.5 mr-1" />Help</Button>
+                  <Button className="h-9 text-xs rounded-xl" variant="destructive" onClick={handleCancelBlockSection}><X className="h-3.5 w-3.5 mr-1" />Cancel</Button>
                 </div>
-                <div className="h-[220px] overflow-auto text-[12px]">
-                  {blockSubjects.map((s) => {
-                    const cm = courseMasterByCode.get(normCode(s.subject_code));
-                    return (
-                      <div key={s.id} className="grid grid-cols-12 border-b border-[#d4e8dc] hover:bg-[#f3fbf6]">
-                        <div className="col-span-2 px-1 py-1 border-r border-[#d4e8dc]">{s.subject_code}</div>
-                        <div className="col-span-3 px-1 py-1 border-r border-[#d4e8dc] truncate">{s.descriptive_title}</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(s.credit_unit ?? 0).toFixed(2)}</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(s.lecture_hour ?? 0).toFixed(2)}</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(s.lab_unit ?? 0).toFixed(2)}</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(s.laboratory_hour ?? 0).toFixed(2)}</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] flex items-center justify-center">
-                          <Checkbox checked={!!cm?.general_education} onCheckedChange={() => {}} />
+              </div>
+            </Card>
+
+            <AlertDialog open={helpOpen} onOpenChange={setHelpOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Create Block Section Help</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    1) Select a Program and Curriculum row.
+                    {"\n"}2) Use Search and Filter to narrow curriculum results.
+                    {"\n"}3) Review subjects, then click Save to store the setup snapshot.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Close</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => setHelpOpen(false)}>Got it</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
+        ) : activeTab === "create-free-section" ? (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40 bg-muted/10">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <CardTitle className="text-sm font-semibold tracking-tight">Create Free Section</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">Add subject(s) as part of Free Section / Special Classes</p>
+                  </div>
+                  {freeSelectedProgram && (
+                    <Badge className="bg-emerald-100 text-emerald-700 border-0 rounded-lg text-xs">
+                      {freeSelectedProgram.program_name}
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_12rem] gap-4">
+                  <div className="space-y-4">
+                    {/* Header Controls */}
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_14rem] gap-4 items-end">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Institution</label>
+                          <Select value={freeInstitutionId} onValueChange={setFreeInstitutionId}>
+                            <SelectTrigger className="h-9 rounded-xl border-border/60 text-xs shadow-sm bg-background">
+                              <SelectValue placeholder="Institution" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              {institutions.map((inst) => (
+                                <SelectItem key={inst.id} value={String(inst.id)} className="text-xs">
+                                  {inst.official_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div className="col-span-2 px-1 py-1 text-right">{cm?.default_min_class_limit ?? 15}</div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Campus</label>
+                          <Select value={freeCampusId} onValueChange={setFreeCampusId}>
+                            <SelectTrigger className="h-9 rounded-xl border-border/60 text-xs shadow-sm bg-background">
+                              <SelectValue placeholder="University / Campus" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              {freeCampuses.map((campus) => (
+                                <SelectItem key={campus.id} value={String(campus.id)} className="text-xs">
+                                  {campus.acronym} {campus.campus_name ? `- ${campus.campus_name}` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">College</label>
+                          <Select value={freeCollegeId} onValueChange={setFreeCollegeId}>
+                            <SelectTrigger className="h-9 rounded-xl border-border/60 text-xs shadow-sm bg-background">
+                              <SelectValue placeholder="College" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              {freeColleges.map((college) => (
+                                <SelectItem key={college.id} value={String(college.id)} className="text-xs">
+                                  {college.college_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Program</label>
+                          <Select value={freeProgramId} onValueChange={setFreeProgramId}>
+                            <SelectTrigger className="h-9 rounded-xl border-border/60 text-xs shadow-sm bg-background">
+                              <SelectValue placeholder="Program" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              {freePrograms.map((program) => (
+                                <SelectItem key={program.id} value={String(program.id)} className="text-xs">
+                                  {program.program_code} - {program.program_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-center justify-between border-t border-[#79b898] bg-[#f8fdf9] px-2 py-1 text-[12px]">
-                  <div className="flex gap-4">
-                    <span>TOTAL SUBJECTS COUNT: {blockSubjects.length}</span>
-                    <span>TOTAL UNITS: {totalUnits.toFixed(1)}</span>
-                    <span>TOTAL LECTURE HRS: {totalLecture.toFixed(1)}</span>
-                    <span>TOTAL LAB UNITS: {totalLabUnits.toFixed(1)}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button className="h-7 text-[11px]" onClick={handleSaveBlockSection}>Save</Button>
-                    <Button className="h-7 text-[11px]" variant="outline" onClick={() => setHelpOpen(true)}>Help</Button>
-                    <Button className="h-7 text-[11px]" variant="destructive" onClick={handleCancelBlockSection}>Cancel</Button>
-                  </div>
-                </div>
-              </div>
-
-              <AlertDialog open={helpOpen} onOpenChange={setHelpOpen}>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Create Block Section Help</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      1) Select a Program and Curriculum row.
-                      {"\n"}2) Use Search and Filter to narrow curriculum results.
-                      {"\n"}3) Review subjects, then click Save to store the setup snapshot.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Close</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => setHelpOpen(false)}>Got it</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          ) : activeTab === "create-free-section" ? (
-            <div className="h-full border border-[#79b898] bg-[#dbeff5] p-1">
-              <div className="border border-[#79b898] bg-white">
-                <div className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] px-2 py-1 text-white">
-                  <div className="text-[30px] leading-none font-semibold">CREATE FREE SECTION</div>
-                  <div className="text-[11px] opacity-95">
-                    Use this module to add subject(s) as part of the Free Section/Special Classes.
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-12 gap-1 p-1">
-                  <div className="col-span-12 lg:col-span-10 space-y-1">
-                    <div className="grid grid-cols-12 gap-2 text-[12px] items-center">
-                      <div className="col-span-7 font-semibold text-[#1f5e45]">
-                        Selected Program: {freeSelectedProgram ? freeSelectedProgram.program_name : "Please select using dropdowns"}
-                      </div>
-                      <div className="col-span-5 flex items-center gap-2">
-                        <span className="whitespace-nowrap font-semibold text-[#1f5e45]">Free Section Name:</span>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Free Section Name</label>
                         <Input
-                          className="h-7 text-[12px]"
+                          className="h-9 rounded-xl border-border/60 text-xs shadow-sm focus-visible:ring-emerald-500"
                           placeholder="e.g. Section 1"
                           value={freeSectionName}
                           onChange={(e) => setFreeSectionName(e.target.value)}
@@ -1100,88 +1152,32 @@ export function ClassSectionsModule() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-2 text-[12px]">
-                      <div className="col-span-3">
-                        <Select value={freeInstitutionId} onValueChange={setFreeInstitutionId}>
-                          <SelectTrigger className="h-7 text-[12px]">
-                            <SelectValue placeholder="Institution" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {institutions.map((inst) => (
-                              <SelectItem key={inst.id} value={String(inst.id)}>
-                                {inst.official_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="col-span-3">
-                        <Select value={freeCampusId} onValueChange={setFreeCampusId}>
-                          <SelectTrigger className="h-7 text-[12px]">
-                            <SelectValue placeholder="University / Campus" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {freeCampuses.map((campus) => (
-                              <SelectItem key={campus.id} value={String(campus.id)}>
-                                {campus.acronym} {campus.campus_name ? `- ${campus.campus_name}` : ""}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="col-span-3">
-                        <Select value={freeCollegeId} onValueChange={setFreeCollegeId}>
-                          <SelectTrigger className="h-7 text-[12px]">
-                            <SelectValue placeholder="College" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {freeColleges.map((college) => (
-                              <SelectItem key={college.id} value={String(college.id)}>
-                                {college.college_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="col-span-3">
-                        <Select value={freeProgramId} onValueChange={setFreeProgramId}>
-                          <SelectTrigger className="h-7 text-[12px]">
-                            <SelectValue placeholder="Program" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {freePrograms.map((program) => (
-                              <SelectItem key={program.id} value={String(program.id)}>
-                                {program.program_code} - {program.program_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-[12px]">
-                      <span className="font-semibold text-[#1f5e45]">Input a Subject Code / Title to Search :</span>
+                    {/* Search Input */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                        className="h-7 text-[12px] flex-1"
+                        className="h-10 pl-9 rounded-xl border-border/60 text-xs shadow-sm focus-visible:ring-emerald-500 bg-muted/20"
+                        placeholder="Input a Subject Code / Title to Search..."
                         value={freeSearchText}
                         onChange={(e) => setFreeSearchText(e.target.value)}
                       />
                     </div>
 
-                    <div className="border border-[#9ed9c1]">
-                      <div className="grid grid-cols-12 bg-[#f8fdf9] text-[11px] font-semibold text-[#1f5e45] border-b border-[#d4e8dc]">
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">SID#</div>
-                        <div className="col-span-2 px-1 py-1 border-r border-[#d4e8dc]">Subject Code</div>
-                        <div className="col-span-4 px-1 py-1 border-r border-[#d4e8dc]">Subject Title</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Units</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Lab.Units</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Lect.Hrs</div>
-                        <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-center">Lab.Hrs</div>
-                        <div className="col-span-1 px-1 py-1 text-center">Limit</div>
+                    {/* Subjects Grid */}
+                    <div className="border border-border/40 rounded-xl overflow-hidden shadow-sm">
+                      <div className="grid grid-cols-[3rem_8rem_1fr_4rem_4rem_4rem_4rem_4rem] bg-muted/30 border-b border-border/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground h-9 items-center px-2">
+                        <div className="text-center">SID#</div>
+                        <div className="px-2 border-l border-border/40">Subject Code</div>
+                        <div className="px-2 border-l border-border/40">Subject Title</div>
+                        <div className="text-center border-l border-border/40">Units</div>
+                        <div className="text-center border-l border-border/40">Lab.Units</div>
+                        <div className="text-center border-l border-border/40">Lect.Hrs</div>
+                        <div className="text-center border-l border-border/40">Lab.Hrs</div>
+                        <div className="text-center border-l border-border/40">Limit</div>
                       </div>
-                      <div
-                        className="h-[420px] overflow-auto text-[12px]"
-                        onScroll={(e) => setFreeGridScrollTop(e.currentTarget.scrollTop)}
+                      <ScrollArea
+                        className="h-[380px]"
+                        onScrollCapture={(e) => setFreeGridScrollTop(e.currentTarget.scrollTop)}
                       >
                         <div style={{ height: freeGridTopSpacer }} />
                         {visibleFreeSectionRows.map((row, idx) => (
@@ -1206,17 +1202,18 @@ export function ClassSectionsModule() {
                               );
                             }}
                             className={cn(
-                              "w-full grid grid-cols-12 border-b border-[#d4e8dc] text-left hover:bg-[#f3fbf6] cursor-pointer",
-                              freeSelectedSet.has(row.course_code) && "bg-[#d9f3e5]"
+                              "w-full grid grid-cols-[3rem_8rem_1fr_4rem_4rem_4rem_4rem_4rem] border-b border-border/20 text-xs items-center px-2 transition-colors hover:bg-emerald-50 cursor-pointer",
+                              freeSelectedSet.has(row.course_code) && "bg-emerald-50/80"
                             )}
                             style={{ height: `${FREE_SECTION_ROW_HEIGHT}px` }}
                           >
                             <div
-                              className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] flex items-center justify-center"
+                              className="flex items-center justify-center h-full"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <Checkbox
                                 checked={freeSelectedSet.has(row.course_code)}
+                                className="h-4 w-4 border-emerald-500/50 data-[state=checked]:bg-emerald-600"
                                 onCheckedChange={(checked) =>
                                   setFreeSelectedCodes((prev) =>
                                     checked
@@ -1228,73 +1225,241 @@ export function ClassSectionsModule() {
                                 }
                               />
                             </div>
-                            <div className="col-span-2 px-1 py-1 border-r border-[#d4e8dc]">{row.course_code}</div>
-                            <div className="col-span-4 px-1 py-1 border-r border-[#d4e8dc] truncate">{row.course_title || "-"}</div>
-                            <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(row.credited_units ?? 0).toFixed(2)}</div>
-                            <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(row.laboratory_units ?? 0).toFixed(2)}</div>
-                            <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(row.lecture_hours ?? 0).toFixed(2)}</div>
-                            <div className="col-span-1 px-1 py-1 border-r border-[#d4e8dc] text-right">{Number(row.laboratory_hours ?? 0).toFixed(2)}</div>
-                            <div className="col-span-1 px-1 py-1 text-right">{row.default_min_class_limit ?? 40}</div>
+                            <div className="px-2 font-mono text-emerald-700 font-semibold">{row.course_code}</div>
+                            <div className="px-2 truncate">{row.course_title || "-"}</div>
+                            <div className="text-center font-medium">{Number(row.credited_units ?? 0).toFixed(2)}</div>
+                            <div className="text-center">{Number(row.laboratory_units ?? 0).toFixed(2)}</div>
+                            <div className="text-center">{Number(row.lecture_hours ?? 0).toFixed(2)}</div>
+                            <div className="text-center">{Number(row.laboratory_hours ?? 0).toFixed(2)}</div>
+                            <div className="text-center text-muted-foreground">{row.default_min_class_limit ?? 40}</div>
                           </div>
                         ))}
                         <div style={{ height: freeGridBottomSpacer }} />
-                      </div>
+                      </ScrollArea>
                     </div>
                   </div>
 
-                  <div className="col-span-12 lg:col-span-2 space-y-1">
-                    <Button className="w-full h-8 text-[12px]" onClick={handleFreeSearch} disabled={!freeSelectedProgram}>
-                      Search
+                  {/* Action Sidebar */}
+                  <div className="flex flex-col gap-2 pt-6 lg:pt-0">
+                    <div className="p-3 bg-muted/20 rounded-xl border border-border/40 space-y-2">
+                      <Button className="w-full h-9 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={handleFreeSearch} disabled={!freeSelectedProgram}>
+                        <Search className="h-3.5 w-3.5 mr-2" /> Search
+                      </Button>
+                      <Button className="w-full h-9 text-xs rounded-xl shadow-sm" variant="outline" onClick={() => void handleFreeRefresh()} disabled={!freeSelectedProgram}>
+                        <RefreshCw className="h-3.5 w-3.5 mr-2" /> Refresh
+                      </Button>
+                    </div>
+
+                    <div className="flex-1 min-h-[100px]" />
+
+                    <div className="p-3 bg-muted/20 rounded-xl border border-border/40 space-y-2">
+                      <Button className="w-full h-9 text-xs rounded-xl shadow-sm" variant="outline" onClick={() => setFreeHelpOpen(true)} disabled={!freeSelectedProgram}>
+                        <HelpCircle className="h-3.5 w-3.5 mr-2" /> Help
+                      </Button>
+                      <Separator className="my-2 bg-border/60" />
+                      <Button className="w-full h-9 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={handleFreeSave} disabled={!freeSelectedProgram}>
+                        <Save className="h-3.5 w-3.5 mr-2" /> Save
+                      </Button>
+                      <Button className="w-full h-9 text-xs rounded-xl shadow-sm" variant="destructive" onClick={handleFreeCancel} disabled={!freeSelectedProgram}>
+                        <X className="h-3.5 w-3.5 mr-2" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <div className="bg-muted/30 px-4 py-2 border-t border-border/40 flex items-center gap-2">
+                <div className="p-1 rounded-md bg-emerald-100">
+                  <HelpCircle className="h-3.5 w-3.5 text-emerald-600" />
+                </div>
+                <span className="text-[11px] text-muted-foreground font-medium">To select subject(s), put a checkmark on the left-most edge of the subject row.</span>
+              </div>
+            </Card>
+
+            <AlertDialog open={freeHelpOpen} onOpenChange={setFreeHelpOpen}>
+              <AlertDialogContent className="rounded-2xl border-border/60">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-xl font-bold tracking-tight">Create Free Section Help</AlertDialogTitle>
+                  <Separator className="my-2" />
+                  <AlertDialogDescription className="space-y-4 pt-2">
+                    <div className="flex gap-3">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700">1</div>
+                      <p className="text-sm font-medium text-foreground">Select a program from the filters and enter a Free Section name.</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700">2</div>
+                      <p className="text-sm font-medium text-foreground">Search by subject code/title, then select subjects using the left checkbox.</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700">3</div>
+                      <p className="text-sm font-medium text-foreground">Click Save to create the free section under that program.</p>
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="mt-6 border-t pt-4">
+                  <AlertDialogCancel className="rounded-xl h-10 px-6">Close</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => setFreeHelpOpen(false)} className="rounded-xl h-10 px-8 bg-emerald-600 hover:bg-emerald-700">Got it</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
+        ) : activeTab === "rename-class-section" ? (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border-border/40 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40 bg-muted/5">
+                <CardTitle className="text-sm font-semibold tracking-tight">Rename Class Section</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Change the display name of an existing class section</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="max-w-md mx-auto space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Select Section to Rename</Label>
+                    <Select>
+                      <SelectTrigger className="h-10 rounded-xl border-border/60 text-xs shadow-sm">
+                        <SelectValue placeholder="Choose a section..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="1" className="text-xs">Section 101 - A</SelectItem>
+                        <SelectItem value="2" className="text-xs">Section 102 - B</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">New Section Name</Label>
+                    <Input
+                      className="h-10 rounded-xl border-border/60 text-sm shadow-sm focus-visible:ring-emerald-500"
+                      placeholder="Enter new name..."
+                    />
+                  </div>
+                  <div className="pt-2 flex gap-3">
+                    <Button className="flex-1 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm text-xs">
+                      <Save className="h-3.5 w-3.5 mr-2" /> Update Name
                     </Button>
-                    <Button className="w-full h-8 text-[12px]" variant="outline" onClick={() => void handleFreeRefresh()} disabled={!freeSelectedProgram}>
-                      Refresh
-                    </Button>
-                    <Button className="w-full h-8 text-[12px]" variant="outline" onClick={() => setFreeHelpOpen(true)} disabled={!freeSelectedProgram}>
-                      Help
-                    </Button>
-                    <div className="h-40" />
-                    <Button className="w-full h-8 text-[12px]" onClick={handleFreeSave} disabled={!freeSelectedProgram}>
-                      Save
-                    </Button>
-                    <Button className="w-full h-8 text-[12px]" variant="destructive" onClick={handleFreeCancel} disabled={!freeSelectedProgram}>
+                    <Button variant="outline" className="flex-1 h-10 rounded-xl text-xs shadow-sm">
                       Cancel
                     </Button>
                   </div>
                 </div>
-
-                <div className="border-t border-[#79b898] px-2 py-1 text-[12px] text-[#1f5e45]">
-                  To select subject(s), put a checkmark on the left-most edge of the subject row.
+              </CardContent>
+            </Card>
+          </div>
+        ) : activeTab === "delete-class-section" ? (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border-border/40 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40 bg-muted/5">
+                <CardTitle className="text-sm font-semibold tracking-tight">Delete Class Section</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Permanently remove a class section from the system</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="max-w-md mx-auto space-y-6">
+                  <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20 flex gap-3">
+                    <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-destructive">Warning: This action cannot be undone</p>
+                      <p className="text-[11px] text-destructive/70 mt-0.5">Deleting a section will also remove all associated subject assignments and student enrollments for this specific section.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Select Section to Delete</Label>
+                    <Select>
+                      <SelectTrigger className="h-10 rounded-xl border-border/60 text-xs shadow-sm">
+                        <SelectValue placeholder="Choose a section..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="1" className="text-xs">Section 101 - A</SelectItem>
+                        <SelectItem value="2" className="text-xs">Section 102 - B</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="pt-2 flex gap-3">
+                    <Button variant="destructive" className="flex-1 h-10 rounded-xl shadow-sm text-xs">
+                      <Trash2 className="h-3.5 w-3.5 mr-2" /> Confirm Deletion
+                    </Button>
+                    <Button variant="outline" className="flex-1 h-10 rounded-xl text-xs shadow-sm">
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : activeTab === "assign-adviser" ? (
+          <div className="space-y-4">
+            <Card className="rounded-2xl border-border/40 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40 bg-muted/5">
+                <CardTitle className="text-sm font-semibold tracking-tight">Assign Class Section Adviser</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Assign a faculty member as an adviser to a specific class section</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-4xl mx-auto">
+                  <div className="md:col-span-6 space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground uppercase tracking-wider font-bold">1. Select Target Section</Label>
+                      <Select>
+                        <SelectTrigger className="h-10 rounded-xl border-border/60 text-xs shadow-sm">
+                          <SelectValue placeholder="Choose a section..." />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="1" className="text-xs">Section 101 - A (BSCS)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="p-4 rounded-xl border border-dashed border-border/60 bg-muted/20 flex flex-col items-center justify-center gap-2 min-h-[140px]">
+                      <Users className="h-8 w-8 text-muted-foreground/30" />
+                      <p className="text-[11px] text-muted-foreground italic">Current Adviser: Not Assigned</p>
+                    </div>
+                  </div>
+                  <div className="md:col-span-6 space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground uppercase tracking-wider font-bold">2. Assign Faculty Adviser</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input className="h-10 pl-9 rounded-xl border-border/60 text-xs shadow-sm" placeholder="Search faculty name..." />
+                      </div>
+                      <ScrollArea className="h-[140px] border border-border/40 rounded-xl bg-background mt-2">
+                        <div className="p-1 space-y-1">
+                          {["Dr. John Smith", "Prof. Jane Doe", "Engr. Michael Brown"].map((f) => (
+                            <button key={f} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-muted/50 transition-colors flex items-center justify-between">
+                              <span>{f}</span>
+                              <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[10px]">Select</Badge>
+                            </button>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </div>
+                  <div className="md:col-span-12 flex justify-end gap-3 pt-2">
+                    <Button variant="outline" className="h-10 px-6 rounded-xl text-xs shadow-sm">Cancel</Button>
+                    <Button className="h-10 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm text-xs font-semibold">
+                      Update Assignment
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <Card className="rounded-2xl border-border/40 shadow-sm overflow-hidden">
+            <CardHeader className="pb-3 border-b border-border/40 bg-muted/5">
+              <CardTitle className="text-sm font-semibold tracking-tight">{activeLabel}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">Manage assignments and settings for the selected section</p>
+            </CardHeader>
+            <CardContent className="p-12 flex flex-col items-center justify-center gap-4 text-muted-foreground">
+              <div className="h-16 w-16 rounded-full bg-emerald-100/50 flex items-center justify-center">
+                <GraduationCap className="h-8 w-8 text-emerald-600 opacity-40" />
               </div>
-
-              <AlertDialog open={freeHelpOpen} onOpenChange={setFreeHelpOpen}>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Create Free Section Help</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      1) Select a program from the left tree and enter a Free Section name.
-                      {"\n"}2) Search by subject code/title, then select subjects using the left checkbox.
-                      {"\n"}3) Click Save to create the free section under that program.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Close</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => setFreeHelpOpen(false)}>Got it</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          ) : (
-            <div className="h-full border border-[#79b898] bg-white">
-              <div className="bg-[#f8fdf9] border-b border-[#9ed9c1] px-2 py-1 text-[12px] font-bold text-[#1f5e45] uppercase">
-                {activeLabel}
+              <div className="text-center space-y-1">
+                <p className="text-sm font-semibold text-foreground">Advanced Configuration Required</p>
+                <p className="text-xs opacity-60 leading-relaxed max-w-[280px]">The specialized workflow for &ldquo;{activeLabel}&rdquo; is being finalized to ensure data integrity.</p>
               </div>
-              <div className="p-3 text-[12px] text-[#35684f]">
-                This tab is ready for the full workflow UI. Tell me which tab to implement next and I will build it.
-              </div>
-            </div>
-          )}
-        </div>
+              <Button variant="outline" className="mt-2 rounded-xl text-xs px-6">
+                View Documentation
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -4,13 +4,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import {
   RefreshCw,
   Save,
   Trash2,
   FilePlus2,
-  XCircle,
-  FolderOpen,
+  Building2,
+  Hash,
+  FileText,
+  Tag,
+  Search,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -53,6 +58,7 @@ export function DepartmentsSetupModule() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [defaultCampusId, setDefaultCampusId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
 
   const shortNameFromRow = useCallback((r: DepartmentRow) => {
     const words = r.dept_name
@@ -102,6 +108,16 @@ export function DepartmentsSetupModule() {
       short_name: shortNameFromRow(selected),
     });
   }, [selected, shortNameFromRow]);
+
+  const filteredRows = useMemo(() => {
+    if (!search.trim()) return rows;
+    const q = search.toLowerCase();
+    return rows.filter(
+      (r) =>
+        r.dept_code.toLowerCase().includes(q) ||
+        r.dept_name.toLowerCase().includes(q)
+    );
+  }, [rows, search]);
 
   const handleNew = () => {
     setSelectedId(null);
@@ -186,157 +202,318 @@ export function DepartmentsSetupModule() {
   };
 
   return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="w-full border-2 border-[#0e8f63] bg-white">
-        <div className="flex items-center justify-between bg-gradient-to-b from-[#16b67a] to-[#0f8f62] px-2 py-1 text-white border-b border-[#0c7752]">
-          <div className="flex items-center gap-2 font-bold text-[13px]">
-            <FolderOpen className="h-4 w-4" />
-            Departments
+    <div className="h-full bg-background relative overflow-x-hidden">
+      <div className="w-full px-2 pt-2 pb-4">
+        {/* ── Page header ── */}
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="setup-type-page-title">Departments</h1>
+            <p className="setup-type-page-desc">
+              Create, edit, and manage academic departments across campuses.
+            </p>
           </div>
-          <button
-            type="button"
-            className="h-5 w-5 grid place-items-center rounded-sm border border-white/50 bg-red-500/80"
-            aria-label="Close"
-          >
-            <XCircle className="h-3.5 w-3.5" />
-          </button>
-        </div>
-
-        <div className="flex gap-1 p-1 border-b border-[#9ed9c1] bg-[#f2fbf7]">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={handleNew}
-            disabled={saving}
-          >
-            <FilePlus2 className="h-3 w-3" />
-            New
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            <Save className="h-3 w-3" />
-            Save
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={handleDelete}
-            disabled={saving || !selectedId}
-          >
-            <Trash2 className="h-3 w-3" />
-            Delete
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            onClick={loadAll}
-            disabled={saving || loading}
-          >
-            <RefreshCw className={cn("h-3 w-3", loading && "animate-spin")} />
-            Refresh
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-            disabled
-          >
-            <XCircle className="h-3 w-3" />
-            Close
-          </Button>
-        </div>
-
-        <div className="p-2">
-          <div className="w-[430px] border border-[#79b898] bg-white mb-2">
-            <div className="px-2 py-0.5 text-[10px] font-bold bg-[#fff6cc] border-b border-[#d6c37a] w-fit">
-              General
+          <div className="hidden sm:flex flex-col items-end gap-2">
+            <div className="setup-type-kicker-pill flex h-9 items-center rounded-xl border border-border/60 bg-background/70 px-3 shadow-sm backdrop-blur">
+              Setup Manager module
             </div>
-            <div className="p-2 space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Label className="w-28 text-right text-[11px]">Dept. Code</Label>
-                <Input
-                  className="h-6 text-[11px] w-[160px]"
-                  value={form.dept_code}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, dept_code: e.target.value }))
-                  }
-                />
+            <div className="setup-type-kicker-pill rounded-xl border border-border/60 bg-muted/30 px-2.5 py-1">
+              Enrollment System v2.0
+            </div>
+          </div>
+        </div>
+
+        {/* ── Module card ── */}
+        <Card className="overflow-hidden rounded-2xl bg-background border-border/40 shadow-sm">
+          <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-border/40 bg-muted/5">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 p-2 rounded-xl border border-emerald-500/20 shadow-sm shrink-0">
+                <Building2 className="h-4 w-4" />
               </div>
-              <div className="flex items-center gap-2">
-                <Label className="w-28 text-right text-[11px]">Department</Label>
-                <Input
-                  className="h-6 text-[11px] w-[250px]"
-                  value={form.dept_name}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, dept_name: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="w-28 text-right text-[11px]">Short Name</Label>
-                <Input
-                  className="h-6 text-[11px] w-[180px]"
-                  value={form.short_name}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, short_name: e.target.value }))
-                  }
-                />
+              <div className="leading-tight min-w-0">
+                <div className="setup-type-module-title">
+                  Department management
+                </div>
+                <div className="setup-type-module-sub">
+                  Organize departments by code, name, and abbreviation
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="border border-[#79b898] bg-white">
-            <div className="grid grid-cols-12 bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[10px] font-bold uppercase">
-              <div className="col-span-2 px-2 py-1 border-r border-white/35">Code</div>
-              <div className="col-span-6 px-2 py-1 border-r border-white/35">
-                Name / Description
+          <div className="p-3 bg-background/60 space-y-3">
+            {/* ── Top row: Form + Actions ── */}
+            <div className="grid grid-cols-12 gap-3">
+              {/* ── Form panel ── */}
+              <div className="col-span-12 lg:col-span-5 flex flex-col rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden min-h-0">
+                <div className="setup-type-section-title shrink-0 border-b border-border/60 bg-muted/5 px-3 py-2.5 flex items-center justify-between">
+                  <span>Department details</span>
+                  <span className="text-[10px] font-normal text-muted-foreground">
+                    {selectedId ? `Editing #${selectedId}` : "New record"}
+                  </span>
+                </div>
+                <div className="p-4 flex-1 flex flex-col">
+                  <div className="space-y-3.5 flex-1">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Hash className="h-3 w-3" />
+                        Dept. Code
+                      </Label>
+                      <Input
+                        className="h-10 rounded-xl text-xs border-border/60 shadow-sm font-mono"
+                        placeholder="e.g. CS, IT, ENG"
+                        value={form.dept_code}
+                        onChange={(e) =>
+                          setForm((s) => ({ ...s, dept_code: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+                        <FileText className="h-3 w-3" />
+                        Department Name
+                      </Label>
+                      <Input
+                        className="h-10 rounded-xl text-xs border-border/60 shadow-sm"
+                        placeholder="e.g. Computer Science"
+                        value={form.dept_name}
+                        onChange={(e) =>
+                          setForm((s) => ({ ...s, dept_name: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Tag className="h-3 w-3" />
+                        Short Name
+                      </Label>
+                      <Input
+                        className="h-10 rounded-xl text-xs border-border/60 shadow-sm uppercase tracking-wide"
+                        placeholder="Auto-generated abbreviation"
+                        value={form.short_name}
+                        onChange={(e) =>
+                          setForm((s) => ({ ...s, short_name: e.target.value }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* ── Action buttons ── */}
+                  <div className="mt-4 pt-3.5 border-t border-border/60 flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm"
+                      onClick={handleNew}
+                      disabled={saving}
+                    >
+                      <FilePlus2 className="h-3.5 w-3.5" />
+                      New
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs rounded-lg shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={handleSave}
+                      disabled={saving}
+                    >
+                      {saving ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Save className="h-3.5 w-3.5" />
+                      )}
+                      Save
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm text-destructive hover:bg-destructive/10"
+                      onClick={handleDelete}
+                      disabled={saving || !selectedId}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm ml-auto"
+                      onClick={loadAll}
+                      disabled={saving || loading}
+                    >
+                      <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="col-span-4 px-2 py-1">Short Name</div>
-            </div>
-            <div className="max-h-[420px] overflow-auto">
-              {rows.map((r, idx) => (
-                <button
-                  type="button"
-                  key={r.id}
-                  onClick={() => setSelectedId(r.id)}
-                  className={cn(
-                    "w-full grid grid-cols-12 text-left text-[11px] border-b border-[#cfe6da]",
-                    idx % 2 ? "bg-[#f8fdf9]" : "bg-white",
-                    selectedId === r.id && "bg-[#d9f3e5] font-medium"
+
+              {/* ── Summary cards ── */}
+              <div className="col-span-12 lg:col-span-7 flex flex-col gap-3">
+                {/* Quick Stats */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden p-4 flex flex-col items-center justify-center gap-1">
+                    <span className="text-2xl font-bold tabular-nums text-primary tracking-tight font-mono">
+                      {rows.length}
+                    </span>
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Total Depts
+                    </span>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden p-4 flex flex-col items-center justify-center gap-1">
+                    <span className="text-2xl font-bold tabular-nums text-foreground tracking-tight font-mono">
+                      {campuses.length}
+                    </span>
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Campuses
+                    </span>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden p-4 flex flex-col items-center justify-center gap-1">
+                    <span className="text-2xl font-bold tabular-nums text-foreground tracking-tight font-mono">
+                      {colleges.length}
+                    </span>
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Colleges
+                    </span>
+                  </div>
+                </div>
+
+                {/* Currently selected indicator */}
+                <div className="rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden p-4 flex-1 flex flex-col">
+                  <div className="setup-type-section-title mb-3">
+                    Selected department
+                  </div>
+                  {selected ? (
+                    <div className="flex-1 flex flex-col gap-2.5">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-muted/50 border border-border/40 flex items-center justify-center shrink-0">
+                          <span className="text-xs font-bold text-primary font-mono">
+                            {selected.dept_code.slice(0, 3)}
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {selected.dept_name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground font-mono">
+                            Code: {selected.dept_code} · Short: {shortNameFromRow(selected)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-auto pt-2.5 border-t border-border/40">
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div className="rounded-lg bg-muted/20 px-3 py-2">
+                            <span className="text-muted-foreground">Campus ID</span>
+                            <span className="ml-2 font-mono font-medium text-foreground">{selected.campus_id}</span>
+                          </div>
+                          <div className="rounded-lg bg-muted/20 px-3 py-2">
+                            <span className="text-muted-foreground">College ID</span>
+                            <span className="ml-2 font-mono font-medium text-foreground">{selected.college_id ?? "—"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center">
+                      <p className="text-xs text-muted-foreground/60 italic">
+                        Select a department from the table below
+                      </p>
+                    </div>
                   )}
-                >
-                  <div className="col-span-2 px-2 py-0.5 border-r border-[#d8ebdf]">
-                    {r.dept_code}
-                  </div>
-                  <div className="col-span-6 px-2 py-0.5 border-r border-[#d8ebdf] truncate">
-                    {r.dept_name}
-                  </div>
-                  <div className="col-span-4 px-2 py-0.5 truncate">
-                    {shortNameFromRow(r)}
-                  </div>
-                </button>
-              ))}
+                </div>
+              </div>
             </div>
-            <div className="px-2 py-1 text-[11px] font-bold border-t border-[#79b898] text-[#c00]">
-              {`TOTAL RECORD: ${rows.length}`}
+
+            {/* ── Data table ── */}
+            <div className="rounded-2xl border border-border/40 bg-card shadow-sm overflow-hidden">
+              <div className="px-3 py-2.5 border-b border-border/40 bg-muted/5 flex items-center justify-between gap-3">
+                <div className="setup-type-section-title">
+                  All departments
+                  <span className="ml-2 text-[10px] font-normal text-muted-foreground">
+                    ({filteredRows.length}{filteredRows.length !== rows.length ? ` of ${rows.length}` : ""} records)
+                  </span>
+                </div>
+                <div className="relative w-48">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+                  <Input
+                    className="h-8 pl-8 rounded-lg text-xs border-border/60 bg-background shadow-sm"
+                    placeholder="Search departments..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="overflow-auto max-h-[min(420px,50svh)] bg-background">
+                <table className="w-full text-[11px] border-collapse min-w-[580px]">
+                  <thead>
+                    <tr className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 shadow-sm">
+                      {["Code", "Department Name", "Short Name"].map((h) => (
+                        <th
+                          key={h}
+                          className="setup-type-table-header border-r border-border/60 px-3 py-2 text-left last:border-r-0"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-8 text-center">
+                          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Loading departments…
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-muted-foreground italic">
+                          {search ? "No departments match your search" : "No departments found"}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRows.map((r, idx) => (
+                        <tr
+                          key={r.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedId(r.id)}
+                          onKeyDown={(ev) => {
+                            if (ev.key === "Enter" || ev.key === " ") {
+                              ev.preventDefault();
+                              setSelectedId(r.id);
+                            }
+                          }}
+                          className={cn(
+                            "premium-row cursor-pointer border-b border-border/40 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            idx % 2 === 1 && "bg-muted/10",
+                            selectedId === r.id &&
+                              "bg-emerald-500/10 font-medium ring-1 ring-inset ring-emerald-500/15"
+                          )}
+                        >
+                          <td className="setup-font-mono-data border-r border-border/50 px-3 py-2">
+                            {r.dept_code}
+                          </td>
+                          <td className="px-3 py-2 border-r border-border/50 font-medium text-foreground">
+                            {r.dept_name}
+                          </td>
+                          <td className="px-3 py-2 text-muted-foreground font-mono uppercase tracking-wide">
+                            {shortNameFromRow(r)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
 }
-

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { cn } from "@/lib/utils";
 
 interface Props {
   value: string;
@@ -44,7 +45,7 @@ export function LogoUploadField({
   };
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col gap-3">
       <input
         ref={inputRef}
         type="file"
@@ -53,54 +54,71 @@ export function LogoUploadField({
         onChange={onFileChange}
       />
 
-      <div className="w-52 h-52 border-2 border-muted-foreground/30 rounded-lg bg-white overflow-hidden flex items-center justify-center p-2 shadow-inner group transition-all hover:border-primary/50 dark:bg-background">
-        {value ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={value}
-            alt="Institution Logo"
-            className="max-w-full max-h-full object-contain animate-in fade-in zoom-in-95 duration-500"
-          />
-        ) : (
-          <div className="flex flex-col items-center text-muted-foreground/40 animate-pulse">
-            <ImageIcon className="h-16 w-16 mb-2" />
-            <p className="text-[10px] font-bold uppercase tracking-widest italic">
-              Official Logo Area
-            </p>
+      <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border/60 bg-muted/30">
+          <p className="text-sm font-semibold tracking-tight">Institution logo</p>
+          <p className="text-xs text-muted-foreground">
+            Used on reports, IDs, and printable forms.
+          </p>
+        </div>
+        <div className="p-4">
+          <div
+            className={cn(
+              "w-full aspect-square max-w-60 mx-auto rounded-2xl",
+              "border border-dashed border-border/70 bg-background/60",
+              "grid place-items-center overflow-hidden",
+              "transition-colors"
+            )}
+          >
+            {value ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={value}
+                alt="Institution Logo"
+                className="h-full w-full object-contain p-4"
+              />
+            ) : (
+              <div className="flex flex-col items-center text-muted-foreground">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-muted">
+                  <ImageIcon className="h-6 w-6" />
+                </div>
+                <p className="mt-3 text-xs font-semibold">Drop your logo here</p>
+                <p className="text-[11px] text-muted-foreground/80">
+                  PNG, JPG, WEBP, SVG
+                </p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div className="flex gap-2 w-full max-w-52">
-        <Button
-          type="button"
-          onClick={() => onChange("")}
-          disabled={!value || uploading}
-          variant="outline"
-          size="sm"
-          className="flex-1 h-7 text-[10px] font-bold uppercase border-2 border-muted-foreground/30 rounded hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-all active:scale-95"
-        >
-          <X className="h-3 w-3 mr-1" />
-          Clear
-        </Button>
-        <Button
-          type="button"
-          onClick={pickAndUpload}
-          disabled={uploading}
-          variant="outline"
-          size="sm"
-          className="flex-1 h-7 text-[10px] font-bold uppercase border-2 border-muted-foreground/30 rounded hover:bg-primary/10 hover:text-primary hover:border-primary transition-all active:scale-95 bg-white shadow-sm dark:bg-background"
-        >
-          {uploading ? (
-            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          ) : (
-            <Upload className="h-3 w-3 mr-1" />
-          )}
-          {uploading ? "Uploading…" : "Upload Logo"}
-        </Button>
+          <div className="mt-4 flex gap-2">
+            <Button
+              type="button"
+              onClick={pickAndUpload}
+              disabled={uploading}
+              className="flex-1 h-9 rounded-xl text-xs font-semibold gap-2"
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              {uploading ? "Uploading…" : value ? "Replace logo" : "Upload logo"}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => onChange("")}
+              disabled={!value || uploading}
+              variant="outline"
+              className="h-9 rounded-xl text-xs font-semibold gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
+          </div>
+        </div>
       </div>
       {uploadError && (
-        <p className="text-[10px] text-destructive text-center max-w-52 leading-snug">
+        <p className="text-xs text-destructive leading-snug">
           {uploadError}
         </p>
       )}

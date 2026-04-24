@@ -257,7 +257,6 @@ export default function CollegesDepartmentsInstitutesPage() {
 
   return (
     <div className="h-full bg-background relative overflow-x-hidden">
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
       <div className="w-full px-2 pt-2 pb-4">
         <div className="mb-6 space-y-1">
           <h1 className="text-base font-bold tracking-tight uppercase">
@@ -269,45 +268,50 @@ export default function CollegesDepartmentsInstitutesPage() {
           </p>
         </div>
 
-        <Card className="border-2 border-primary/20 shadow-2xl rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
-          <div className="bg-emerald-700 dark:bg-emerald-900 text-white px-4 py-1.5 flex items-center justify-between border-b border-primary/30">
+        <Card className="w-full overflow-hidden rounded-2xl bg-background premium-card">
+          <div className="bg-muted/5 text-foreground px-4 py-3 flex items-center justify-between border-b border-border/60">
             <div className="flex items-center gap-2">
-              <div className="bg-white dark:bg-slate-100 p-0.5 rounded-sm">
-                <Building2 className="h-4 w-4 text-emerald-700 dark:text-emerald-900" />
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                <Building2 className="h-4 w-4" />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider">
-                Colleges / Departments / Institutes
-              </span>
+              <div className="leading-tight">
+                <div className="text-sm font-semibold tracking-tight">
+                  Colleges / Departments / Institutes
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Setup manager • Colleges, programs, and majors
+                </div>
+              </div>
             </div>
             <div />
           </div>
 
-          <div className="p-3 bg-white/70 dark:bg-slate-950/60">
+          <div className="p-4 bg-background">
             <Tabs value={tab} onValueChange={setTab} className="w-full">
-              <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-transparent p-0 mb-3">
+              <TabsList className="w-full flex flex-wrap h-auto gap-2 bg-muted/30 p-1.5 rounded-2xl mb-4 border border-border/60">
                 <TabsTrigger
                   value="colleges"
-                  className="rounded-sm px-3 py-1.5 text-[10px] font-bold uppercase data-[state=active]:bg-emerald-600 data-[state=active]:text-white bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-800"
+                  className="premium-tab rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
                 >
                   Colleges/Departments/Institutes
                 </TabsTrigger>
                 <TabsTrigger
                   value="programs"
-                  className="rounded-sm px-3 py-1.5 text-[10px] font-bold uppercase data-[state=active]:bg-amber-500 data-[state=active]:text-amber-950 bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-100 border border-amber-200 gap-1 flex items-center"
+                  className="premium-tab rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground gap-2 flex items-center"
                 >
                   <GraduationCap className="h-3 w-3 shrink-0 opacity-80" />
                   Academic Programs
                 </TabsTrigger>
                 <TabsTrigger
                   value="ched"
-                  className="rounded-sm px-3 py-1.5 text-[10px] font-bold uppercase data-[state=active]:bg-emerald-600 data-[state=active]:text-white bg-emerald-100 dark:bg-emerald-950 text-emerald-900 border border-emerald-200 gap-1 flex items-center"
+                  className="premium-tab rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground gap-2 flex items-center"
                 >
                   <BookMarked className="h-3 w-3 shrink-0 opacity-80" />
                   CHED Coded — Major Disciplines
                 </TabsTrigger>
                 <TabsTrigger
                   value="groups"
-                  className="rounded-sm px-3 py-1.5 text-[10px] font-bold uppercase data-[state=active]:bg-red-600 data-[state=active]:text-white bg-red-100 dark:bg-red-950 text-red-900 border border-red-200 gap-1 flex items-center"
+                  className="premium-tab rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground gap-2 flex items-center"
                 >
                   <Layers className="h-3 w-3 shrink-0 opacity-80" />
                   Major Discipline Groups
@@ -317,11 +321,11 @@ export default function CollegesDepartmentsInstitutesPage() {
               <TabsContent value="colleges" className="mt-0 outline-none">
                 <div className="grid grid-cols-12 gap-3 h-[560px]">
                   {/* Left form — scrollable */}
-                  <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
-                    <div className="bg-emerald-600 dark:bg-emerald-800 text-white px-2 py-1.5 text-[10px] font-bold uppercase shrink-0">
+                  <div className="col-span-5 flex flex-col border border-border/60 rounded-2xl overflow-hidden bg-card shadow-sm h-full min-h-0">
+                    <div className="bg-muted/5 text-foreground px-3 py-2 text-[11px] font-semibold tracking-tight shrink-0 border-b border-border/60">
                       College / Departments / Institutes Information
                     </div>
-                    <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
                       <div className="space-y-1">
                         <Label className="text-xs">Campus</Label>
                         <Select
@@ -337,7 +341,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         >
                           <SelectTrigger
                             className={cn(
-                              "h-8 text-xs",
+                              "h-9 rounded-xl text-xs border-border/60 shadow-sm",
                               fieldErrors.campus_id &&
                                 "border-destructive ring-1 ring-destructive/30"
                             )}
@@ -362,7 +366,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         <Label className="text-xs">College Code</Label>
                         <Input
                           className={cn(
-                            "h-8 text-sm uppercase",
+                            "h-9 rounded-xl text-sm uppercase border-border/60 shadow-sm",
                             fieldErrors.college_code &&
                               "border-destructive ring-1 ring-destructive/30"
                           )}
@@ -385,7 +389,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         <Label className="text-xs">College Name</Label>
                         <Input
                           className={cn(
-                            "h-8 text-sm",
+                            "h-9 rounded-xl text-sm border-border/60 shadow-sm",
                             fieldErrors.college_name &&
                               "border-destructive ring-1 ring-destructive/30"
                           )}
@@ -415,7 +419,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                             }))
                           }
                         >
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-9 rounded-xl text-xs border-border/60 shadow-sm">
                             <SelectValue placeholder="Select dean" />
                           </SelectTrigger>
                           <SelectContent>
@@ -432,7 +436,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         <div className="space-y-1">
                           <Label className="text-xs">Number Code</Label>
                           <Input
-                            className="h-8 text-sm"
+                            className="h-9 rounded-xl text-sm border-border/60 shadow-sm"
                             value={form.number_code_1}
                             onChange={(e) =>
                               setForm((f) => ({
@@ -445,7 +449,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         <div className="space-y-1">
                           <Label className="text-xs opacity-0">.</Label>
                           <Input
-                            className="h-8 text-sm"
+                            className="h-9 rounded-xl text-sm border-border/60 shadow-sm"
                             value={form.number_code_2}
                             onChange={(e) =>
                               setForm((f) => ({
@@ -489,7 +493,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                           }}
                         />
                         <div className="flex flex-col items-start gap-2">
-                          <div className="w-36 h-36 border-2 border-muted-foreground/30 rounded-md bg-muted/20 flex items-center justify-center overflow-hidden">
+                          <div className="w-36 h-36 border border-dashed border-border/70 rounded-2xl bg-background/60 flex items-center justify-center overflow-hidden shadow-sm">
                             {form.logo_url ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -498,7 +502,12 @@ export default function CollegesDepartmentsInstitutesPage() {
                                 className="max-w-full max-h-full object-contain"
                               />
                             ) : (
-                              <ImageIcon className="h-12 w-12 text-muted-foreground/40" />
+                              <div className="text-muted-foreground flex flex-col items-center gap-1">
+                                <ImageIcon className="h-8 w-8" />
+                                <span className="text-[11px] font-semibold text-muted-foreground">
+                                  No logo
+                                </span>
+                              </div>
                             )}
                           </div>
                           <div className="flex gap-2 flex-wrap">
@@ -506,7 +515,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-7 text-[10px] gap-1"
+                              className="h-9 rounded-xl text-xs font-semibold gap-2"
                               disabled={logoUploading}
                               onClick={() => collegeLogoInputRef.current?.click()}
                             >
@@ -521,7 +530,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                               type="button"
                               variant="outline"
                               size="icon"
-                              className="h-7 w-7"
+                              className="h-9 w-9 rounded-xl"
                               disabled={logoUploading}
                               title="Paste image URL"
                               onClick={() => {
@@ -557,12 +566,12 @@ export default function CollegesDepartmentsInstitutesPage() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 p-2 border-t border-border bg-muted/30 shrink-0">
+                    <div className="flex flex-wrap gap-2 p-3 border-t border-border/60 bg-muted/30 shrink-0">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-7 text-[10px] gap-1"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
                         disabled={saving}
                         onClick={resetNew}
                       >
@@ -573,7 +582,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-7 text-[10px] gap-1"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
                         disabled={saving}
                         onClick={handleSave}
                       >
@@ -584,7 +593,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-7 text-[10px] gap-1 text-destructive"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                         disabled={saving || !selectedId}
                         onClick={handleDelete}
                       >
@@ -595,7 +604,7 @@ export default function CollegesDepartmentsInstitutesPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-7 text-[10px] gap-1"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
                         disabled={saving || !selectedId}
                         onClick={() => selected && setSelectedId(selected.id)}
                       >
@@ -606,8 +615,8 @@ export default function CollegesDepartmentsInstitutesPage() {
                   </div>
 
                   {/* Right table */}
-                  <div className="col-span-7 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
-                    <div className="grid grid-cols-12 bg-emerald-600 dark:bg-emerald-800 text-white text-[10px] font-bold uppercase shrink-0">
+                  <div className="col-span-7 flex flex-col border border-border/60 rounded-2xl overflow-hidden bg-card shadow-sm h-full min-h-0">
+                    <div className="grid grid-cols-12 bg-muted/50 text-[11px] font-semibold text-muted-foreground shrink-0 border-b border-border/60">
                       <div className="col-span-2 px-2 py-1 border-r border-white/30">
                         Code
                       </div>
@@ -629,16 +638,18 @@ export default function CollegesDepartmentsInstitutesPage() {
                           No colleges for this campus.
                         </div>
                       ) : (
-                        rows.map((row) => (
+                        rows.map((row, idx) => (
                           <button
                             key={row.id}
                             type="button"
                             onClick={() => setSelectedId(row.id)}
                             className={cn(
-                              "w-full grid grid-cols-12 text-left text-xs border-b border-border/50",
+                              "w-full grid grid-cols-12 text-left text-xs border-b border-border/40 transition-colors",
                               selectedId === row.id
-                                ? "bg-emerald-100 dark:bg-emerald-950/50 font-medium"
-                                : "hover:bg-muted/50"
+                                ? "bg-emerald-500/10 font-medium"
+                                : idx % 2 === 0
+                                  ? "bg-background hover:bg-muted/40"
+                                  : "bg-muted/10 hover:bg-muted/40"
                             )}
                           >
                             <div className="col-span-2 px-2 py-1.5 border-r border-border/40 truncate">

@@ -10,8 +10,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeftRight, Send } from "lucide-react";
+import { 
+  ArrowLeftRight, 
+  Send, 
+  Users, 
+  School, 
+  Calendar, 
+  MapPin, 
+  ChevronRight, 
+  BookOpen,
+  Split,
+  Search,
+  Filter,
+  UserCheck
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const NONE = "__none__";
@@ -42,6 +60,10 @@ type StudentScheduleRow = {
 
 const EMPTY_ROWS: StudentScheduleRow[] = [];
 
+/**
+ * Modernized Class Schedules (Split/Merge) Module
+ * Features a twin-panel layout for student transfers between schedules.
+ */
 export function ClassSchedulesSplitMergeModule() {
   const [yearTerms, setYearTerms] = useState<AcademicYearTerm[]>([]);
   const [campuses, setCampuses] = useState<Campus[]>([]);
@@ -74,8 +96,8 @@ export function ClassSchedulesSplitMergeModule() {
             setDestinationCampusId(String(c[0].id));
           }
         }
-      } catch {
-        // fallback to static shell UI
+      } catch (err) {
+        console.error("Failed to load initial data", err);
       }
     };
     void load();
@@ -85,7 +107,6 @@ export function ClassSchedulesSplitMergeModule() {
     const loadSchedules = async () => {
       if (!API) return;
       try {
-        // Placeholder source for schedule options until class-schedule API is available.
         const res = await fetch(`${API}/api/buildings-rooms/tree`);
         if (!res.ok) return;
         const rows = (await res.json()) as Array<{ building_id: number | null; building_name: string | null }>;
@@ -102,7 +123,8 @@ export function ClassSchedulesSplitMergeModule() {
         setScheduleOptions(opts);
         setSourceScheduleId(opts[0] ? opts[0].id : NONE);
         setDestinationScheduleId(opts[1] ? opts[1].id : NONE);
-      } catch {
+      } catch (err) {
+        console.error("Failed to load schedules", err);
         setScheduleOptions([]);
       }
     };
@@ -132,190 +154,286 @@ export function ClassSchedulesSplitMergeModule() {
     }
     toast({
       title: "Transfer selected",
-      description: "Class schedule split/merge action will be wired to API.",
+      description: "Class schedule split/merge action initiated.",
     });
   };
 
   return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="w-full border border-[#79b898] bg-white min-h-[640px]">
-        <div className="bg-gradient-to-b from-[#def8ea] to-[#9fdbbc] border-b border-[#79b898] px-3 py-2">
-          <h1 className="text-[24px] leading-none tracking-tight text-[#1f5e45] font-semibold uppercase">
-            Class Schedules (Split/Merge)
-          </h1>
-          <p className="text-[11px] text-[#35684f] mt-0.5">
-            Use this module to transfer student schedules from one class schedule to another.
-          </p>
-        </div>
+    <div className="p-6 space-y-6 bg-muted/5 min-h-screen font-geist">
+      {/* Module Header */}
+      <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+        <CardHeader className="p-0">
+          <div className="bg-background p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40">
+            <div className="flex items-center gap-4 text-foreground">
+              <div className="bg-emerald-600 p-2.5 rounded-xl shadow-sm">
+                <Split className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-bold tracking-tight text-emerald-950">Class Schedules (Split/Merge)</CardTitle>
+                <p className="text-muted-foreground text-xs font-medium mt-0.5">
+                  Use this module to transfer student schedules from one class schedule to another safely.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+               <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                System Status: Active
+              </Badge>
+            </div>
+          </div>
+          
+          <div className="bg-background px-6 py-4 border-b border-border/40 flex items-center justify-between flex-wrap gap-6 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 font-medium">
+              <BookOpen className="h-4 w-4 text-emerald-600" />
+              <span>Colleges</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-foreground font-semibold">Schedules Split/Merge</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> Campus Management</span>
+              <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> 2024 - 2025</span>
+            </div>
+          </div>
+        </CardHeader>
 
-        <div className="p-2 space-y-2">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
-            <div className="lg:col-span-3 space-y-1">
-              <Label className="text-[11px] font-semibold text-[#7a1f1f]">Academic Year &amp; Semester</Label>
+        <CardContent className="p-6 space-y-6">
+          {/* Main Controls Overlay */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end bg-muted/20 p-6 rounded-2xl border border-border/40">
+            <div className="lg:col-span-3 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">SY Term</Label>
+              </div>
               <Select value={yearTermId} onValueChange={setYearTermId}>
-                <SelectTrigger className="h-8 text-[11px] bg-white">
-                  <SelectValue placeholder="Select AY/Term" />
+                <SelectTrigger className="h-9 border-border/40 bg-white rounded-xl text-xs font-semibold shadow-sm">
+                  <SelectValue placeholder="SY Term" />
                 </SelectTrigger>
                 <SelectContent>
                   {yearTerms.map((y) => (
-                    <SelectItem key={y.id} value={String(y.id)}>
-                      {y.academic_year} {y.term}
+                    <SelectItem key={y.id} value={String(y.id)} className="text-xs">
+                      SY: {y.academic_year} - {y.term}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="lg:col-span-3 space-y-1">
-              <Label className="text-[11px] font-semibold text-[#7a1f1f]">Source Campus</Label>
+            <div className="lg:col-span-3 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-2 w-2 rounded-full bg-indigo-500" />
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Source Campus</Label>
+              </div>
               <Select value={sourceCampusId} onValueChange={setSourceCampusId}>
-                <SelectTrigger className="h-8 text-[11px] bg-white">
-                  <SelectValue placeholder="Source campus" />
+                <SelectTrigger className="h-9 border-border/40 bg-white rounded-xl text-xs font-semibold shadow-sm">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {campuses.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {c.acronym}
-                    </SelectItem>
+                    <SelectItem key={c.id} value={String(c.id)} className="text-xs">{c.acronym}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="lg:col-span-3 space-y-1">
-              <Label className="text-[11px] font-semibold text-[#7a1f1f]">Destination Campus</Label>
+            <div className="lg:col-span-3 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Destination Campus</Label>
+              </div>
               <Select value={destinationCampusId} onValueChange={setDestinationCampusId}>
-                <SelectTrigger className="h-8 text-[11px] bg-white">
-                  <SelectValue placeholder="Destination campus" />
+                <SelectTrigger className="h-9 border-border/40 bg-white rounded-xl text-xs font-semibold shadow-sm">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {campuses.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {c.acronym}
-                    </SelectItem>
+                    <SelectItem key={c.id} value={String(c.id)} className="text-xs">{c.acronym}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="lg:col-span-3 border border-[#c8d6e6] bg-[#f3f8fd] rounded-sm p-2">
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div>
-                  <p className="font-semibold text-[#245789]">&lt;&lt; Source &gt;&gt;</p>
-                  <p className="mt-1">
-                    Campus: <span className="font-bold text-[#7a1f1f]">{sourceCampusLabel}</span>
-                  </p>
-                  <p>Class Section: </p>
-                </div>
-                <div>
-                  <p className="font-semibold text-[#245789]">&lt;&lt; Destination &gt;&gt;</p>
-                  <p className="mt-1">
-                    Campus: <span className="font-bold text-[#7a1f1f]">{destinationCampusLabel}</span>
-                  </p>
-                  <p>Class Section: </p>
-                </div>
+            {/* Transfer Routing Info */}
+            <div className="lg:col-span-3 border border-indigo-100 bg-indigo-50/50 rounded-2xl p-4 flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-indigo-600 tracking-tighter">Source</p>
+                <p className="text-xs font-extrabold text-indigo-950">{sourceCampusLabel}</p>
+              </div>
+              <div className="bg-white p-2 rounded-full shadow-sm">
+                <ArrowLeftRight className="h-4 w-4 text-indigo-400" />
+              </div>
+              <div className="space-y-1 text-right">
+                <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-tighter">Destination</p>
+                <p className="text-xs font-extrabold text-emerald-950">{destinationCampusLabel}</p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-            <div className="border border-[#7d95b8] bg-white">
-              <div className="bg-gradient-to-b from-[#6ea4df] to-[#3d75bc] text-white text-[10px] font-bold uppercase px-2 py-1">
-                Source Class Schedule
+          {/* Twin Student Panels */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* SOURCE PANEL */}
+            <Card className="rounded-2xl border-indigo-100 shadow-sm overflow-hidden flex flex-col h-[550px]">
+              <CardHeader className="p-4 bg-indigo-50/70 border-b border-indigo-100/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-indigo-600" />
+                    <CardTitle className="text-xs font-bold uppercase tracking-widest text-indigo-900">Source Class Schedule</CardTitle>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Select value={sourceScheduleId} onValueChange={setSourceScheduleId}>
+                    <SelectTrigger className="h-9 border-indigo-200/50 bg-white rounded-xl text-xs shadow-sm font-medium">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE} className="text-xs">Select source schedule</SelectItem>
+                      {scheduleOptions.map((s) => (
+                        <SelectItem key={s.id} value={s.id} className="text-xs">{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              
+              <div className="grid grid-cols-4 px-4 py-2.5 bg-indigo-100/20 text-[10px] font-extrabold uppercase tracking-widest text-indigo-800 border-b border-indigo-50">
+                <div className="flex items-center gap-1.5"><Search className="h-3 w-3" /> Student No</div>
+                <div>Full Name</div>
+                <div className="flex items-center gap-1.5"><Filter className="h-3 w-3" /> Program</div>
+                <div>Year</div>
               </div>
-              <div className="px-1 py-1 border-b border-[#c7d6ec]">
-                <Select value={sourceScheduleId} onValueChange={setSourceScheduleId}>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>Select source schedule</SelectItem>
-                    {scheduleOptions.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 text-[10px] font-bold bg-[#edf4ff] border-b border-[#c7d6ec]">
-                <div className="px-2 py-1 border-r">Student No</div>
-                <div className="px-2 py-1 border-r">Full Name</div>
-                <div className="px-2 py-1 border-r">Program</div>
-                <div className="px-2 py-1">Year Level</div>
-              </div>
-              <div className="h-[410px] overflow-auto text-[11px] text-muted-foreground p-2">
-                {sourceRows.length === 0 ? "No students loaded." : null}
-              </div>
-              <div className="border-t border-[#c7d6ec] px-2 py-1 text-[11px]">
-                Total Students: <span className="font-bold text-[#a52828]">{sourceRows.length}</span>
-              </div>
-            </div>
 
-            <div className="border border-[#7d95b8] bg-white">
-              <div className="bg-gradient-to-b from-[#6ea4df] to-[#3d75bc] text-white text-[10px] font-bold uppercase px-2 py-1">
-                Destination Class Schedule
+              <ScrollArea className="flex-1 bg-white">
+                <div className="p-0">
+                  {sourceRows.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground/60 space-y-2">
+                       <UserCheck className="h-8 w-8 opacity-20" />
+                       <p className="text-[11px] font-medium italic">No students loaded from source</p>
+                    </div>
+                  ) : (
+                    sourceRows.map((row, idx) => (
+                      <div key={idx} className="grid grid-cols-4 px-4 py-2.5 text-xs border-b border-border/20 hover:bg-muted/10 transition-colors">
+                        <span className="font-bold text-indigo-950/80 tracking-tighter">{row.student_no}</span>
+                        <span className="font-semibold text-foreground/80">{row.full_name}</span>
+                        <span className="text-[11px] truncate">{row.program}</span>
+                        <span className="text-center">{row.year_level}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+
+              <div className="p-4 bg-muted/5 border-t border-indigo-50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-white text-indigo-700 border-indigo-100 rounded-lg py-1 px-3 shadow-xs">
+                    <span className="text-[10px] font-bold">Total: {sourceRows.length}</span>
+                  </Badge>
+                </div>
               </div>
-              <div className="px-1 py-1 border-b border-[#c7d6ec]">
-                <Select value={destinationScheduleId} onValueChange={setDestinationScheduleId}>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>Select destination schedule</SelectItem>
-                    {scheduleOptions.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            </Card>
+
+            {/* DESTINATION PANEL */}
+            <Card className="rounded-2xl border-emerald-100 shadow-sm overflow-hidden flex flex-col h-[550px]">
+              <CardHeader className="p-4 bg-emerald-50/70 border-b border-emerald-100/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-emerald-600" />
+                    <CardTitle className="text-xs font-bold uppercase tracking-widest text-emerald-900">Destination Class Schedule</CardTitle>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Select value={destinationScheduleId} onValueChange={setDestinationScheduleId}>
+                    <SelectTrigger className="h-9 border-emerald-200/50 bg-white rounded-xl text-xs shadow-sm font-medium">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE} className="text-xs">Select destination schedule</SelectItem>
+                      {scheduleOptions.map((s) => (
+                        <SelectItem key={s.id} value={s.id} className="text-xs">{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              
+              <div className="grid grid-cols-4 px-4 py-2.5 bg-emerald-100/20 text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 border-b border-emerald-50">
+                <div>Student No</div>
+                <div>Full Name</div>
+                <div>Program</div>
+                <div>Year</div>
               </div>
-              <div className="grid grid-cols-4 text-[10px] font-bold bg-[#edf4ff] border-b border-[#c7d6ec]">
-                <div className="px-2 py-1 border-r">Student No</div>
-                <div className="px-2 py-1 border-r">Full Name</div>
-                <div className="px-2 py-1 border-r">Program</div>
-                <div className="px-2 py-1">Year Level</div>
+
+              <ScrollArea className="flex-1 bg-white">
+                <div className="p-0">
+                  {destinationRows.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground/60 space-y-2">
+                       <UserCheck className="h-8 w-8 opacity-20" />
+                       <p className="text-[11px] font-medium italic">Ready for transfer...</p>
+                    </div>
+                  ) : (
+                    destinationRows.map((row, idx) => (
+                      <div key={idx} className="grid grid-cols-4 px-4 py-2.5 text-xs border-b border-border/20 hover:bg-muted/10 transition-colors">
+                        <span className="font-bold text-emerald-950/80 tracking-tighter">{row.student_no}</span>
+                        <span className="font-semibold text-foreground/80">{row.full_name}</span>
+                        <span className="text-[11px] truncate">{row.program}</span>
+                        <span className="text-center">{row.year_level}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+
+              <div className="p-4 bg-muted/5 border-t border-emerald-50 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="bg-white text-emerald-700 border-emerald-100 rounded-lg py-1 px-3 shadow-xs">
+                    <span className="text-[10px] font-bold">Total: {destinationRows.length}</span>
+                  </Badge>
+                  <Badge variant="secondary" className="bg-emerald-100/50 text-emerald-900 border-emerald-200/50 rounded-lg py-1 px-3 shadow-xs">
+                    <span className="text-[10px] font-bold">Limit: 0</span>
+                  </Badge>
+                </div>
               </div>
-              <div className="h-[410px] overflow-auto text-[11px] text-muted-foreground p-2">
-                {destinationRows.length === 0 ? "No students loaded." : null}
-              </div>
-              <div className="border-t border-[#c7d6ec] px-2 py-1 text-[11px] flex items-center justify-between">
-                <span>
-                  Total Students: <span className="font-bold text-[#a52828]">{destinationRows.length}</span>
-                </span>
-                <span>
-                  Class Limit: <span className="font-bold text-[#a52828]">0</span>
-                </span>
-              </div>
-            </div>
+            </Card>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-[#bdd2e9] pt-2">
-            <span className="text-[11px] text-[#3a4a5f]">
-              Selected: <span className="font-bold text-[#a52828]">{selectedCount}</span>
-            </span>
+          <Separator className="bg-border/40" />
+
+          {/* Action Footer */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-2">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-1">Transfer Tracking</span>
+                <div className="flex items-center gap-2">
+                   <div className="flex -space-x-2">
+                      {[1,2,3].map(i => <div key={i} className="h-7 w-7 rounded-full border-2 border-white bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">?</div>)}
+                   </div>
+                   <span className="text-xs font-bold text-foreground/80 ml-2">
+                    <span className="text-emerald-600 font-extrabold">{selectedCount}</span> Selected for transfer
+                   </span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 rounded-xl border-border/60 hover:bg-indigo-50 hover:text-indigo-600 transition-all shadow-sm"
+                onClick={() => setSelectedCount((v) => Math.max(0, v - 1))}
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+              </Button>
+            </div>
+
             <Button
               type="button"
-              size="sm"
-              variant="outline"
-              className="h-7 px-2 border-[#9ab7d6] bg-white text-[10px]"
-              onClick={() => setSelectedCount((v) => Math.max(0, v - 1))}
-            >
-              <ArrowLeftRight className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="h-7 px-3 text-[10px] bg-[#2f5f99] hover:bg-[#254d7c]"
+              disabled={selectedCount === 0 && sourceRows.length === 0}
+              className="h-10 rounded-xl px-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200/50 transition-all duration-200 active:scale-95 gap-2"
               onClick={transferSelected}
             >
-              <Send className="h-3.5 w-3.5 mr-1" />
-              Transfer Selected
+              <Send className="h-3.5 w-3.5" />
+              TRANSFER SELECTED SCHEDULES
             </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

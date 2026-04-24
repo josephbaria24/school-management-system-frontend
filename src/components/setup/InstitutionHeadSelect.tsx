@@ -30,13 +30,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2, Plus, Pencil, Trash2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 }
 
-export function InstitutionHeadSelect({ value, onChange }: Props) {
+export function InstitutionHeadSelect({ value, onChange, error }: Props) {
   const [heads, setHeads] = useState<InstitutionHead[]>([]);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
@@ -155,65 +157,73 @@ export function InstitutionHeadSelect({ value, onChange }: Props) {
   };
 
   return (
-    <div className="space-y-2 w-full">
-      <div className="flex items-center gap-2">
+    <div className="space-y-1.5 w-full">
+      <div className="flex items-center gap-1.5">
         <Select
           value={value || "none"}
           onValueChange={(next) => onChange(next === "none" ? "" : next)}
           disabled={loading || working}
         >
-          <SelectTrigger className="h-8 rounded-sm border-muted-foreground/30 shadow-inner">
-            <SelectValue placeholder={loading ? "Loading..." : "Select Person..."} />
+          <SelectTrigger className={cn("h-9 rounded-xl border-border/60 bg-background shadow-sm", error && "border-destructive ring-destructive/20")}>
+            <SelectValue placeholder={loading ? "Loading..." : "Select Person"} />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">-- None --</SelectItem>
+          <SelectContent className="rounded-xl border-border/60 shadow-xl">
+            <SelectItem value="none" className="text-xs">-- None --</SelectItem>
             {heads.map((item) => (
-              <SelectItem key={item.id} value={item.id.toString()}>
+              <SelectItem key={item.id} value={item.id.toString()} className="text-xs">
                 {item.full_name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            setActionError(null);
-            setNewHeadName("");
-            setAddOpen(true);
-          }}
-          disabled={working}
-        >
-          <Plus className="h-3.5 w-3.5 mr-1" />
-          Add
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          onClick={() => {
-            if (!selectedHead) return;
-            setActionError(null);
-            setEditHeadName(selectedHead.full_name);
-            setEditOpen(true);
-          }}
-          disabled={!selectedHead || working}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          onClick={() => {
-            setActionError(null);
-            setDeleteOpen(true);
-          }}
-          disabled={!selectedHead || working}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+
+        <div className="flex items-center gap-1 bg-muted/20 p-1 rounded-xl border border-border/40">
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
+            onClick={() => {
+              setActionError(null);
+              setNewHeadName("");
+              setAddOpen(true);
+            }}
+            disabled={working}
+            title="Add Person"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
+            onClick={() => {
+              if (!selectedHead) return;
+              setActionError(null);
+              setEditHeadName(selectedHead.full_name);
+              setEditOpen(true);
+            }}
+            disabled={!selectedHead || working}
+            title="Edit Selection"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors"
+            onClick={() => {
+              setActionError(null);
+              setDeleteOpen(true);
+            }}
+            disabled={!selectedHead || working}
+            title="Delete Selection"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       {(loading || working) && (

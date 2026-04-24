@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -16,10 +17,14 @@ import {
   Building2,
   ChevronDown,
   ChevronRight,
+  DoorOpen,
   Home,
+  Layers,
+  Loader2,
   Pencil,
   Plus,
   RefreshCw,
+  Search,
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -60,6 +65,7 @@ type RoomRow = {
   shared: boolean;
 };
 
+/* ──────────────────────────── Tree item ──────────────────────────── */
 function TreeItem({
   node,
   level = 0,
@@ -79,45 +85,56 @@ function TreeItem({
 }) {
   const hasChildren = !!node.children?.length;
   const expanded = expandedIds.has(node.id);
+  const isActive = activeId === node.id;
+
+  const iconForKind = () => {
+    switch (node.kind) {
+      case "institution":
+        return <Building2 className="h-3.5 w-3.5 text-primary/70" />;
+      case "campus":
+        return <Building2 className="h-3.5 w-3.5 text-primary/70" />;
+      case "building":
+        return <Home className="h-3.5 w-3.5 text-primary/60" />;
+      case "floor":
+        return <Layers className="h-3.5 w-3.5 text-muted-foreground/60" />;
+    }
+  };
+
   return (
     <div>
       <div
         className={cn(
-          "w-full flex items-center gap-1 text-[11px] py-0.5 hover:bg-[#dcf6ea]",
-          activeId === node.id && "bg-[#c8efd9] font-semibold"
+          "w-full flex items-center gap-1 text-[11px] py-1 rounded-md transition-colors",
+          isActive
+            ? "bg-emerald-500/12 text-foreground font-semibold ring-1 ring-inset ring-emerald-500/15"
+            : "hover:bg-muted/40 text-foreground/80"
         )}
-        style={{ paddingLeft: `${4 + level * 14}px` }}
+        style={{ paddingLeft: `${4 + level * 12}px`, paddingRight: 4 }}
       >
         <button
           type="button"
           className={cn(
-            "h-4 w-4 grid place-items-center text-[#1f7a57]",
-            !hasChildren && "opacity-30 cursor-default"
+            "h-3.5 w-3.5 grid place-items-center shrink-0 rounded transition-colors",
+            hasChildren ? "text-muted-foreground hover:text-foreground hover:bg-muted/50" : "invisible"
           )}
           onClick={() => hasChildren && onToggleExpand(node.id)}
           aria-label={expanded ? "Collapse" : "Expand"}
         >
-          {hasChildren ? (
-            expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />
-          ) : (
-            <span className="h-3 w-3" />
-          )}
+          {hasChildren &&
+            (expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />)}
         </button>
         <button
           type="button"
           onClick={() => onSelect(node)}
           onDoubleClick={() => onDoubleSelect(node)}
-          className="flex items-center gap-1.5 text-left flex-1"
+          className="flex items-center gap-1.5 text-left flex-1 min-w-0"
         >
-          {hasChildren ? (
-            <Building2 className="h-3 w-3 text-[#1f7a57]" />
-          ) : (
-            <Home className="h-3 w-3 text-[#1f7a57]" />
-          )}
+          {iconForKind()}
           <span className="truncate">{node.label}</span>
         </button>
       </div>
-      {hasChildren && expanded &&
+      {hasChildren &&
+        expanded &&
         node.children!.map((child) => (
           <TreeItem
             key={child.id}
@@ -134,6 +151,23 @@ function TreeItem({
   );
 }
 
+/* ──────────────────────── Bool badge ──────────────────────── */
+function BoolBadge({ value }: { value: boolean }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-bold",
+        value
+          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+          : "bg-muted/30 text-muted-foreground/40"
+      )}
+    >
+      {value ? "✓" : "—"}
+    </span>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════ */
 export function BuildingsRoomsModule() {
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [activeNode, setActiveNode] = useState<TreeNode | null>(null);
@@ -179,6 +213,7 @@ export function BuildingsRoomsModule() {
     floor_name: "",
   });
 
+  /* ── Data loading ── */
   const loadTree = useCallback(async () => {
     const res = await fetch(`${API}/api/buildings-rooms/tree`);
     if (!res.ok) return;
@@ -278,13 +313,8 @@ export function BuildingsRoomsModule() {
     }
   }, [activeNode, selectedRoomId]);
 
-  useEffect(() => {
-    loadTree();
-  }, [loadTree]);
-
-  useEffect(() => {
-    loadRooms();
-  }, [loadRooms]);
+  useEffect(() => { loadTree(); }, [loadTree]);
+  useEffect(() => { loadRooms(); }, [loadRooms]);
 
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -299,20 +329,16 @@ export function BuildingsRoomsModule() {
 
   const rightTitle = activeNode?.label || "Select a floor";
 
+  /* ── CRUD handlers ── */
   const submitBuilding = async (saveAndAnother = false) => {
     const campusId = parseInt(buildingForm.campus_id, 10);
     if (!Number.isFinite(campusId) || !buildingForm.building_name.trim()) {
-      toast({
-        title: "Validation error",
-        description: "Campus and Building Name are required.",
-        variant: "destructive",
-      });
+      toast({ title: "Validation error", description: "Campus and Building Name are required.", variant: "destructive" });
       return;
     }
-    const endpoint =
-      buildingDialogMode === "edit" && editingBuildingId
-        ? `${API}/api/buildings-rooms/buildings/${editingBuildingId}`
-        : `${API}/api/buildings-rooms/buildings`;
+    const endpoint = buildingDialogMode === "edit" && editingBuildingId
+      ? `${API}/api/buildings-rooms/buildings/${editingBuildingId}`
+      : `${API}/api/buildings-rooms/buildings`;
     const res = await fetch(endpoint, {
       method: buildingDialogMode === "edit" ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -327,31 +353,14 @@ export function BuildingsRoomsModule() {
     });
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
-      toast({
-        title: "Save failed",
-        description: result?.error || "Failed to save building.",
-        variant: "destructive",
-      });
+      toast({ title: "Save failed", description: result?.error || "Failed to save building.", variant: "destructive" });
       return;
     }
     await loadTree();
-    toast({
-      title: "Saved",
-      description: buildingDialogMode === "edit" ? "Building updated." : "Building saved.",
-    });
-    if (buildingDialogMode === "edit") {
-      setAddBuildingOpen(false);
-      return;
-    }
+    toast({ title: "Saved", description: buildingDialogMode === "edit" ? "Building updated." : "Building saved." });
+    if (buildingDialogMode === "edit") { setAddBuildingOpen(false); return; }
     if (saveAndAnother) {
-      setBuildingForm((s) => ({
-        ...s,
-        building_name: "",
-        popular_name: "",
-        acronym: "",
-        number_of_floors: "1",
-        lan_ready: false,
-      }));
+      setBuildingForm((s) => ({ ...s, building_name: "", popular_name: "", acronym: "", number_of_floors: "1", lan_ready: false }));
       return;
     }
     setAddBuildingOpen(false);
@@ -360,58 +369,36 @@ export function BuildingsRoomsModule() {
   const submitRoom = async () => {
     const floorId = parseInt(roomForm.floor_id, 10);
     if (!Number.isFinite(floorId) || !roomForm.room_no.trim() || !roomForm.room_name.trim()) {
-      toast({
-        title: "Validation error",
-        description: "Floor location, room no, and room name are required.",
-        variant: "destructive",
-      });
+      toast({ title: "Validation error", description: "Floor location, room no, and room name are required.", variant: "destructive" });
       return;
     }
     const capacity = Number(roomForm.capacity || "0");
-    const endpoint =
-      roomDialogMode === "edit" && editingRoomId
-        ? `${API}/api/buildings-rooms/rooms/${editingRoomId}`
-        : `${API}/api/buildings-rooms/rooms`;
+    const endpoint = roomDialogMode === "edit" && editingRoomId
+      ? `${API}/api/buildings-rooms/rooms/${editingRoomId}`
+      : `${API}/api/buildings-rooms/rooms`;
     const res = await fetch(endpoint, {
       method: roomDialogMode === "edit" ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        floor_id: floorId,
-        room_no: roomForm.room_no.trim(),
-        room_name: roomForm.room_name.trim(),
-        room_type: roomForm.room_type.trim() || null,
-        capacity: Number.isFinite(capacity) ? capacity : 0,
-        air_conditioned: roomForm.air_conditioned,
-        fit_to_use: roomForm.fit_to_use,
-        lan_member: roomForm.lan_member,
-        night_class_allowed: roomForm.night_class_allowed,
-        shared: roomForm.shared,
+        floor_id: floorId, room_no: roomForm.room_no.trim(), room_name: roomForm.room_name.trim(),
+        room_type: roomForm.room_type.trim() || null, capacity: Number.isFinite(capacity) ? capacity : 0,
+        air_conditioned: roomForm.air_conditioned, fit_to_use: roomForm.fit_to_use,
+        lan_member: roomForm.lan_member, night_class_allowed: roomForm.night_class_allowed, shared: roomForm.shared,
       }),
     });
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
-      toast({
-        title: "Save failed",
-        description: result?.error || "Failed to save room.",
-        variant: "destructive",
-      });
+      toast({ title: "Save failed", description: result?.error || "Failed to save room.", variant: "destructive" });
       return;
     }
     await loadRooms();
     await loadTree();
-    toast({
-      title: "Saved",
-      description: roomDialogMode === "edit" ? "Room updated." : "Room saved.",
-    });
+    toast({ title: "Saved", description: roomDialogMode === "edit" ? "Room updated." : "Room saved." });
   };
 
   const submitFloor = async () => {
     if (!editingFloorId || !floorForm.floor_name.trim()) {
-      toast({
-        title: "Validation error",
-        description: "Floor name is required.",
-        variant: "destructive",
-      });
+      toast({ title: "Validation error", description: "Floor name is required.", variant: "destructive" });
       return;
     }
     const res = await fetch(`${API}/api/buildings-rooms/floors/${editingFloorId}`, {
@@ -421,11 +408,7 @@ export function BuildingsRoomsModule() {
     });
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
-      toast({
-        title: "Save failed",
-        description: result?.error || "Failed to save floor.",
-        variant: "destructive",
-      });
+      toast({ title: "Save failed", description: result?.error || "Failed to save floor.", variant: "destructive" });
       return;
     }
     toast({ title: "Saved", description: "Floor updated." });
@@ -433,167 +416,9 @@ export function BuildingsRoomsModule() {
     await loadTree();
   };
 
-  const openBuildingEditDialog = (node: TreeNode) => {
-    if (node.kind !== "building" || !node.refId) return;
-    const campus = campusOptions.find((c) =>
-      (c.children || []).some((b) => b.refId === node.refId)
-    );
-    const building = (campus?.children || []).find((b) => b.refId === node.refId);
-    const floorCount = (building?.children || []).length;
-    setBuildingDialogMode("edit");
-    setEditingBuildingId(node.refId);
-    setBuildingForm({
-      campus_id: campus?.refId ? String(campus.refId) : "",
-      building_name: node.label,
-      popular_name: "",
-      acronym: "",
-      number_of_floors: String(Math.max(1, floorCount || 1)),
-      lan_ready: false,
-    });
-    setAddBuildingOpen(true);
-  };
-
-  const openFloorEditDialog = (node: TreeNode) => {
-    if (node.kind !== "floor" || !node.refId) return;
-    const building = campusOptions
-      .flatMap((c) => c.children || [])
-      .find((b) => (b.children || []).some((f) => f.refId === node.refId));
-    const campus = campusOptions.find((c) =>
-      (c.children || []).some((b) => b.refId === building?.refId)
-    );
-    setFloorDialogMode("edit");
-    setEditingFloorId(node.refId);
-    setFloorForm({
-      campus_id: campus?.refId ? String(campus.refId) : "",
-      building_id: building?.refId ? String(building.refId) : "",
-      floor_name: node.label.replace(/\s*\(\d+\)\s*$/, ""),
-    });
-    setAddFloorOpen(true);
-  };
-
-  const openRoomEditDialog = (row: RoomRow) => {
-    const building = campusOptions
-      .flatMap((c) => c.children || [])
-      .find((b) => (b.children || []).some((f) => f.refId === row.floor_id));
-    const campus = campusOptions.find((c) =>
-      (c.children || []).some((b) => b.refId === building?.refId)
-    );
-    setRoomDialogMode("edit");
-    setEditingRoomId(row.id);
-    setRoomForm({
-      campus_id: campus?.refId ? String(campus.refId) : "",
-      building_id: building?.refId ? String(building.refId) : "",
-      floor_id: String(row.floor_id),
-      room_no: row.room_no,
-      room_name: row.room_name,
-      room_type: row.room_type || "",
-      capacity: String(row.capacity ?? 0),
-      air_conditioned: !!row.air_conditioned,
-      fit_to_use: !!row.fit_to_use,
-      lan_member: !!row.lan_member,
-      night_class_allowed: !!row.night_class_allowed,
-      shared: !!row.shared,
-    });
-    setAddRoomOpen(true);
-  };
-
-  const editRoom = async () => {
-    if (activeNode?.kind === "building" && activeNode.refId) {
-      openBuildingEditDialog(activeNode);
-      return;
-    }
-    if (activeNode?.kind === "floor" && activeNode.refId) {
-      openFloorEditDialog(activeNode);
-      return;
-    }
-    const row = rows.find((r) => r.id === selectedRoomId) ?? rows[0];
-    if (!row) {
-      toast({
-        title: "No selection",
-        description: "Select a room to edit.",
-        variant: "destructive",
-      });
-      return;
-    }
-    openRoomEditDialog(row);
-  };
-
-  const deleteRoom = async () => {
-    if (activeNode?.kind === "building" && activeNode.refId) {
-      if (!confirm("Delete selected building and all its floors/rooms?")) return;
-      const res = await fetch(`${API}/api/buildings-rooms/buildings/${activeNode.refId}`, {
-        method: "DELETE",
-      });
-      const result = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast({
-          title: "Delete failed",
-          description: result?.error || "Failed to delete building.",
-          variant: "destructive",
-        });
-        return;
-      }
-      toast({ title: "Deleted", description: "Building deleted." });
-      setActiveNode(null);
-      setSelectedRoomId(null);
-      await loadTree();
-      await loadRooms();
-      return;
-    }
-    if (activeNode?.kind === "floor" && activeNode.refId) {
-      if (!confirm("Delete selected floor and all its rooms?")) return;
-      const res = await fetch(`${API}/api/buildings-rooms/floors/${activeNode.refId}`, {
-        method: "DELETE",
-      });
-      const result = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast({
-          title: "Delete failed",
-          description: result?.error || "Failed to delete floor.",
-          variant: "destructive",
-        });
-        return;
-      }
-      toast({ title: "Deleted", description: "Floor deleted." });
-      setActiveNode(null);
-      setSelectedRoomId(null);
-      await loadTree();
-      await loadRooms();
-      return;
-    }
-    const rowId = selectedRoomId ?? rows[0]?.id ?? null;
-    if (!rowId) {
-      toast({
-        title: "No selection",
-        description: "Select a room to delete.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!confirm("Delete selected room?")) return;
-    const res = await fetch(`${API}/api/buildings-rooms/rooms/${rowId}`, {
-      method: "DELETE",
-    });
-    const result = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      toast({
-        title: "Delete failed",
-        description: result?.error || "Failed to delete room.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setSelectedRoomId(null);
-    toast({ title: "Deleted", description: "Room deleted." });
-    await loadRooms();
-    await loadTree();
-  };
-
+  /* ── Edit / delete helpers ── */
   const campusOptions = useMemo(
-    () =>
-      treeData
-        .flatMap((i) => i.children || [])
-        .filter((n) => n.kind === "campus" && n.refId),
+    () => treeData.flatMap((i) => i.children || []).filter((n) => n.kind === "campus" && n.refId),
     [treeData]
   );
   const buildingOptions = useMemo(() => {
@@ -616,623 +441,442 @@ export function BuildingsRoomsModule() {
     return (building?.children || []).filter((n) => n.kind === "floor" && n.refId);
   }, [roomForm.building_id, campusOptions]);
 
-  return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="border border-[#79b898] bg-white">
-        <div className="bg-gradient-to-b from-[#def8ea] to-[#9fdbbc] border-b border-[#79b898] px-2 py-1">
-          <h1 className="text-[28px] leading-none tracking-tight text-[#1f5e45] font-semibold">
-            BUILDINGS AND ROOMS
-          </h1>
-          <p className="text-[11px] text-[#35684f] -mt-0.5">
-            Use this module to add, edit and delete building and rooms.....
-          </p>
-        </div>
+  const openBuildingEditDialog = (node: TreeNode) => {
+    if (node.kind !== "building" || !node.refId) return;
+    const campus = campusOptions.find((c) => (c.children || []).some((b) => b.refId === node.refId));
+    const building = (campus?.children || []).find((b) => b.refId === node.refId);
+    const floorCount = (building?.children || []).length;
+    setBuildingDialogMode("edit");
+    setEditingBuildingId(node.refId);
+    setBuildingForm({ campus_id: campus?.refId ? String(campus.refId) : "", building_name: node.label, popular_name: "", acronym: "", number_of_floors: String(Math.max(1, floorCount || 1)), lan_ready: false });
+    setAddBuildingOpen(true);
+  };
+  const openFloorEditDialog = (node: TreeNode) => {
+    if (node.kind !== "floor" || !node.refId) return;
+    const building = campusOptions.flatMap((c) => c.children || []).find((b) => (b.children || []).some((f) => f.refId === node.refId));
+    const campus = campusOptions.find((c) => (c.children || []).some((b) => b.refId === building?.refId));
+    setFloorDialogMode("edit");
+    setEditingFloorId(node.refId);
+    setFloorForm({ campus_id: campus?.refId ? String(campus.refId) : "", building_id: building?.refId ? String(building.refId) : "", floor_name: node.label.replace(/\s*\(\d+\)\s*$/, "") });
+    setAddFloorOpen(true);
+  };
+  const openRoomEditDialog = (row: RoomRow) => {
+    const building = campusOptions.flatMap((c) => c.children || []).find((b) => (b.children || []).some((f) => f.refId === row.floor_id));
+    const campus = campusOptions.find((c) => (c.children || []).some((b) => b.refId === building?.refId));
+    setRoomDialogMode("edit");
+    setEditingRoomId(row.id);
+    setRoomForm({ campus_id: campus?.refId ? String(campus.refId) : "", building_id: building?.refId ? String(building.refId) : "", floor_id: String(row.floor_id), room_no: row.room_no, room_name: row.room_name, room_type: row.room_type || "", capacity: String(row.capacity ?? 0), air_conditioned: !!row.air_conditioned, fit_to_use: !!row.fit_to_use, lan_member: !!row.lan_member, night_class_allowed: !!row.night_class_allowed, shared: !!row.shared });
+    setAddRoomOpen(true);
+  };
 
-        <div className="grid grid-cols-12 min-h-[520px]">
-          <div className="col-span-12 lg:col-span-3 border-r border-[#79b898]">
-            <div className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[11px] px-1 py-0.5">
-              Buildings And Rooms
+  const editRoom = async () => {
+    if (activeNode?.kind === "building" && activeNode.refId) { openBuildingEditDialog(activeNode); return; }
+    if (activeNode?.kind === "floor" && activeNode.refId) { openFloorEditDialog(activeNode); return; }
+    const row = rows.find((r) => r.id === selectedRoomId) ?? rows[0];
+    if (!row) { toast({ title: "No selection", description: "Select a room to edit.", variant: "destructive" }); return; }
+    openRoomEditDialog(row);
+  };
+
+  const deleteRoom = async () => {
+    if (activeNode?.kind === "building" && activeNode.refId) {
+      if (!confirm("Delete selected building and all its floors/rooms?")) return;
+      const res = await fetch(`${API}/api/buildings-rooms/buildings/${activeNode.refId}`, { method: "DELETE" });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) { toast({ title: "Delete failed", description: result?.error || "Failed to delete building.", variant: "destructive" }); return; }
+      toast({ title: "Deleted", description: "Building deleted." });
+      setActiveNode(null); setSelectedRoomId(null);
+      await loadTree(); await loadRooms(); return;
+    }
+    if (activeNode?.kind === "floor" && activeNode.refId) {
+      if (!confirm("Delete selected floor and all its rooms?")) return;
+      const res = await fetch(`${API}/api/buildings-rooms/floors/${activeNode.refId}`, { method: "DELETE" });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) { toast({ title: "Delete failed", description: result?.error || "Failed to delete floor.", variant: "destructive" }); return; }
+      toast({ title: "Deleted", description: "Floor deleted." });
+      setActiveNode(null); setSelectedRoomId(null);
+      await loadTree(); await loadRooms(); return;
+    }
+    const rowId = selectedRoomId ?? rows[0]?.id ?? null;
+    if (!rowId) { toast({ title: "No selection", description: "Select a room to delete.", variant: "destructive" }); return; }
+    if (!confirm("Delete selected room?")) return;
+    const res = await fetch(`${API}/api/buildings-rooms/rooms/${rowId}`, { method: "DELETE" });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) { toast({ title: "Delete failed", description: result?.error || "Failed to delete room.", variant: "destructive" }); return; }
+    setSelectedRoomId(null);
+    toast({ title: "Deleted", description: "Room deleted." });
+    await loadRooms(); await loadTree();
+  };
+
+  /* ══════════════════ JSX ══════════════════ */
+  return (
+    <div className="h-full bg-background relative overflow-x-hidden">
+      <div className="w-full px-2 pt-2 pb-4">
+        {/* ── Page header ── */}
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="setup-type-page-title">Buildings &amp; Rooms</h1>
+            <p className="setup-type-page-desc">
+              Manage buildings, floors, and rooms across all campuses.
+            </p>
+          </div>
+          <div className="hidden sm:flex flex-col items-end gap-2">
+            <div className="setup-type-kicker-pill flex h-9 items-center rounded-xl border border-border/60 bg-background/70 px-3 shadow-sm backdrop-blur">
+              Setup Manager module
             </div>
-            <div className="p-1 border-b border-[#cfe6da]">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-6 text-[11px]"
-                placeholder="Search rooms"
-              />
-            </div>
-            <div className="h-[455px] overflow-auto bg-white">
-              {treeData.map((node) => (
-                <TreeItem
-                  key={node.id}
-                  node={node}
-                  activeId={activeNode?.id || ""}
-                  expandedIds={expandedIds}
-                  onToggleExpand={toggleExpand}
-                  onSelect={setActiveNode}
-                  onDoubleSelect={(n) => {
-                    setActiveNode(n);
-                    if (n.kind === "building") openBuildingEditDialog(n);
-                    if (n.kind === "floor") openFloorEditDialog(n);
-                  }}
-                />
-              ))}
+            <div className="setup-type-kicker-pill rounded-xl border border-border/60 bg-muted/30 px-2.5 py-1">
+              Enrollment System v2.0
             </div>
           </div>
+        </div>
 
-          <div className="col-span-12 lg:col-span-9">
-            <div className="bg-gradient-to-b from-[#ffe9ac] to-[#eecf76] border-b border-[#c9ab56] px-1 py-0.5 text-[11px] font-semibold">
-              {rightTitle}
+        {/* ── Module card ── */}
+        <Card className="overflow-hidden rounded-2xl bg-background border-border/40 shadow-sm">
+          <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-border/40 bg-muted/5">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 p-2 rounded-xl border border-emerald-500/20 shadow-sm shrink-0">
+                <Building2 className="h-4 w-4" />
+              </div>
+              <div className="leading-tight min-w-0">
+                <div className="setup-type-module-title">Building &amp; room management</div>
+                <div className="setup-type-module-sub">Organize physical spaces by campus, building, floor, and room</div>
+              </div>
             </div>
-            <div className="flex items-center gap-1 p-1 border-b border-[#79b898] bg-gradient-to-b from-[#e4f8ee] to-[#9ed9c1] flex-wrap">
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center gap-1.5">
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
+                type="button" size="sm"
+                className="h-8 gap-1.5 text-xs rounded-lg shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => {
                   const firstCampus = campusOptions[0];
-                  setBuildingForm({
-                    campus_id: firstCampus?.refId ? String(firstCampus.refId) : "",
-                    building_name: "",
-                    popular_name: "",
-                    acronym: "",
-                    number_of_floors: "1",
-                    lan_ready: false,
-                  });
-                  setBuildingDialogMode("create");
-                  setEditingBuildingId(null);
-                  setAddBuildingOpen(true);
+                  setBuildingForm({ campus_id: firstCampus?.refId ? String(firstCampus.refId) : "", building_name: "", popular_name: "", acronym: "", number_of_floors: "1", lan_ready: false });
+                  setBuildingDialogMode("create"); setEditingBuildingId(null); setAddBuildingOpen(true);
                 }}
               >
-                <Plus className="h-3 w-3" />
-                Create New Building
+                <Plus className="h-3.5 w-3.5" /> New Building
               </Button>
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
+                type="button" variant="outline" size="sm"
+                className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm"
                 onClick={() => {
-                  const selectedFloor =
-                    activeNode?.kind === "floor" && activeNode.refId ? activeNode : null;
-                  let defaultCampusId = "";
-                  let defaultBuildingId = "";
-                  let defaultFloorId = selectedFloor?.refId ? String(selectedFloor.refId) : "";
+                  const selectedFloor = activeNode?.kind === "floor" && activeNode.refId ? activeNode : null;
+                  let defaultCampusId = ""; let defaultBuildingId = ""; let defaultFloorId = selectedFloor?.refId ? String(selectedFloor.refId) : "";
                   if (selectedFloor?.refId) {
-                    const building = campusOptions
-                      .flatMap((c) => c.children || [])
-                      .find((b) => (b.children || []).some((f) => f.refId === selectedFloor.refId));
-                    if (building?.refId) {
-                      defaultBuildingId = String(building.refId);
-                      const campus = campusOptions.find((c) =>
-                        (c.children || []).some((b) => b.refId === building.refId)
-                      );
-                      if (campus?.refId) defaultCampusId = String(campus.refId);
-                    }
+                    const building = campusOptions.flatMap((c) => c.children || []).find((b) => (b.children || []).some((f) => f.refId === selectedFloor.refId));
+                    if (building?.refId) { defaultBuildingId = String(building.refId); const campus = campusOptions.find((c) => (c.children || []).some((b) => b.refId === building.refId)); if (campus?.refId) defaultCampusId = String(campus.refId); }
                   }
-                  if (!defaultCampusId) {
-                    const firstCampus = campusOptions[0];
-                    defaultCampusId = firstCampus?.refId ? String(firstCampus.refId) : "";
-                  }
-                  setRoomForm({
-                    campus_id: defaultCampusId,
-                    building_id: defaultBuildingId,
-                    floor_id: defaultFloorId,
-                    room_no: "",
-                    room_name: "",
-                    room_type: "",
-                    capacity: "50",
-                    air_conditioned: false,
-                    fit_to_use: true,
-                    lan_member: false,
-                    night_class_allowed: false,
-                    shared: false,
-                  });
-                  setRoomDialogMode("create");
-                  setEditingRoomId(null);
-                  setAddRoomOpen(true);
+                  if (!defaultCampusId) { const firstCampus = campusOptions[0]; defaultCampusId = firstCampus?.refId ? String(firstCampus.refId) : ""; }
+                  setRoomForm({ campus_id: defaultCampusId, building_id: defaultBuildingId, floor_id: defaultFloorId, room_no: "", room_name: "", room_type: "", capacity: "50", air_conditioned: false, fit_to_use: true, lan_member: false, night_class_allowed: false, shared: false });
+                  setRoomDialogMode("create"); setEditingRoomId(null); setAddRoomOpen(true);
                 }}
               >
-                <Plus className="h-3 w-3" />
-                Create New Room
+                <DoorOpen className="h-3.5 w-3.5" /> New Room
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-                onClick={editRoom}
-                disabled={
-                  !(
-                    (activeNode?.kind === "building" && activeNode.refId) ||
-                    (activeNode?.kind === "floor" && activeNode.refId) ||
-                    selectedRoomId
-                  )
-                }
-              >
-                <Pencil className="h-3 w-3" />
-                Edit
+              <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm" onClick={editRoom}
+                disabled={!((activeNode?.kind === "building" && activeNode.refId) || (activeNode?.kind === "floor" && activeNode.refId) || selectedRoomId)}>
+                <Pencil className="h-3.5 w-3.5" /> Edit
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-                onClick={deleteRoom}
-                disabled={
-                  !(
-                    (activeNode?.kind === "building" && activeNode.refId) ||
-                    (activeNode?.kind === "floor" && activeNode.refId) ||
-                    selectedRoomId
-                  )
-                }
-              >
-                <Trash2 className="h-3 w-3" />
-                Delete
+              <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm text-destructive hover:bg-destructive/10" onClick={deleteRoom}
+                disabled={!((activeNode?.kind === "building" && activeNode.refId) || (activeNode?.kind === "floor" && activeNode.refId) || selectedRoomId)}>
+                <Trash2 className="h-3.5 w-3.5" /> Delete
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-6 px-2 text-[10px] border-[#9ed9c1] bg-white"
-                onClick={async () => {
-                  await loadTree();
-                  await loadRooms();
-                }}
-              >
-                <RefreshCw className="h-3 w-3" />
-                Refresh
+              <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm" onClick={async () => { await loadTree(); await loadRooms(); }}>
+                <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} /> Refresh
               </Button>
-            </div>
-            <div className="overflow-auto h-[482px]">
-              <table className="w-full text-[11px] border-collapse min-w-[820px]">
-                <thead>
-                  <tr className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white">
-                    {[
-                      "Room No.",
-                      "Room Name",
-                      "Type",
-                      "Capacity",
-                      "Air Conditioned",
-                      "Fit to Use",
-                      "LAN Member",
-                      "Night Class Allowed",
-                      "Shared",
-                    ].map((h) => (
-                      <th key={h} className="px-1 py-0.5 text-left border-r border-white/35 text-[10px] font-bold">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={9} className="px-2 py-2 text-muted-foreground">
-                        Loading...
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredRows.map((r, idx) => (
-                    <tr
-                      key={r.id}
-                      onClick={() => setSelectedRoomId(r.id)}
-                      onDoubleClick={() => {
-                        setSelectedRoomId(r.id);
-                        openRoomEditDialog(r);
-                      }}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(ev) => {
-                        if (ev.key === "Enter" || ev.key === " ") {
-                          ev.preventDefault();
-                          setSelectedRoomId(r.id);
-                        }
-                      }}
-                      className={cn(
-                        "cursor-pointer",
-                        idx % 2 ? "bg-[#f8fdf9]" : "bg-white",
-                        selectedRoomId === r.id && "bg-[#c8efd9]"
-                      )}
-                    >
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">{r.room_no}</td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">{r.room_name}</td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">{r.room_type || ""}</td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">{r.capacity}</td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">
-                        <input type="checkbox" checked={r.air_conditioned} readOnly />
-                      </td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">
-                        <input type="checkbox" checked={r.fit_to_use} readOnly />
-                      </td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">
-                        <input type="checkbox" checked={r.lan_member} readOnly />
-                      </td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">
-                        <input type="checkbox" checked={r.night_class_allowed} readOnly />
-                      </td>
-                      <td className="px-1 py-0.5 border border-[#d4e8dc]">
-                        <input type="checkbox" checked={r.shared} readOnly />
-                      </td>
-                    </tr>
-                  )))}
-                </tbody>
-              </table>
             </div>
           </div>
-        </div>
 
+          <div className="p-3 bg-background/60">
+            <div className="grid grid-cols-12 gap-3 min-h-[520px]">
+              {/* ── Left: Tree panel ── */}
+              <div className="col-span-12 lg:col-span-3 flex flex-col rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden min-h-0">
+                <div className="setup-type-section-title shrink-0 border-b border-border/60 bg-muted/5 px-3 py-2.5 flex items-center gap-2">
+                  <Building2 className="h-3.5 w-3.5 text-primary/60" />
+                  Buildings &amp; Rooms
+                </div>
+                <div className="px-2 pt-2 pb-1.5">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+                    <Input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="h-8 pl-8 rounded-lg text-xs border-border/60 bg-background shadow-sm"
+                      placeholder="Search rooms..."
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto overflow-x-hidden py-1">
+                  {treeData.map((node) => (
+                    <TreeItem
+                      key={node.id}
+                      node={node}
+                      activeId={activeNode?.id || ""}
+                      expandedIds={expandedIds}
+                      onToggleExpand={toggleExpand}
+                      onSelect={setActiveNode}
+                      onDoubleSelect={(n) => {
+                        setActiveNode(n);
+                        if (n.kind === "building") openBuildingEditDialog(n);
+                        if (n.kind === "floor") openFloorEditDialog(n);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Right: Room table ── */}
+              <div className="col-span-12 lg:col-span-9 flex flex-col rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden min-h-0">
+                <div className="setup-type-section-title shrink-0 border-b border-border/60 bg-muted/5 px-3 py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-3.5 w-3.5 text-primary/60" />
+                    <span>{rightTitle}</span>
+                  </div>
+                  <span className="text-[10px] font-normal text-muted-foreground">
+                    {filteredRows.length} room{filteredRows.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="flex-1 overflow-auto bg-background">
+                  <table className="w-full text-[11px] border-collapse min-w-[820px]">
+                    <thead>
+                      <tr className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 shadow-sm">
+                        {["Room No.", "Room Name", "Type", "Capacity", "A/C", "Active", "LAN", "Night", "Shared"].map((h) => (
+                          <th key={h} className="setup-type-table-header border-r border-border/60 px-2 py-2 text-left last:border-r-0">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        <tr>
+                          <td colSpan={9} className="px-4 py-8 text-center">
+                            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                              <Loader2 className="h-4 w-4 animate-spin" /> Loading rooms…
+                            </div>
+                          </td>
+                        </tr>
+                      ) : filteredRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={9} className="px-4 py-12 text-center text-sm text-muted-foreground italic">
+                            {activeNode?.kind === "floor" ? "No rooms on this floor" : "Select a floor to view rooms"}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredRows.map((r, idx) => (
+                          <tr
+                            key={r.id}
+                            onClick={() => setSelectedRoomId(r.id)}
+                            onDoubleClick={() => { setSelectedRoomId(r.id); openRoomEditDialog(r); }}
+                            role="button" tabIndex={0}
+                            onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); setSelectedRoomId(r.id); } }}
+                            className={cn(
+                              "premium-row cursor-pointer border-b border-border/40 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                              idx % 2 === 1 && "bg-muted/10",
+                              selectedRoomId === r.id && "bg-emerald-500/10 font-medium ring-1 ring-inset ring-emerald-500/15"
+                            )}
+                          >
+                            <td className="setup-font-mono-data border-r border-border/50 px-2 py-1.5">{r.room_no}</td>
+                            <td className="px-2 py-1.5 border-r border-border/50 font-medium text-foreground">{r.room_name}</td>
+                            <td className="px-2 py-1.5 border-r border-border/50 text-muted-foreground">{r.room_type || "—"}</td>
+                            <td className="px-2 py-1.5 border-r border-border/50 tabular-nums text-center font-mono">{r.capacity}</td>
+                            <td className="px-2 py-1.5 border-r border-border/50 text-center"><BoolBadge value={r.air_conditioned} /></td>
+                            <td className="px-2 py-1.5 border-r border-border/50 text-center"><BoolBadge value={r.fit_to_use} /></td>
+                            <td className="px-2 py-1.5 border-r border-border/50 text-center"><BoolBadge value={r.lan_member} /></td>
+                            <td className="px-2 py-1.5 border-r border-border/50 text-center"><BoolBadge value={r.night_class_allowed} /></td>
+                            <td className="px-2 py-1.5 text-center"><BoolBadge value={r.shared} /></td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
+
+      {/* ══════════════════ Building Dialog ══════════════════ */}
       <Dialog open={addBuildingOpen} onOpenChange={setAddBuildingOpen}>
-        <DialogContent className="max-w-[780px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-base">
+        <DialogContent className="max-w-[720px] p-0 gap-0 overflow-hidden rounded-2xl" aria-describedby={undefined}>
+          <DialogHeader className="px-5 py-3.5 border-b border-border/60 bg-muted/5">
+            <DialogTitle className="text-sm font-semibold">
               {buildingDialogMode === "edit" ? "Edit Building" : "Add New Building"}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-3 bg-white grid grid-cols-12 gap-3">
-            <div className="col-span-9 border border-[#9ed9c1] p-3 space-y-2">
-              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Campus</Label>
-                <Select
-                  value={buildingForm.campus_id || "__none__"}
-                  onValueChange={(v) =>
-                    setBuildingForm((s) => ({ ...s, campus_id: v === "__none__" ? "" : v }))
-                  }
-                >
-                  <SelectTrigger className="h-7 text-[12px]">
-                    <SelectValue placeholder="Select campus" />
-                  </SelectTrigger>
+          <div className="p-5 space-y-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Campus</Label>
+                <Select value={buildingForm.campus_id || "__none__"} onValueChange={(v) => setBuildingForm((s) => ({ ...s, campus_id: v === "__none__" ? "" : v }))}>
+                  <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background"><SelectValue placeholder="Select campus" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Select campus</SelectItem>
-                    {campusOptions.map((c) => (
-                      <SelectItem key={c.id} value={String(c.refId)}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
+                    {campusOptions.map((c) => (<SelectItem key={c.id} value={String(c.refId)}>{c.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Building Name</Label>
-                <Input
-                  className="h-7 text-[12px]"
-                  value={buildingForm.building_name}
-                  onChange={(e) =>
-                    setBuildingForm((s) => ({ ...s, building_name: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Popular Name</Label>
-                <Input
-                  className="h-7 text-[12px]"
-                  value={buildingForm.popular_name}
-                  onChange={(e) =>
-                    setBuildingForm((s) => ({ ...s, popular_name: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Acronym</Label>
-                <Input
-                  className="h-7 text-[12px]"
-                  value={buildingForm.acronym}
-                  onChange={(e) =>
-                    setBuildingForm((s) => ({ ...s, acronym: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Number of Floors or Storeys</Label>
-                <Input
-                  className="h-7 text-[12px] w-20"
-                  value={buildingForm.number_of_floors}
-                  onChange={(e) =>
-                    setBuildingForm((s) => ({ ...s, number_of_floors: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Local Area Network Ready</Label>
-                <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={buildingForm.lan_ready}
-                    onChange={(e) =>
-                      setBuildingForm((s) => ({ ...s, lan_ready: e.target.checked }))
-                    }
-                  />
-                  Put a checkmark if the Building/Facility is wired internally.
-                </label>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Acronym</Label>
+                <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm" placeholder="e.g. SCI" value={buildingForm.acronym} onChange={(e) => setBuildingForm((s) => ({ ...s, acronym: e.target.value }))} />
               </div>
             </div>
-            <div className="col-span-3 flex flex-col gap-2">
-              <Button className="h-10" onClick={() => submitBuilding(false)}>
-                Save
-              </Button>
-              {buildingDialogMode === "create" && (
-                <Button className="h-10" variant="secondary" onClick={() => submitBuilding(true)}>
-                  Save &amp; Add Another
-                </Button>
-              )}
+            <div className="space-y-1">
+              <Label className="text-[11px] font-medium text-muted-foreground">Building Name</Label>
+              <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm" placeholder="e.g. Science Building" value={buildingForm.building_name} onChange={(e) => setBuildingForm((s) => ({ ...s, building_name: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Popular Name</Label>
+                <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm" value={buildingForm.popular_name} onChange={(e) => setBuildingForm((s) => ({ ...s, popular_name: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Number of Floors</Label>
+                <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm font-mono w-24" value={buildingForm.number_of_floors} onChange={(e) => setBuildingForm((s) => ({ ...s, number_of_floors: e.target.value }))} />
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <input type="checkbox" className="accent-primary rounded" checked={buildingForm.lan_ready} onChange={(e) => setBuildingForm((s) => ({ ...s, lan_ready: e.target.checked }))} />
+              <span className="text-muted-foreground">LAN Ready (wired internally)</span>
+            </label>
+            <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+              <Button className="h-9 rounded-lg shadow-sm" onClick={() => submitBuilding(false)}>Save</Button>
+              {buildingDialogMode === "create" && (<Button className="h-9 rounded-lg shadow-sm" variant="secondary" onClick={() => submitBuilding(true)}>Save &amp; Add Another</Button>)}
               <div className="flex-1" />
-              <Button variant="destructive" className="h-10" onClick={() => setAddBuildingOpen(false)}>
-                Cancel
-              </Button>
+              <Button variant="outline" className="h-9 rounded-lg border-border/60" onClick={() => setAddBuildingOpen(false)}>Cancel</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ══════════════════ Room Dialog ══════════════════ */}
       <Dialog open={addRoomOpen} onOpenChange={setAddRoomOpen}>
-        <DialogContent className="max-w-[820px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-base">
-              {roomDialogMode === "edit" ? "Edit Room" : "Add New Rooms"}
+        <DialogContent className="max-w-[720px] p-0 gap-0 overflow-hidden rounded-2xl" aria-describedby={undefined}>
+          <DialogHeader className="px-5 py-3.5 border-b border-border/60 bg-muted/5">
+            <DialogTitle className="text-sm font-semibold">
+              {roomDialogMode === "edit" ? "Edit Room" : "Add New Room"}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-3 bg-white grid grid-cols-12 gap-3">
-            <div className="col-span-9 border border-[#9ed9c1] p-3 space-y-2">
-              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Campus</Label>
-                <Select
-                  value={roomForm.campus_id || "__none__"}
-                  onValueChange={(v) =>
-                    setRoomForm((s) => ({
-                      ...s,
-                      campus_id: v === "__none__" ? "" : v,
-                      building_id: "",
-                      floor_id: "",
-                    }))
-                  }
-                >
-                  <SelectTrigger className="h-7 text-[12px]">
-                    <SelectValue placeholder="Select campus" />
-                  </SelectTrigger>
+          <div className="p-5 space-y-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Campus</Label>
+                <Select value={roomForm.campus_id || "__none__"} onValueChange={(v) => setRoomForm((s) => ({ ...s, campus_id: v === "__none__" ? "" : v, building_id: "", floor_id: "" }))}>
+                  <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background"><SelectValue placeholder="Select campus" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Select campus</SelectItem>
-                    {campusOptions.map((c) => (
-                      <SelectItem key={c.id} value={String(c.refId)}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
+                    {campusOptions.map((c) => (<SelectItem key={c.id} value={String(c.refId)}>{c.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Building</Label>
-                <Select
-                  value={roomForm.building_id || "__none__"}
-                  onValueChange={(v) =>
-                    setRoomForm((s) => ({
-                      ...s,
-                      building_id: v === "__none__" ? "" : v,
-                      floor_id: "",
-                    }))
-                  }
-                >
-                  <SelectTrigger className="h-7 text-[12px]">
-                    <SelectValue placeholder="Select building" />
-                  </SelectTrigger>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Building</Label>
+                <Select value={roomForm.building_id || "__none__"} onValueChange={(v) => setRoomForm((s) => ({ ...s, building_id: v === "__none__" ? "" : v, floor_id: "" }))}>
+                  <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background"><SelectValue placeholder="Select building" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Select building</SelectItem>
-                    {buildingOptions.map((b) => (
-                      <SelectItem key={b.id} value={String(b.refId)}>
-                        {b.label}
-                      </SelectItem>
-                    ))}
+                    {buildingOptions.map((b) => (<SelectItem key={b.id} value={String(b.refId)}>{b.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-[100px_120px] items-center gap-2">
-                <Label className="text-[12px]">Floor Location</Label>
-                <Select
-                  value={roomForm.floor_id || "__none__"}
-                  onValueChange={(v) =>
-                    setRoomForm((s) => ({ ...s, floor_id: v === "__none__" ? "" : v }))
-                  }
-                >
-                  <SelectTrigger className="h-7 text-[12px]">
-                    <SelectValue placeholder="Floor" />
-                  </SelectTrigger>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Floor</Label>
+                <Select value={roomForm.floor_id || "__none__"} onValueChange={(v) => setRoomForm((s) => ({ ...s, floor_id: v === "__none__" ? "" : v }))}>
+                  <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background"><SelectValue placeholder="Floor" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Floor</SelectItem>
-                    {floorOptions.map((f) => (
-                      <SelectItem key={f.id} value={String(f.refId)}>
-                        {f.label}
-                      </SelectItem>
-                    ))}
+                    {floorOptions.map((f) => (<SelectItem key={f.id} value={String(f.refId)}>{f.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-[100px_160px] items-center gap-2">
-                <Label className="text-[12px]">Room No.</Label>
-                <Input
-                  className="h-7 text-[12px]"
-                  value={roomForm.room_no}
-                  onChange={(e) => setRoomForm((s) => ({ ...s, room_no: e.target.value }))}
-                />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Room No.</Label>
+                <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm font-mono" value={roomForm.room_no} onChange={(e) => setRoomForm((s) => ({ ...s, room_no: e.target.value }))} />
               </div>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Popular Name</Label>
-                <Input
-                  className="h-7 text-[12px]"
-                  value={roomForm.room_name}
-                  onChange={(e) => setRoomForm((s) => ({ ...s, room_name: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Room Type</Label>
-                <Input
-                  className="h-7 text-[12px]"
-                  value={roomForm.room_type}
-                  onChange={(e) => setRoomForm((s) => ({ ...s, room_type: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid grid-cols-[100px_80px] items-center gap-2">
-                  <Label className="text-[12px]">Capacity</Label>
-                  <Input
-                    className="h-7 text-[12px]"
-                    value={roomForm.capacity}
-                    onChange={(e) => setRoomForm((s) => ({ ...s, capacity: e.target.value }))}
-                  />
-                </div>
-                <div />
-                <label className="flex items-center gap-2 text-[12px]">
-                  <span className="w-[100px]">Air Conditioned</span>
-                  <input
-                    type="checkbox"
-                    checked={roomForm.air_conditioned}
-                    onChange={(e) =>
-                      setRoomForm((s) => ({ ...s, air_conditioned: e.target.checked }))
-                    }
-                  />
-                </label>
-                <label className="flex items-center gap-2 text-[12px]">
-                  <span className="w-[100px]">Night Class Allowed</span>
-                  <input
-                    type="checkbox"
-                    checked={roomForm.night_class_allowed}
-                    onChange={(e) =>
-                      setRoomForm((s) => ({ ...s, night_class_allowed: e.target.checked }))
-                    }
-                  />
-                </label>
-                <label className="flex items-center gap-2 text-[12px]">
-                  <span className="w-[100px]">Fit to Use/Active</span>
-                  <input
-                    type="checkbox"
-                    checked={roomForm.fit_to_use}
-                    onChange={(e) =>
-                      setRoomForm((s) => ({ ...s, fit_to_use: e.target.checked }))
-                    }
-                  />
-                </label>
-                <label className="flex items-center gap-2 text-[12px]">
-                  <span className="w-[100px]">LAN Member</span>
-                  <input
-                    type="checkbox"
-                    checked={roomForm.lan_member}
-                    onChange={(e) =>
-                      setRoomForm((s) => ({ ...s, lan_member: e.target.checked }))
-                    }
-                  />
-                </label>
-                <div />
-                <label className="flex items-center gap-2 text-[12px]">
-                  <span className="w-[100px]">Shared</span>
-                  <input
-                    type="checkbox"
-                    checked={roomForm.shared}
-                    onChange={(e) => setRoomForm((s) => ({ ...s, shared: e.target.checked }))}
-                  />
-                </label>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Room Name</Label>
+                <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm" value={roomForm.room_name} onChange={(e) => setRoomForm((s) => ({ ...s, room_name: e.target.value }))} />
               </div>
             </div>
-            <div className="col-span-3 flex flex-col gap-2">
-              <Button
-                className="h-10"
-                onClick={async () => {
-                  await submitRoom();
-                  if (roomDialogMode === "edit") setAddRoomOpen(false);
-                  else setAddRoomOpen(false);
-                }}
-              >
-                Save
-              </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Room Type</Label>
+                <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm" value={roomForm.room_type} onChange={(e) => setRoomForm((s) => ({ ...s, room_type: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Capacity</Label>
+                <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm font-mono w-24" value={roomForm.capacity} onChange={(e) => setRoomForm((s) => ({ ...s, capacity: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 rounded-xl border border-border/60 bg-muted/10 p-3">
+              {[
+                { key: "air_conditioned" as const, label: "Air Conditioned" },
+                { key: "fit_to_use" as const, label: "Fit to Use / Active" },
+                { key: "lan_member" as const, label: "LAN Member" },
+                { key: "night_class_allowed" as const, label: "Night Class Allowed" },
+                { key: "shared" as const, label: "Shared" },
+              ].map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-2 text-xs cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
+                  <input type="checkbox" className="accent-primary rounded" checked={roomForm[key] as boolean} onChange={(e) => setRoomForm((s) => ({ ...s, [key]: e.target.checked }))} />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+              <Button className="h-9 rounded-lg shadow-sm" onClick={async () => { await submitRoom(); setAddRoomOpen(false); }}>Save</Button>
               {roomDialogMode === "create" && (
-                <Button
-                  className="h-10"
-                  variant="secondary"
-                  onClick={async () => {
-                    await submitRoom();
-                    setRoomForm((s) => ({
-                      ...s,
-                      room_no: "",
-                      room_name: "",
-                      room_type: "",
-                      capacity: "50",
-                      air_conditioned: false,
-                      fit_to_use: true,
-                      lan_member: false,
-                      night_class_allowed: false,
-                      shared: false,
-                    }));
-                  }}
-                >
-                  Save &amp; Add Another
-                </Button>
+                <Button className="h-9 rounded-lg shadow-sm" variant="secondary" onClick={async () => {
+                  await submitRoom();
+                  setRoomForm((s) => ({ ...s, room_no: "", room_name: "", room_type: "", capacity: "50", air_conditioned: false, fit_to_use: true, lan_member: false, night_class_allowed: false, shared: false }));
+                }}>Save &amp; Add Another</Button>
               )}
               <div className="flex-1" />
-              <Button variant="destructive" className="h-10" onClick={() => setAddRoomOpen(false)}>
-                Cancel
-              </Button>
+              <Button variant="outline" className="h-9 rounded-lg border-border/60" onClick={() => setAddRoomOpen(false)}>Cancel</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ══════════════════ Floor Dialog ══════════════════ */}
       <Dialog open={addFloorOpen} onOpenChange={setAddFloorOpen}>
-        <DialogContent className="max-w-[700px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-base">
+        <DialogContent className="max-w-[480px] p-0 gap-0 overflow-hidden rounded-2xl border border-border/40 shadow-sm" aria-describedby={undefined}>
+          <DialogHeader className="px-5 py-3.5 border-b border-border/60 bg-muted/5">
+            <DialogTitle className="text-sm font-semibold">
               {floorDialogMode === "edit" ? "Edit Floor" : "Add New Floor"}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-3 bg-white grid grid-cols-12 gap-3">
-            <div className="col-span-9 border border-[#9ed9c1] p-3 space-y-2">
-              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Campus</Label>
+          <div className="p-5 space-y-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Campus</Label>
                 <Select value={floorForm.campus_id || "__none__"} disabled>
-                  <SelectTrigger className="h-7 text-[12px]">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Select campus</SelectItem>
-                    {campusOptions.map((c) => (
-                      <SelectItem key={c.id} value={String(c.refId)}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
+                    {campusOptions.map((c) => (<SelectItem key={c.id} value={String(c.refId)}>{c.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Building</Label>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-medium text-muted-foreground">Building</Label>
                 <Select value={floorForm.building_id || "__none__"} disabled>
-                  <SelectTrigger className="h-7 text-[12px]">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Select building</SelectItem>
-                    {buildingOptions.map((b) => (
-                      <SelectItem key={b.id} value={String(b.refId)}>
-                        {b.label}
-                      </SelectItem>
-                    ))}
+                    {buildingOptionsForFloor.map((b) => (<SelectItem key={b.id} value={String(b.refId)}>{b.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-                <Label className="text-[12px]">Floor Name</Label>
-                <Input
-                  className="h-7 text-[12px]"
-                  value={floorForm.floor_name}
-                  onChange={(e) =>
-                    setFloorForm((s) => ({ ...s, floor_name: e.target.value }))
-                  }
-                />
-              </div>
             </div>
-            <div className="col-span-3 flex flex-col gap-2">
-              <Button className="h-10" onClick={submitFloor}>
-                Save
-              </Button>
+            <div className="space-y-1">
+              <Label className="text-[11px] font-medium text-muted-foreground">Floor Name</Label>
+              <Input className="h-10 rounded-xl text-xs border-border/60 shadow-sm" value={floorForm.floor_name} onChange={(e) => setFloorForm((s) => ({ ...s, floor_name: e.target.value }))} />
+            </div>
+            <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+              <Button className="h-9 rounded-lg shadow-sm" onClick={submitFloor}>Save</Button>
               <div className="flex-1" />
-              <Button variant="destructive" className="h-10" onClick={() => setAddFloorOpen(false)}>
-                Cancel
-              </Button>
+              <Button variant="outline" className="h-9 rounded-lg border-border/60" onClick={() => setAddFloorOpen(false)}>Cancel</Button>
             </div>
           </div>
         </DialogContent>
@@ -1240,4 +884,3 @@ export function BuildingsRoomsModule() {
     </div>
   );
 }
-

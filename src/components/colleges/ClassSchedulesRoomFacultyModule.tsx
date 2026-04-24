@@ -12,8 +12,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Building2, Eraser, Printer, UserRound } from "lucide-react";
+import { 
+  Building2, 
+  Eraser, 
+  Printer, 
+  UserRound, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  GraduationCap, 
+  Search,
+  Filter,
+  Users,
+  Settings2,
+  RefreshCw,
+  Layout,
+  Table as TableIcon,
+  ChevronRight,
+  BookOpen
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
@@ -260,25 +288,37 @@ export function ClassSchedulesRoomFacultyModule() {
   const palette = useMemo(() => {
     if (scheduleView === "room") {
       return {
-        tab: "from-[#f7e8ad] to-[#ebcf7c] text-[#59430e]",
-        activeTab: "bg-[#e0b94f] text-[#3c2d05]",
-        right: "from-[#fff5cd] to-[#f3e195]",
-        gridHead: "from-[#f7e8ad] to-[#ebcf7c] text-[#4f3e10]",
+        tab: "bg-amber-600 shadow-amber-200/50",
+        activeTab: "bg-amber-600 text-white shadow-md shadow-amber-200",
+        inactiveTab: "bg-amber-50 text-amber-700 hover:bg-amber-100",
+        gridTint: "bg-amber-50/30",
+        accent: "text-amber-700",
+        border: "border-amber-200/60",
+        gridHead: "bg-amber-100 text-amber-900 border-amber-200",
+        right: "bg-[#fffdf2]/50",
       };
     }
     if (scheduleView === "faculty") {
       return {
-        tab: "from-[#ddeecf] to-[#c6dfb1] text-[#26432d]",
-        activeTab: "bg-[#98bd75] text-[#17311f]",
-        right: "from-[#eef8e5] to-[#d8ebc8]",
-        gridHead: "from-[#ddeecf] to-[#c6dfb1] text-[#26432d]",
+        tab: "bg-emerald-600 shadow-emerald-200/50",
+        activeTab: "bg-emerald-600 text-white shadow-md shadow-emerald-200",
+        inactiveTab: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+        gridTint: "bg-emerald-50/30",
+        accent: "text-emerald-700",
+        border: "border-emerald-200/60",
+        gridHead: "bg-emerald-100 text-emerald-900 border-emerald-200",
+        right: "bg-[#f9fffb]/50",
       };
     }
     return {
-      tab: "from-[#d7e0ff] to-[#b8c7ff] text-[#1b285f]",
-      activeTab: "bg-[#4f70db] text-white",
-      right: "from-[#e6eeff] to-[#c8d8ff]",
-      gridHead: "from-[#d7e0ff] to-[#b8c7ff] text-[#1b285f]",
+      tab: "bg-indigo-600 shadow-indigo-200/50",
+      activeTab: "bg-indigo-600 text-white shadow-md shadow-indigo-200",
+      inactiveTab: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
+      gridTint: "bg-indigo-50/30",
+      accent: "text-indigo-700",
+      border: "border-indigo-200/60",
+      gridHead: "bg-indigo-100 text-indigo-900 border-indigo-200",
+      right: "bg-[#fafdff]/50",
     };
   }, [scheduleView]);
 
@@ -286,7 +326,7 @@ export function ClassSchedulesRoomFacultyModule() {
     { id: "class" as const, label: "Class Schedule" },
     {
       id: "room" as const,
-      label: `Room Schedule${selectedRoom ? ` [${selectedRoom.building_name} - ${selectedRoom.room_no}]` : ""}`,
+      label: `Room Schedule${selectedRoom ? ` [${selectedRoom.room_no}]` : ""}`,
     },
     { id: "faculty" as const, label: "Faculty Schedule" },
   ];
@@ -295,140 +335,176 @@ export function ClassSchedulesRoomFacultyModule() {
     toast({ title: label, description: "This action will be connected to schedule APIs." });
 
   return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="w-full border border-[#79b898] bg-white min-h-[640px] flex flex-col">
-        <div className="bg-gradient-to-b from-[#def8ea] to-[#9fdbbc] border-b border-[#79b898] px-3 py-2 shrink-0">
-          <h1 className="text-[20px] font-bold uppercase tracking-tight text-[#1f5e45]">Class Scheduling Module</h1>
-          <p className="text-[11px] text-[#35684f] max-w-4xl">
-            Use this module to create, modify and manage the schedules for class sections, rooms and faculty.
-          </p>
-        </div>
-
-        <div className="flex-1 p-2 min-h-0">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-2 h-full min-h-[560px]">
-            <div className="xl:col-span-4 flex flex-col gap-2 min-h-0">
-              <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold text-[#1f5e45]">AY. Term</Label>
-                  <Select value={ayTermId} onValueChange={setAyTermId}>
-                    <SelectTrigger className="h-8 text-[11px] bg-white">
-                      <SelectValue placeholder="Select term" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {yearTerms.map((y) => (
-                        <SelectItem key={y.id} value={String(y.id)}>
-                          {y.academic_year} {y.term}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold text-[#1f5e45]">Campus</Label>
-                  <Select value={campusId} onValueChange={setCampusId}>
-                    <SelectTrigger className="h-8 text-[11px] bg-white">
-                      <SelectValue placeholder="Campus" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {campuses.map((c) => (
-                        <SelectItem key={c.id} value={String(c.id)}>
-                          {c.acronym}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold text-[#1f5e45]">Program</Label>
-                  <Select value={programId} onValueChange={setProgramId}>
-                    <SelectTrigger className="h-8 text-[11px] bg-white">
-                      <SelectValue placeholder="Program" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredPrograms.map((p) => (
-                        <SelectItem key={p.id} value={String(p.id)}>
-                          {p.program_code} - {p.program_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+    <div className="p-6 space-y-6 bg-muted/5 min-h-screen font-geist">
+      {/* Module Header */}
+      <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+        <CardHeader className="p-0">
+          <div className="bg-background p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40">
+            <div className="flex items-center gap-4 text-foreground">
+              <div className="bg-emerald-600 p-2.5 rounded-xl shadow-sm">
+                <Calendar className="h-6 w-6 text-white" />
               </div>
+              <div>
+                <CardTitle className="text-lg font-bold tracking-tight text-emerald-950">Class Scheduling Module</CardTitle>
+                <p className="text-muted-foreground text-xs font-medium mt-0.5">
+                  Manage schedules for class sections, rooms, and teaching faculty.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+               <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                System Status: Active
+              </Badge>
+            </div>
+          </div>
+          
+          <div className="bg-background px-6 py-4 border-b border-border/40 flex items-center justify-between flex-wrap gap-6">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <BookOpen className="h-4 w-4 text-emerald-600" />
+              <span>Colleges</span>
+              <ChevronRight className="h-3.5 w-3.5 opacity-50" />
+              <span className="text-foreground font-semibold">Class Scheduling</span>
+            </div>
 
-              <div className="grid grid-cols-12 gap-2 min-h-[150px]">
-                <div className="col-span-12 lg:col-span-5 border border-[#79b898] bg-white flex flex-col min-h-[150px]">
-                  <div className="flex border-b border-[#9ed9c1]">
-                    <button
-                      type="button"
-                      onClick={() => setListTab("sections")}
-                      className={cn(
-                        "flex-1 text-[10px] font-bold py-1 px-1 uppercase",
-                        listTab === "sections" ? "bg-[#2f9b68] text-white" : "bg-[#c8ead9] text-[#1f5e45]",
-                      )}
-                    >
+            {/* Quick Filters */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">SY Term</label>
+                <Select value={ayTermId} onValueChange={setAyTermId}>
+                  <SelectTrigger className="h-9 w-[200px] rounded-xl border-border/60 text-xs shadow-sm bg-background">
+                    <SelectValue placeholder="Select term" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {yearTerms.map((y) => (
+                      <SelectItem key={y.id} value={String(y.id)} className="text-xs">
+                        {y.academic_year} {y.term}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">Campus</label>
+                <Select value={campusId} onValueChange={setCampusId}>
+                  <SelectTrigger className="h-9 w-[100px] rounded-xl border-border/60 text-xs shadow-sm bg-background">
+                    <SelectValue placeholder="Campus" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {campuses.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)} className="text-xs">
+                        {c.acronym}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">Program</label>
+                <Select value={programId} onValueChange={setProgramId}>
+                  <SelectTrigger className="h-9 w-[220px] rounded-xl border-border/60 text-xs shadow-sm bg-background">
+                    <SelectValue placeholder="Program" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl max-h-[300px]">
+                    {filteredPrograms.map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)} className="text-xs">
+                        {p.program_code} - {p.program_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* Navigation & Grid Sidebar */}
+        <div className="xl:col-span-4 space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+             {/* Sections / Year Tabs */}
+            <Card className="col-span-2 rounded-2xl border-border/60 shadow-sm overflow-hidden flex flex-col h-[280px]">
+              <CardHeader className="p-0 border-b border-border/40 shrink-0">
+                <Tabs value={listTab} onValueChange={(v) => setListTab(v as any)} className="w-full">
+                  <TabsList className="w-full h-11 bg-muted/20 p-1 rounded-none gap-1">
+                    <TabsTrigger value="sections" className="flex-1 rounded-lg text-[10px] font-bold uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-700">
                       Class Sections
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setListTab("year")}
-                      className={cn(
-                        "flex-1 text-[10px] font-bold py-1 px-1 uppercase border-l border-[#79b898]",
-                        listTab === "year" ? "bg-[#2f9b68] text-white" : "bg-[#c8ead9] text-[#1f5e45]",
-                      )}
-                    >
+                    </TabsTrigger>
+                    <TabsTrigger value="year" className="flex-1 rounded-lg text-[10px] font-bold uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-700">
                       Year Level
-                    </button>
-                  </div>
-                  <div className="flex-1 p-2 text-[11px] text-muted-foreground">
-                    {listTab === "sections"
-                      ? "There are no item to show in this view."
-                      : "Year level listing will appear when schedule data is connected."}
-                  </div>
-                </div>
-                <div className="col-span-12 lg:col-span-7 border border-[#79b898] bg-white flex flex-col min-h-[150px]">
-                  <div
-                    className={cn(
-                      "grid grid-cols-12 text-[10px] font-bold px-1 py-0.5 border-b border-[#c9ab56] bg-gradient-to-b",
-                      palette.tab,
-                    )}
-                  >
-                    <div className="col-span-2 border-r border-white/40 px-1">CODE</div>
-                    <div className="col-span-8 border-r border-white/40 px-1">SUBJECT TITLE</div>
-                    <div className="col-span-2 text-center">UNITS</div>
-                  </div>
-                  <div className="flex-1 p-2 text-[11px] text-muted-foreground">There are no item to show in this view.</div>
-                </div>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </CardHeader>
+              <ScrollArea className="flex-1">
+                <CardContent className="p-4 text-xs text-muted-foreground/60 font-medium italic flex flex-col items-center justify-center min-h-[180px]">
+                   <Users className="h-8 w-8 mb-2 opacity-10" />
+                  {listTab === "sections"
+                    ? "Currently no class sections listed."
+                    : "Year level listing will appear when connected."}
+                </CardContent>
+              </ScrollArea>
+              <div className="p-3 border-t border-border/40 bg-muted/5 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Items</span>
+                <Badge variant="outline" className="bg-white text-[10px] h-5 rounded-md">0</Badge>
               </div>
+            </Card>
 
-              <div className="border border-[#79b898] bg-white flex flex-col shrink-0 h-[360px]">
-                <div className="flex border-b border-[#9ed9c1] shrink-0">
-                  {scheduleTabs.map((t, i) => (
+            {/* Subject List */}
+            <Card className="col-span-2 rounded-2xl border-border/60 shadow-sm overflow-hidden flex flex-col h-[240px]">
+               <CardHeader className="pb-2 border-b border-border/40 bg-muted/5">
+                <div className="flex items-center gap-2">
+                  <TableIcon className={cn("h-4 w-4", palette.accent)} />
+                  <CardTitle className="text-xs font-bold uppercase tracking-wider">Scheduled Subjects</CardTitle>
+                </div>
+              </CardHeader>
+              <div className={cn("grid grid-cols-[5rem_1fr_4rem] text-[9px] font-bold uppercase tracking-widest py-2 px-3 border-b", palette.gridHead)}>
+                <div>Code</div>
+                <div className="px-2 border-l border-black/5">Subject Title</div>
+                <div className="text-center border-l border-black/5">Units</div>
+              </div>
+              <ScrollArea className="flex-1">
+                <CardContent className="p-4 text-xs text-muted-foreground/50 text-center flex flex-col items-center justify-center min-h-[140px]">
+                  <Layout className="h-6 w-6 mb-2 opacity-10" />
+                  No subjects scheduled.
+                </CardContent>
+              </ScrollArea>
+            </Card>
+          </div>
+
+          {/* Visual Schedule Grid */}
+          <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden flex flex-col h-[400px]">
+             <CardHeader className="p-0 border-b border-border/40 shrink-0">
+               <div className="p-1 flex items-center gap-1 bg-muted/20">
+                  {scheduleTabs.map((t) => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => setScheduleView(t.id)}
                       className={cn(
-                        "flex-1 text-[10px] font-bold py-1.5 px-1",
-                        scheduleView === t.id ? palette.activeTab : "bg-[#eef3ff] text-[#28447d]",
-                        i > 0 && "border-l border-[#79b898]",
+                        "flex-1 text-[9px] font-bold py-2 px-1 rounded-xl transition-all duration-200",
+                        scheduleView === t.id ? palette.activeTab : "bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground",
                       )}
                     >
                       {t.label}
                     </button>
                   ))}
-                </div>
-                <div className="flex-1 overflow-auto min-h-0 p-1">
-                  <div
-                    className="grid text-[9px] min-w-[540px]"
-                    style={{ gridTemplateColumns: `72px repeat(${visibleDays.length}, ${columnWidth}px)` }}
+               </div>
+              </CardHeader>
+              <ScrollArea className="flex-1">
+                <div
+                    className="grid text-[9px] p-2 min-w-max"
+                    style={{ gridTemplateColumns: `64px repeat(${visibleDays.length}, ${columnWidth}px)` }}
                   >
-                    <div className={cn("border p-0.5 font-semibold", "bg-[#f8fdf9] border-[#c5e3d4]")} />
-                    {visibleDays.map((d) => (
+                    <div className="border border-border/20 p-2 font-semibold bg-muted/30 rounded-tl-xl h-9" />
+                    {visibleDays.map((d, i) => (
                       <div
                         key={d}
                         className={cn(
-                          "border p-0.5 text-center font-bold bg-gradient-to-b border-[#c5e3d4]",
+                          "border-y border-r border-border/20 p-2 text-center font-bold uppercase tracking-widest flex items-center justify-center h-9",
                           palette.gridHead,
+                          i === visibleDays.length - 1 && "rounded-tr-xl"
                         )}
                       >
                         {d}
@@ -436,378 +512,289 @@ export function ClassSchedulesRoomFacultyModule() {
                     ))}
                     {TIME_ROWS.map((time, rowIdx) => (
                       <Fragment key={rowIdx}>
-                        <div className="bg-white border border-[#d4e8dc] px-0.5 py-0 whitespace-nowrap">{time}</div>
+                        <div className="bg-muted/10 border-x border-b border-border/20 px-2 py-1 flex items-center font-medium h-9 text-[8px]">{time}</div>
                         {visibleDays.map((d, dayIdx) => {
                           const selected = selectedCell.day === dayIdx && selectedCell.row === rowIdx;
                           return (
                             <button
                               key={`${d}-${rowIdx}`}
                               type="button"
-                              aria-label={`${d} ${time}`}
                               onClick={() => setSelectedCell({ day: dayIdx, row: rowIdx })}
                               className={cn(
-                                "border border-[#d9e1ef] bg-white hover:bg-[#eef6ff]",
-                                selected && "bg-[#007bd6] hover:bg-[#007bd6]",
+                                "border-r border-b border-border/10 bg-background transition-colors h-9",
+                                selected ? cn(palette.tab, "ring-2 ring-inset ring-black/5 shadow-inner") : "hover:bg-muted/30",
                               )}
-                              style={{ height: `${rowHeight}px` }}
+                              style={{ height: `${rowHeight > 18 ? rowHeight * 1.5 : 36}px` }}
                             />
                           );
                         })}
                       </Fragment>
                     ))}
                   </div>
-                </div>
-              </div>
-            </div>
+                  <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+          </Card>
+        </div>
 
-            <div
-              className={cn(
-                "xl:col-span-8 border border-[#79b898] bg-gradient-to-b flex flex-col min-h-0 overflow-hidden",
-                palette.right,
-              )}
-            >
-              <div className="flex w-full h-7 shrink-0 border-b border-[#79b898] bg-[#c8ead9]">
-                {(["1", "2", "3", "4", "5"] as const).map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setSchedSegment(n)}
-                    className={cn(
-                      "flex-1 text-[9px] font-bold border-r border-[#79b898] last:border-r-0",
-                      schedSegment === n ? "bg-[#2f9b68] text-white" : "text-[#1f5e45] hover:bg-[#b8e6cc]",
-                    )}
-                  >
-                    Sched.{n}
-                  </button>
-                ))}
-              </div>
-
-              <div className="p-1.5 border-b border-[#b8d6c5] space-y-1">
-                <div className="flex flex-wrap gap-x-2 gap-y-1 items-center">
-                  {DAYS.map((d) => (
-                    <label key={d} className="flex items-center gap-1 text-[9px]">
-                      <Checkbox className="h-3.5 w-3.5" />
-                      {d}
-                    </label>
+        {/* Main Control Panel */}
+        <div className="xl:col-span-8">
+           <Card className={cn("rounded-2xl border-border/60 shadow-sm overflow-hidden min-h-[920px] flex flex-col transition-colors duration-500", palette.right)}>
+              <CardHeader className="p-0 border-b border-border/40 shrink-0">
+                <div className="flex bg-muted/20 p-1.5 gap-1.5">
+                   {(["1", "2", "3", "4", "5"] as const).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setSchedSegment(n)}
+                      className={cn(
+                        "flex-1 h-10 rounded-xl text-xs font-bold transition-all duration-200 border border-transparent shadow-sm flex items-center justify-center gap-2",
+                        schedSegment === n 
+                          ? "bg-white text-emerald-700 border-emerald-100 shadow-md scale-[1.02]" 
+                          : "bg-transparent text-muted-foreground hover:bg-white/40 hover:text-emerald-600"
+                      )}
+                    >
+                      <Settings2 className="h-3.5 w-3.5 opacity-50" />
+                      Segment {n}
+                    </button>
                   ))}
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5">
-                  <div className="space-y-1">
-                    <Label className="text-[9px]">Start Time</Label>
-                    <Input className="h-6 text-[10px] bg-white" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[9px]">End Time</Label>
-                    <Input className="h-6 text-[10px] bg-white" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[9px]">Building</Label>
-                    <Select value={buildingId} onValueChange={setBuildingId}>
-                      <SelectTrigger className="h-6 text-[10px] bg-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={NONE}>Select building</SelectItem>
-                        {buildingOptions.map((b) => (
-                          <SelectItem key={b.id} value={String(b.id)}>
-                            {b.label}
-                          </SelectItem>
+              </CardHeader>
+
+              <CardContent className="p-6 space-y-8 flex-1">
+                {/* Time & Days Group */}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_20rem] gap-8">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                       <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                          <Clock className="h-3 w-3" /> Start Time
+                        </label>
+                        <Input 
+                          className="h-10 rounded-xl border-border/60 text-sm shadow-sm bg-background focus-visible:ring-emerald-500" 
+                          value={startTime} 
+                          onChange={(e) => setStartTime(e.target.value)} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                           <Clock className="h-3 w-3" /> End Time
+                        </label>
+                        <Input 
+                          className="h-10 rounded-xl border-border/60 text-sm shadow-sm bg-background focus-visible:ring-emerald-500" 
+                          value={endTime} 
+                          onChange={(e) => setEndTime(e.target.value)} 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1 block">Scheduled Days</label>
+                       <div className="bg-background border border-border/40 p-4 rounded-xl flex flex-wrap gap-4 shadow-inner">
+                         {DAYS.map((d) => (
+                          <label key={d} className="flex items-center gap-2 cursor-pointer group">
+                             <div className="relative flex items-center">
+                              <Checkbox 
+                                className="h-5 w-5 rounded-md border-border/30 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-transparent" 
+                              />
+                            </div>
+                            <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">{d}</span>
+                          </label>
                         ))}
-                      </SelectContent>
-                    </Select>
+                       </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-[9px]">Room</Label>
-                    <Select value={roomId} onValueChange={setRoomId}>
-                      <SelectTrigger className="h-6 text-[10px] bg-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={NONE}>Select room</SelectItem>
-                        {roomOptions.map((r) => (
-                          <SelectItem key={r.id} value={String(r.id)}>
-                            {r.room_no} - {r.room_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                         <MapPin className="h-3 w-3" /> Building
+                      </label>
+                      <Select value={buildingId} onValueChange={setBuildingId}>
+                        <SelectTrigger className="h-10 rounded-xl border-border/60 text-sm shadow-sm bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value={NONE} className="text-sm italic">Select building</SelectItem>
+                          {buildingOptions.map((b) => (
+                            <SelectItem key={b.id} value={String(b.id)} className="text-sm">
+                              {b.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                         <Layout className="h-3 w-3" /> Room Selection
+                      </label>
+                      <Select value={roomId} onValueChange={setRoomId}>
+                        <SelectTrigger className="h-10 rounded-xl border-border/60 text-sm shadow-sm bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value={NONE} className="text-sm italic">Select room</SelectItem>
+                          {roomOptions.map((r) => (
+                            <SelectItem key={r.id} value={String(r.id)} className="text-sm">
+                              {r.room_no} — {r.room_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 items-end">
-                  <div className="space-y-1">
-                    <Label className="text-[9px]">Event</Label>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1 block">Instructional Event</label>
                     <Select defaultValue="lecture">
-                      <SelectTrigger className="h-6 text-[10px] bg-white">
+                      <SelectTrigger className="h-10 rounded-xl border-border/60 text-sm shadow-sm bg-background">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="lecture">Lecture Only</SelectItem>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="lecture" className="text-sm">Lecture Only</SelectItem>
+                        <SelectItem value="laboratory" className="text-sm">Laboratory Only</SelectItem>
+                        <SelectItem value="mixed" className="text-sm">Mixed (Lec/Lab)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-[9px]">Faculty</Label>
-                    <div className="flex gap-1">
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                       <UserRound className="h-3 w-3" /> Assigned Faculty
+                    </label>
+                    <div className="flex gap-2">
                       <Select>
-                        <SelectTrigger className="h-6 text-[10px] bg-white flex-1">
+                        <SelectTrigger className="h-10 rounded-xl border-border/60 text-sm shadow-sm bg-background flex-1">
                           <SelectValue placeholder="Select faculty" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={NONE}>Select faculty</SelectItem>
+                        <SelectContent className="rounded-xl max-h-[400px]">
+                          <SelectItem value={NONE} className="text-sm italic">Select faculty</SelectItem>
                           {facultyRows.slice(0, 50).map((f) => (
-                            <SelectItem key={f.id} value={String(f.id)}>
+                            <SelectItem key={f.id} value={String(f.id)} className="text-sm">
                               {facultyName(f)}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button type="button" variant="outline" size="icon" className="h-6 w-6 shrink-0">
-                        <UserRound className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button type="button" variant="outline" size="icon" className="h-6 w-6 shrink-0">
-                        <Eraser className="h-3.5 w-3.5" />
+                      <Button type="button" variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl border-border/60 hover:bg-emerald-50 hover:border-emerald-200 group">
+                        <Eraser className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600" />
                       </Button>
                     </div>
                   </div>
-                  <label className="flex items-center gap-1 text-[9px]">
-                    <Checkbox className="h-3.5 w-3.5" />
-                    <span className="text-red-600 font-medium">Special Class</span>
+                </div>
+
+                <div className="flex flex-wrap gap-6 bg-muted/10 p-4 rounded-2xl border border-border/20 border-dashed">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <Checkbox className="h-4 w-4 rounded border-border/40 data-[state=checked]:bg-red-500 data-[state=checked]:border-transparent" />
+                    <span className="text-xs font-bold text-red-600 uppercase tracking-wider group-hover:text-red-700 transition-colors">Special Class Engagement</span>
                   </label>
-                  <label className="flex items-center gap-1 text-[9px]">
-                    <Checkbox className="h-3.5 w-3.5" />
-                    Over-ride Conflict
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <Checkbox className="h-4 w-4 rounded border-border/40 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-transparent" />
+                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider group-hover:text-emerald-900 transition-colors">Over-ride Scheduling Conflict</span>
                   </label>
                 </div>
-              </div>
 
-              <div className="flex-1 min-h-0 overflow-auto p-1.5">
-                {scheduleView === "class" && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button type="button" variant="outline" className="h-6 text-[9px]" onClick={() => reportAction("List of Post Class Schedules")}>
-                        List of Post Class Schedules
-                      </Button>
-                      <Button type="button" variant="outline" className="h-6 text-[9px]" onClick={() => reportAction("Report Signatory")}>
-                        Report Signatory
-                      </Button>
-                    </div>
-                    <div className="border border-[#87a6e6] bg-[#dbe6ff] p-1.5 text-[10px]">
-                      <div className="font-bold text-[#193271] mb-0.5">Class Section Summary</div>
-                      <div>No. of Subjects: 0</div>
-                      <div>Total Units: 0</div>
-                      <div>Total No. of Hrs/Wk: 0</div>
-                    </div>
-                    <div className="border border-[#87a6e6] bg-[#dbe6ff] p-1.5 text-[10px] space-y-1.5">
-                      <div className="font-bold text-[#193271]">Hide Columns and Rows</div>
-                      <div className="flex items-center gap-3">
-                        <label className="flex items-center gap-1">
-                          <Checkbox checked={hideSunday} onCheckedChange={(v) => setHideSunday(Boolean(v))} />
-                          Hide Sunday Column
-                        </label>
-                        <label className="flex items-center gap-1">
-                          <Checkbox checked={hideSaturday} onCheckedChange={(v) => setHideSaturday(Boolean(v))} />
-                          Hide Saturday Column
-                        </label>
+                <Separator className="bg-border/40" />
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                   {/* Summary Area */}
+                   <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Layout className="h-4 w-4 text-emerald-600" />
+                         <span className="text-xs font-bold uppercase tracking-widest text-foreground">Section Summary</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-1.5 max-w-[330px]">
-                        <div>
-                          <Label className="text-[9px]">Start</Label>
-                          <Input className="h-6 text-[10px] bg-white" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-                        </div>
-                        <div>
-                          <Label className="text-[9px]">End</Label>
-                          <Input className="h-6 text-[10px] bg-white" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-                        </div>
+                      <Card className="rounded-2xl border-indigo-100 shadow-none bg-indigo-50/30 overflow-hidden">
+                        <CardContent className="p-4 grid grid-cols-3 gap-4">
+                          <div className="text-center space-y-1">
+                            <span className="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Subjects</span>
+                            <p className="text-lg font-bold text-indigo-900 tracking-tight">0</p>
+                          </div>
+                          <div className="text-center space-y-1 border-x border-indigo-100">
+                            <span className="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Units</span>
+                            <p className="text-lg font-bold text-indigo-900 tracking-tight">0.00</p>
+                          </div>
+                          <div className="text-center space-y-1">
+                            <span className="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Total Hr/Wk</span>
+                            <p className="text-lg font-bold text-indigo-900 tracking-tight">0</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                   </div>
+
+                   {/* Grid Settings Area */}
+                   <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Settings2 className="h-4 w-4 text-emerald-600" />
+                         <span className="text-xs font-bold uppercase tracking-widest text-foreground">Grid View Controls</span>
                       </div>
-                      <Button type="button" variant="outline" className="h-6 text-[9px]" onClick={() => reportAction("Hide Time Range")}>
-                        Hide Time Range
-                      </Button>
-                    </div>
-                    <div className="border border-[#87a6e6] bg-[#dbe6ff] p-1.5 text-[10px]">
-                      <div className="font-bold text-[#193271] mb-0.5">Adjust Row Height and Column Width</div>
-                      <div className="grid grid-cols-2 gap-1.5 max-w-[290px]">
-                        <div>
-                          <Label className="text-[9px]">Row Height</Label>
-                          <Input
-                            className="h-6 text-[10px] bg-white"
-                            value={String(rowHeight)}
-                            onChange={(e) => setRowHeight(Math.max(14, Number(e.target.value) || 18))}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-[9px]">Column Width</Label>
-                          <Input
-                            className="h-6 text-[10px] bg-white"
-                            value={String(columnWidth)}
-                            onChange={(e) => setColumnWidth(Math.max(70, Number(e.target.value) || 95))}
-                          />
-                        </div>
+                      <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Row Density</label>
+                            <Input
+                              type="number"
+                              className="h-9 rounded-xl border-border/40 text-xs shadow-sm bg-background"
+                              value={rowHeight}
+                              onChange={(e) => setRowHeight(Math.max(14, Number(e.target.value) || 18))}
+                            />
+                         </div>
+                         <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Column Width</label>
+                            <Input
+                               type="number"
+                              className="h-9 rounded-xl border-border/40 text-xs shadow-sm bg-background"
+                              value={columnWidth}
+                              onChange={(e) => setColumnWidth(Math.max(70, Number(e.target.value) || 95))}
+                            />
+                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
+                   </div>
+                </div>
+
+                {/* Print & Reports Footer */}
+                <div className="bg-muted/10 p-4 rounded-2xl border border-border/40 flex flex-wrap items-center justify-between gap-4">
+                   <div className="flex items-center gap-3">
                       <Select defaultValue="1">
-                        <SelectTrigger className="h-6 w-[100px] text-[9px] bg-white">
+                        <SelectTrigger className="h-9 w-[160px] rounded-xl text-xs bg-background shadow-sm">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Format - 1</SelectItem>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="1" className="text-xs">Standard Format</SelectItem>
+                          <SelectItem value="2" className="text-xs">Compact Format</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button type="button" variant="outline" className="h-6 text-[9px] gap-1" onClick={() => reportAction("Print Class Schedule Grid")}>
-                        <Printer className="h-3 w-3" />
-                        Print Class Schedule Grid
+                      <Button className="h-9 rounded-xl px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 shadow-sm" onClick={() => reportAction("Print Class Schedule Grid")}>
+                        <Printer className="h-3 w-3 mr-2 text-indigo-100" /> Print Schedule Grid
                       </Button>
-                    </div>
-                  </div>
-                )}
+                   </div>
 
-                {scheduleView === "room" && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-end">
-                      <Button type="button" variant="outline" className="h-6 text-[9px]" onClick={() => reportAction("Report Signatory")}>
-                        Report Signatory
+                   <div className="flex items-center gap-2">
+                      <Button variant="outline" className="h-9 rounded-xl px-4 text-xs font-bold shadow-sm border-border/60 hover:bg-white" onClick={() => reportAction("List of Post Class Schedules")}>
+                        History Log
                       </Button>
-                    </div>
-                    <div className="border border-[#d2b86a] bg-[#fff3c9] p-1.5">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Building2 className="h-4 w-4 text-[#7a611f]" />
-                        <Label className="text-[10px] font-bold">Building</Label>
-                        <Select value={buildingId} onValueChange={setBuildingId}>
-                          <SelectTrigger className="h-6 text-[9px] bg-white w-[200px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={NONE}>Select building</SelectItem>
-                            {buildingOptions.map((b) => (
-                              <SelectItem key={b.id} value={String(b.id)}>
-                                {b.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="border border-[#d2b86a] bg-white overflow-auto max-h-[160px]">
-                        <table className="w-full text-[10px]">
-                          <thead className="bg-[#f3e3ab]">
-                            <tr>
-                              <th className="text-left px-2 py-1 border-r">ROOM NO</th>
-                              <th className="text-left px-2 py-1">ROOM NAME</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {roomOptions.map((r) => (
-                              <tr
-                                key={r.id}
-                                onClick={() => setRoomId(String(r.id))}
-                                className={cn("cursor-pointer", roomId === String(r.id) && "bg-[#ffe593]")}
-                              >
-                                <td className="px-2 py-1 border-t border-r">{r.room_no}</td>
-                                <td className="px-2 py-1 border-t">{r.room_name}</td>
-                              </tr>
-                            ))}
-                            {roomOptions.length === 0 && (
-                              <tr>
-                                <td colSpan={2} className="px-2 py-2 text-muted-foreground border-t">
-                                  No rooms available.
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[10px]">Subject(s) Count:</span>
-                        <span className="text-[10px] font-bold">0</span>
-                        <span className="text-[10px]">Total Hours Per Week</span>
-                        <span className="text-[10px] font-bold">0</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Select defaultValue="1">
-                          <SelectTrigger className="h-6 w-[100px] text-[9px] bg-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">Format - 1</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button type="button" variant="outline" className="h-6 text-[9px] gap-1" onClick={() => reportAction("Print Room Schedule Grid")}>
-                          <Printer className="h-3 w-3" />
-                          Print Room Schedule Grid
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="border border-[#d2b86a] bg-[#fff3c9] p-1.5">
-                      <div className="font-bold text-[10px] text-[#7a611f] mb-1">Room Utilization Meter</div>
-                      <div className="grid grid-cols-7 gap-2 items-end">
-                        {DAYS.map((d) => (
-                          <div key={d} className="text-center">
-                            <div className="h-16 border border-[#b1d38c] bg-[#f4ffea] flex items-end">
-                              <div className="w-full bg-[#54c647]" style={{ height: "64%" }} />
-                            </div>
-                            <div className="text-[10px]">{d}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {scheduleView === "faculty" && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-end">
-                      <Button type="button" variant="outline" className="h-6 text-[9px]" onClick={() => reportAction("Report Signatory")}>
-                        Report Signatory
+                      <Button variant="secondary" className="h-9 rounded-xl px-4 text-xs font-bold shadow-sm bg-muted/60" onClick={() => reportAction("Report Signatory")}>
+                        Signatories
                       </Button>
-                    </div>
-                    <div className="border border-[#8bb07d] bg-[#e5f3d8] p-1.5">
-                      <div className="font-bold text-[11px] text-[#1d4b2a] mb-1">Members of the Faculty/Teaching Staff</div>
-                      <div className="border border-[#8bb07d] bg-white overflow-auto max-h-[220px]">
-                        <table className="w-full text-[10px]">
-                          <thead className="bg-[#d5edbf]">
-                            <tr>
-                              <th className="text-left px-2 py-1 border-r">FACULTY</th>
-                              <th className="text-left px-2 py-1">COLLEGE CODE</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {facultyRows.slice(0, 80).map((f) => (
-                              <tr key={f.id} className="odd:bg-white even:bg-[#f8fff3]">
-                                <td className="px-2 py-1 border-t border-r">{facultyName(f)}</td>
-                                <td className="px-2 py-1 border-t">{f.college_code || ""}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    <div className="border border-[#8bb07d] bg-[#e5f3d8] p-1.5">
-                      <div className="font-bold text-[10px] text-[#1d4b2a] mb-1">Teaching Load Statistics</div>
-                      <div className="flex items-center gap-3 text-[10px]">
-                        <span>No. of Subject</span>
-                        <span className="font-bold">0</span>
-                        <span>Hours Load Per Week</span>
-                        <span className="font-bold">0</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Select defaultValue="1">
-                          <SelectTrigger className="h-6 w-[100px] text-[9px] bg-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">Format - 1</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button type="button" variant="outline" className="h-6 text-[9px] gap-1" onClick={() => reportAction("Print Faculty Schedule Grid")}>
-                          <Printer className="h-3 w-3" />
-                          Print Faculty Schedule Grid
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                   </div>
+                </div>
+              </CardContent>
+              
+              <div className="p-4 bg-background border-t border-border/40 flex items-center justify-between">
+                 <div className="flex items-center gap-4">
+                    <Button variant="ghost" className="h-9 rounded-xl text-xs font-bold text-muted-foreground hover:text-emerald-600">
+                      <RefreshCw className="h-3.5 w-3.5 mr-2" /> Reset Form
+                    </Button>
+                    <Separator orientation="vertical" className="h-6" />
+                    <Button variant="ghost" className="h-9 rounded-xl text-xs font-bold text-muted-foreground hover:text-red-600">
+                       Cancel Arrangement
+                    </Button>
+                 </div>
+                 <Button className="h-10 rounded-xl px-8 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200/50">
+                    Commit Selection
+                 </Button>
               </div>
-            </div>
-          </div>
+           </Card>
         </div>
       </div>
     </div>

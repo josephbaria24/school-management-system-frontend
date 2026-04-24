@@ -458,7 +458,7 @@ export function AcademicProgramsTab() {
       {message && (
         <div
           className={cn(
-            "mb-2 px-3 py-2 rounded-sm text-xs border",
+            "mb-2 px-4 py-3 rounded-2xl text-xs border shadow-sm",
             messageVariant === "error"
               ? "border-destructive/50 bg-destructive/10 text-destructive"
               : "border-border bg-muted/60"
@@ -468,11 +468,11 @@ export function AcademicProgramsTab() {
         </div>
       )}
       <div className="grid grid-cols-12 gap-3 min-h-[560px]">
-        <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background max-h-[720px] min-h-[560px]">
-          <div className="bg-amber-600 dark:bg-amber-800 text-white px-2 py-1.5 text-[10px] font-bold uppercase shrink-0">
+        <div className="col-span-5 flex flex-col border border-border/60 rounded-2xl overflow-hidden bg-card shadow-sm max-h-[720px] min-h-[560px]">
+          <div className="bg-muted/5 text-foreground px-3 py-2 text-[11px] font-semibold tracking-tight shrink-0 border-b border-border/60">
             Academic program information
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             <div className="space-y-1">
               <Label className="text-xs">Campus</Label>
               <Select
@@ -485,7 +485,7 @@ export function AcademicProgramsTab() {
               >
                 <SelectTrigger
                   className={cn(
-                    "h-8 text-xs",
+                    "h-9 rounded-xl text-xs border-border/60 shadow-sm",
                     fieldErrors.campus_id &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -518,7 +518,7 @@ export function AcademicProgramsTab() {
               >
                 <SelectTrigger
                   className={cn(
-                    "h-8 text-xs",
+                    "h-9 rounded-xl text-xs border-border/60 shadow-sm",
                     fieldErrors.college_id &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -544,7 +544,7 @@ export function AcademicProgramsTab() {
                 <Label className="text-xs">Program code</Label>
                 <Input
                   className={cn(
-                    "h-8 text-sm font-mono",
+                    "h-9 rounded-xl text-sm font-mono border-border/60 shadow-sm",
                     fieldErrors.program_code &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -564,7 +564,7 @@ export function AcademicProgramsTab() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-8 text-[10px]"
+                className="h-9 rounded-xl text-xs font-semibold"
                 onClick={() => {
                   setSelectedId(null);
                   setFieldErrors({});
@@ -813,12 +813,12 @@ export function AcademicProgramsTab() {
         </div>
 
         <div className="col-span-7 flex flex-col gap-2 min-h-[560px]">
-          <div className="flex-1 flex flex-col border border-border rounded-sm overflow-hidden bg-background min-h-0">
-            <div className="grid grid-cols-12 bg-amber-600 dark:bg-amber-800 text-white text-[10px] font-bold uppercase shrink-0">
-              <div className="col-span-2 px-2 py-1 border-r border-white/30 font-mono">
+          <div className="flex-1 flex flex-col border border-border/60 rounded-2xl overflow-hidden bg-card shadow-sm min-h-0 premium-surface">
+            <div className="grid grid-cols-12 bg-muted/50 text-[11px] font-semibold text-muted-foreground shrink-0 border-b border-border/60">
+              <div className="col-span-2 px-2 py-2 border-r border-border/60 font-mono">
                 Code
               </div>
-              <div className="col-span-10 px-2 py-1">Program name</div>
+              <div className="col-span-10 px-2 py-2">Program name</div>
             </div>
             <div className="flex-1 overflow-auto min-h-0 max-h-[200px]">
               {loading ? (
@@ -828,22 +828,24 @@ export function AcademicProgramsTab() {
                   No programs for this college.
                 </div>
               ) : (
-                programs.map((p) => (
+                programs.map((p, idx) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setSelectedId(p.id)}
                     className={cn(
-                      "w-full grid grid-cols-12 text-left text-xs border-b border-border/50",
+                      "premium-row w-full grid grid-cols-12 text-left text-xs border-b border-border/40 transition-colors",
                       selectedId === p.id
-                        ? "bg-amber-100 dark:bg-amber-950/40 font-medium"
-                        : "hover:bg-muted/50"
+                        ? "bg-amber-500/10 font-medium"
+                        : idx % 2 === 0
+                          ? "bg-background hover:bg-muted/40"
+                          : "bg-muted/10 hover:bg-muted/40"
                     )}
                   >
-                    <div className="col-span-2 px-2 py-1.5 border-r border-border/40 font-mono truncate">
+                    <div className="col-span-2 px-2 py-2 border-r border-border/60 font-mono truncate">
                       {p.program_code}
                     </div>
-                    <div className="col-span-10 px-2 py-1.5 truncate">
+                    <div className="col-span-10 px-2 py-2 truncate">
                       {p.program_name}
                     </div>
                   </button>
@@ -855,13 +857,13 @@ export function AcademicProgramsTab() {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col border border-border rounded-sm overflow-hidden bg-background min-h-0">
-            <div className="flex items-center justify-between gap-2 bg-amber-600 dark:bg-amber-800 text-white px-2 py-1.5 shrink-0">
-              <span className="text-[10px] font-bold uppercase">
+          <div className="flex-1 flex flex-col border border-border/60 rounded-2xl overflow-hidden bg-card shadow-sm min-h-0 premium-surface">
+            <div className="flex items-center justify-between gap-2 bg-muted/5 text-foreground px-3 py-2 shrink-0 border-b border-border/60">
+              <span className="text-[11px] font-semibold tracking-tight">
                 Major discipline category
               </span>
               <Select value={groupFilter} onValueChange={setGroupFilter}>
-                <SelectTrigger className="h-7 w-[200px] text-[10px] bg-white/15 border-white/40 text-white [&_svg]:text-white">
+                <SelectTrigger className="h-9 w-[220px] rounded-xl text-xs border-border/60 shadow-sm bg-background">
                   <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent>
@@ -876,14 +878,14 @@ export function AcademicProgramsTab() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex gap-2 px-2 py-1.5 border-b border-border bg-muted/20 items-end shrink-0">
+            <div className="flex gap-2 px-3 py-2 border-b border-border/60 bg-muted/20 items-end shrink-0">
               <div className="flex-1 space-y-0.5 min-w-0">
                 <Label className="text-[10px]">Add CHED discipline</Label>
                 <Select
                   value={addDisciplineId}
                   onValueChange={setAddDisciplineId}
                 >
-                  <SelectTrigger className="h-7 text-[10px]">
+                  <SelectTrigger className="h-9 rounded-xl text-xs border-border/60 shadow-sm">
                     <SelectValue placeholder="Select…" />
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
@@ -899,7 +901,7 @@ export function AcademicProgramsTab() {
               <Button
                 type="button"
                 size="sm"
-                className="h-7 text-[10px]"
+                className="h-9 rounded-xl text-xs font-semibold"
                 disabled={!selectedId || !addDisciplineId}
                 onClick={addLink}
               >
@@ -907,14 +909,14 @@ export function AcademicProgramsTab() {
               </Button>
             </div>
             <div className="flex-1 overflow-auto min-h-0">
-              <div className="grid grid-cols-12 bg-muted text-[10px] font-bold uppercase border-b border-border">
-                <div className="col-span-2 px-2 py-1 border-r font-mono">
+              <div className="grid grid-cols-12 bg-muted/50 text-[11px] font-semibold text-muted-foreground border-b border-border/60">
+                <div className="col-span-2 px-2 py-2 border-r border-border/60 font-mono">
                   Major code
                 </div>
-                <div className="col-span-5 px-2 py-1 border-r truncate">
+                <div className="col-span-5 px-2 py-2 border-r border-border/60 truncate">
                   Major discipline
                 </div>
-                <div className="col-span-2 px-2 py-1 border-r text-center">
+                <div className="col-span-2 px-2 py-2 border-r border-border/60 text-center">
                   Offer
                 </div>
                 <div className="col-span-3 px-2 py-1 text-center">Inactive</div>
