@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../school-management-system-backend"
+			"path": "../sms-server"
 		}
 	],
 	"settings": {}
