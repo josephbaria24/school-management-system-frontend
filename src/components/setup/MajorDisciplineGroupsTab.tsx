@@ -138,7 +138,7 @@ export function MajorDisciplineGroupsTab() {
       {message && (
         <div
           className={cn(
-            "mb-2 px-3 py-2 rounded-sm text-xs border",
+            "mb-2 px-4 py-3 rounded-2xl text-xs border shadow-sm",
             bannerVariant === "destructive"
               ? "border-destructive/50 bg-destructive/10 text-destructive"
               : "border-border bg-muted/60"
@@ -148,16 +148,16 @@ export function MajorDisciplineGroupsTab() {
         </div>
       )}
       <div className="grid grid-cols-12 gap-3 h-[560px]">
-        <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
-          <div className="bg-red-700 dark:bg-red-900 text-white px-2 py-1.5 text-[10px] font-bold uppercase shrink-0">
+        <div className="col-span-5 flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm h-full min-h-0">
+          <div className="bg-muted/5 text-foreground px-3 py-2 text-[11px] font-semibold tracking-tight shrink-0 border-b border-border/60">
             Major group information
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             <div className="space-y-1">
               <Label className="text-xs">Group code</Label>
               <Input
                 className={cn(
-                  "h-8 text-sm font-mono",
+                  "h-9 rounded-xl text-sm font-mono border-border/60 shadow-sm",
                   fieldErrors.group_code &&
                     "border-destructive ring-1 ring-destructive/30"
                 )}
@@ -177,7 +177,7 @@ export function MajorDisciplineGroupsTab() {
               <Label className="text-xs">Group description</Label>
               <Input
                 className={cn(
-                  "h-8 text-sm",
+                  "h-9 rounded-xl text-sm border-border/60 shadow-sm",
                   fieldErrors.group_description &&
                     "border-destructive ring-1 ring-destructive/30"
                 )}
@@ -197,12 +197,12 @@ export function MajorDisciplineGroupsTab() {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-1.5 p-2 border-t border-border bg-muted/30 shrink-0">
+          <div className="flex flex-wrap gap-2 p-3 border-t border-border/60 bg-muted/30 shrink-0">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1"
+              className="h-9 rounded-xl text-xs font-semibold gap-2"
               disabled={saving}
               onClick={resetNew}
             >
@@ -213,7 +213,7 @@ export function MajorDisciplineGroupsTab() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1"
+              className="h-9 rounded-xl text-xs font-semibold gap-2"
               disabled={saving}
               onClick={handleSave}
             >
@@ -224,7 +224,7 @@ export function MajorDisciplineGroupsTab() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1 text-destructive"
+              className="h-9 rounded-xl text-xs font-semibold gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
               disabled={saving || !selectedId}
               onClick={handleDelete}
             >
@@ -234,12 +234,12 @@ export function MajorDisciplineGroupsTab() {
           </div>
         </div>
 
-        <div className="col-span-7 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
-          <div className="grid grid-cols-12 bg-red-600 dark:bg-red-900 text-white text-[10px] font-bold uppercase shrink-0">
-            <div className="col-span-3 px-2 py-1 border-r border-white/30 font-mono">
+        <div className="col-span-7 flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm h-full min-h-0">
+          <div className="grid grid-cols-12 bg-muted/50 text-[11px] font-semibold text-muted-foreground shrink-0 border-b border-border/60 sticky top-0 z-10">
+            <div className="col-span-3 px-2 py-2 border-r border-border/60 font-mono">
               Group code
             </div>
-            <div className="col-span-9 px-2 py-1">Group description</div>
+            <div className="col-span-9 px-2 py-2">Group description</div>
           </div>
           <div className="flex-1 overflow-auto min-h-0">
             {loading ? (
@@ -249,22 +249,24 @@ export function MajorDisciplineGroupsTab() {
                 No groups.
               </div>
             ) : (
-              rows.map((row) => (
+              rows.map((row, idx) => (
                 <button
                   key={row.id}
                   type="button"
                   onClick={() => setSelectedId(row.id)}
                   className={cn(
-                    "w-full grid grid-cols-12 text-left text-xs border-b border-border/50",
+                    "premium-row w-full grid grid-cols-12 text-left text-xs border-b border-border/40 transition-colors",
                     selectedId === row.id
-                      ? "bg-red-100 dark:bg-red-950/40 font-medium"
-                      : "hover:bg-muted/50"
+                      ? "bg-red-500/10 font-medium"
+                      : idx % 2 === 0
+                        ? "bg-background hover:bg-muted/40"
+                        : "bg-muted/10 hover:bg-muted/40"
                   )}
                 >
-                  <div className="col-span-3 px-2 py-1.5 border-r border-border/40 font-mono truncate">
+                  <div className="col-span-3 px-2 py-2 border-r border-border/60 font-mono truncate">
                     {row.group_code}
                   </div>
-                  <div className="col-span-9 px-2 py-1.5 truncate">
+                  <div className="col-span-9 px-2 py-2 truncate">
                     {row.group_description}
                   </div>
                 </button>

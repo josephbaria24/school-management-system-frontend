@@ -176,8 +176,14 @@
   * {
     @apply border-border;
   }
+  /**
+   * App fonts: Geist Sans + Geist Mono (see `src/app/layout.tsx` via next/font).
+   * Setup / dashboard screens use `.setup-type-*` utilities below for consistent hierarchy.
+   */
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
+    text-rendering: optimizeLegibility;
   }
 }
 
@@ -239,5 +245,58 @@
   .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
   .active-elevate-2:active:not(.no-default-active-elevate)::after {
     background-color: var(--elevate-2);
+  }
+
+  /* Premium module surfaces (distinct, not "generic admin") */
+  .premium-surface {
+    position: relative;
+    isolation: isolate;
+  }
+  .premium-card {
+    border: 1px solid hsl(var(--border) / 0.65);
+    box-shadow:
+      0 18px 48px -36px rgba(2, 6, 23, 0.55),
+      0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  }
+  .dark .premium-card {
+    box-shadow:
+      0 18px 48px -36px rgba(0, 0, 0, 0.8),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  }
+  .premium-tab {
+    position: relative;
+    overflow: hidden;
+  }
+  .premium-row {
+    transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  }
+  .premium-row:hover {
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
+  }
+
+  /* Setup / module typography (pair with premium-* surfaces; uses theme font-sans = Geist) */
+  .setup-type-page-title {
+    @apply text-sm sm:text-base font-semibold tracking-tight text-foreground;
+  }
+  .setup-type-page-desc {
+    @apply text-sm leading-relaxed text-muted-foreground;
+  }
+  .setup-type-module-title {
+    @apply text-sm font-semibold tracking-tight text-foreground;
+  }
+  .setup-type-module-sub {
+    @apply text-xs leading-snug text-muted-foreground;
+  }
+  .setup-type-section-title {
+    @apply text-[11px] font-semibold tracking-tight text-foreground;
+  }
+  .setup-type-table-header {
+    @apply text-[10px] font-semibold uppercase tracking-wide text-muted-foreground;
+  }
+  .setup-type-kicker-pill {
+    @apply text-xs font-medium text-muted-foreground;
+  }
+  .setup-font-mono-data {
+    @apply font-mono text-xs tabular-nums;
   }
 }

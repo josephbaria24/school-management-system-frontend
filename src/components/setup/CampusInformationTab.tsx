@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -19,6 +22,12 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Plus,
+  Search,
+  MapPin,
+  Building2,
+  Landmark,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,9 +41,9 @@ interface InlineFieldProps {
 
 function InlineField({ label, children, labelWidth }: InlineFieldProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-[7.5rem_1fr] items-start sm:items-center gap-1.5 sm:gap-3">
       <Label
-        className={`${labelWidth || "w-28"} text-right font-medium text-muted-foreground shrink-0 pr-2 text-[11px]`}
+        className={`${labelWidth || "w-auto"} text-left sm:text-right font-medium text-muted-foreground sm:pr-2 text-[11px] leading-5`}
       >
         {label}
       </Label>
@@ -54,6 +63,7 @@ export function CampusInformationTab({ institutionId }: CampusInformationTabProp
     ...emptyCampus,
     institution_id: institutionId,
   });
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{
@@ -224,6 +234,12 @@ export function CampusInformationTab({ institutionId }: CampusInformationTabProp
     }
   };
 
+  const handlePrimaryAction = async () => {
+    // If a campus is selected, we update (PUT). Otherwise we create (POST).
+    if (selectedId) return handleSave();
+    return handleAdd();
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     clearFieldError(name);
@@ -234,6 +250,13 @@ export function CampusInformationTab({ institutionId }: CampusInformationTabProp
     setFormData((prev) => ({ ...prev, [field]: checked }));
   };
 
+  const filtered = campuses.filter((c) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const hay = `${c.acronym ?? ""} ${c.campus_name ?? ""} ${c.short_name ?? ""} ${c.short_name_by_site ?? ""}`.toLowerCase();
+    return hay.includes(q);
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 animate-pulse">
@@ -243,411 +266,414 @@ export function CampusInformationTab({ institutionId }: CampusInformationTabProp
   }
 
   return (
-    <div className="space-y-6">
-      {/* Feedback Message */}
-      {message && (
-        <div
-          className={`flex items-center gap-2 px-4 py-2 rounded-sm text-xs font-bold border-2 animate-in slide-in-from-top-2 duration-300 ${
-            message.type === "success"
-              ? "bg-emerald-50 border-emerald-300 text-emerald-700"
-              : "bg-red-50 border-red-300 text-red-700"
-          }`}
-        >
-          {message.type === "success" ? (
-            <CheckCircle2 className="h-3.5 w-3.5" />
-          ) : (
-            <AlertCircle className="h-3.5 w-3.5" />
-          )}
-          {message.text}
-        </div>
-      )}
-
-      {/* Top Row: Acronym, Campus Name, Short Name */}
-      <div className="flex flex-wrap items-start gap-4">
-        <div className="space-y-0.5">
-          <InlineField label="Acronym" labelWidth="w-16">
-            <Input
-              name="acronym"
-              value={formData.acronym}
-              onChange={handleChange}
-              className={cn(
-                "h-8 w-28 rounded-sm border-muted-foreground/30 shadow-sm font-bold",
-                fieldErrors.acronym &&
-                  "border-destructive ring-1 ring-destructive/30"
-              )}
-            />
-          </InlineField>
-          {fieldErrors.acronym && (
-            <p className="text-[10px] text-destructive pl-[4.5rem]">
-              {fieldErrors.acronym}
-            </p>
-          )}
-        </div>
-        <div className="space-y-0.5 flex-1 min-w-[200px]">
-          <InlineField label="Campus Name" labelWidth="w-24">
-            <Input
-              name="campus_name"
-              value={formData.campus_name || ""}
-              onChange={handleChange}
-              className={cn(
-                "h-8 rounded-sm border-muted-foreground/30 shadow-sm",
-                fieldErrors.campus_name &&
-                  "border-destructive ring-1 ring-destructive/30"
-              )}
-            />
-          </InlineField>
-          {fieldErrors.campus_name && (
-            <p className="text-[10px] text-destructive pl-[6.5rem]">
-              {fieldErrors.campus_name}
-            </p>
-          )}
-        </div>
-        <InlineField label="Short Name" labelWidth="w-20">
-          <Input
-            name="short_name"
-            value={formData.short_name || ""}
-            onChange={handleChange}
-            className="h-8 rounded-sm border-muted-foreground/30 shadow-sm"
-          />
-        </InlineField>
-      </div>
-      {fieldErrors.institution_id && (
-        <p className="text-xs text-destructive font-medium border border-destructive/30 rounded-sm px-3 py-2 bg-destructive/5">
-          {fieldErrors.institution_id}
-        </p>
-      )}
-
-      {/* Campus List Table */}
-      <div className="border-2 border-muted-foreground/20 rounded-sm overflow-hidden shadow-inner bg-white dark:bg-slate-900">
-        <div className="grid grid-cols-3 bg-slate-200 dark:bg-slate-800 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground border-b border-border/60">
-          <div className="px-3 py-1.5 border-r border-white/50 dark:border-slate-700">Acronym</div>
-          <div className="px-3 py-1.5 border-r border-white/50 dark:border-slate-700">ShortName</div>
-          <div className="px-3 py-1.5">ShortNameBySite</div>
-        </div>
-        <div className="max-h-36 overflow-y-auto">
-          {campuses.length === 0 ? (
-            <div className="px-3 py-6 text-center text-xs text-muted-foreground italic">
-              No campuses registered yet. Click ADD to create one.
+    <div className="grid grid-cols-1 lg:grid-cols-[22rem_1fr] gap-6">
+      {/* Left: campus list */}
+      <Card className="rounded-2xl border-border/60 overflow-hidden">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-0.5">
+              <CardTitle className="text-sm font-semibold tracking-tight">
+                Campuses
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Select a campus to edit, or create a new one.
+              </p>
             </div>
-          ) : (
-            campuses.map((campus) => (
-              <div
-                key={campus.id}
-                onClick={() => selectCampus(campus)}
-                className={`grid grid-cols-3 text-xs cursor-pointer border-b border-muted/30 transition-colors duration-150 ${
-                  selectedId === campus.id
-                    ? "bg-emerald-700 dark:bg-emerald-900 text-white font-bold"
-                    : "hover:bg-emerald-50 dark:hover:bg-slate-800"
-                }`}
-              >
-                <div className="px-3 py-1.5 border-r border-muted/20 truncate">
-                  {campus.acronym}
-                </div>
-                <div className="px-3 py-1.5 border-r border-muted/20 truncate">
-                  {campus.short_name}
-                </div>
-                <div className="px-3 py-1.5 truncate">
-                  {campus.short_name_by_site}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* ADD / DELETE Buttons */}
-      <div className="flex justify-end gap-2">
-        <Button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          variant="outline"
-          size="sm"
-          className="h-7 rounded-sm border-2 border-muted-foreground/30 text-[10px] font-bold uppercase gap-1 shadow-[2px_2px_0_rgba(0,0,0,0.08)] bg-white dark:bg-slate-900 dark:shadow-none"
-        >
-          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
-          SAVE
-        </Button>
-        <Button
-          type="button"
-          onClick={handleAdd}
-          disabled={saving}
-          variant="outline"
-          size="sm"
-          className="h-7 rounded-sm border-2 border-muted-foreground/30 text-[10px] font-bold uppercase gap-1 shadow-[2px_2px_0_rgba(0,0,0,0.08)] bg-white dark:bg-slate-900 dark:shadow-none"
-        >
-          <PenSquare className="h-3 w-3 text-green-600" />
-          ADD
-        </Button>
-        <Button
-          type="button"
-          onClick={handleDelete}
-          disabled={!selectedId}
-          variant="outline"
-          size="sm"
-          className="h-7 rounded-sm border-2 border-muted-foreground/30 text-[10px] font-bold uppercase gap-1 shadow-[2px_2px_0_rgba(0,0,0,0.08)] bg-white dark:bg-slate-900 dark:shadow-none hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2 className="h-3 w-3 text-destructive" />
-          DELETE
-        </Button>
-      </div>
-
-      {/* Office Grid: Registrar | Accounting | Cashier */}
-      <div className="grid grid-cols-3 gap-3">
-        {/* Registrar */}
-        <div className="border-2 border-muted-foreground/20 rounded-sm p-3 space-y-3 bg-white/80 dark:bg-slate-900/80">
-          <div className="flex items-center justify-between border-b border-muted/40 pb-1.5">
-            <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-              Campus Registrar
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[9px] italic text-muted-foreground">
-                Applies to All
-              </span>
-              <Checkbox
-                checked={formData.registrar_applies_to_all}
-                onCheckedChange={(v) =>
-                  handleCheckChange("registrar_applies_to_all", !!v)
-                }
-                className="h-3.5 w-3.5"
-              />
-            </div>
-          </div>
-          <InlineField label="Office Name" labelWidth="w-20">
-            <Input
-              name="registrar_office_name"
-              value={formData.registrar_office_name || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="Registrar" labelWidth="w-20">
-            <Input
-              name="registrar_name"
-              value={formData.registrar_name || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <p className="text-center text-[10px] text-muted-foreground italic mt-1">
-            {formData.registrar_title || "Title"}
-          </p>
-        </div>
-
-        {/* Accounting */}
-        <div className="border-2 border-muted-foreground/20 rounded-sm p-3 space-y-3 bg-white/80 dark:bg-slate-900/80">
-          <div className="flex items-center justify-between border-b border-muted/40 pb-1.5">
-            <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-              Campus Accounting
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[9px] italic text-muted-foreground">
-                Applies to All
-              </span>
-              <Checkbox
-                checked={formData.accounting_applies_to_all}
-                onCheckedChange={(v) =>
-                  handleCheckChange("accounting_applies_to_all", !!v)
-                }
-                className="h-3.5 w-3.5"
-              />
-            </div>
-          </div>
-          <InlineField label="Office Name" labelWidth="w-20">
-            <Input
-              name="accounting_office_name"
-              value={formData.accounting_office_name || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="Accountant" labelWidth="w-20">
-            <Input
-              name="accountant_name"
-              value={formData.accountant_name || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <p className="text-center text-[10px] text-muted-foreground italic mt-1">
-            {formData.accountant_title || "Title"}
-          </p>
-        </div>
-
-        {/* Cashier */}
-        <div className="border-2 border-muted-foreground/20 rounded-sm p-3 space-y-3 bg-white/80 dark:bg-slate-900/80">
-          <div className="flex items-center justify-between border-b border-muted/40 pb-1.5">
-            <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-              Campus Cashier
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[9px] italic text-muted-foreground">
-                Applies to All
-              </span>
-              <Checkbox
-                checked={formData.cashier_applies_to_all}
-                onCheckedChange={(v) =>
-                  handleCheckChange("cashier_applies_to_all", !!v)
-                }
-                className="h-3.5 w-3.5"
-              />
-            </div>
-          </div>
-          <InlineField label="Office Name" labelWidth="w-20">
-            <Input
-              name="cashier_office_name"
-              value={formData.cashier_office_name || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="Cashier" labelWidth="w-20">
-            <Input
-              name="cashier_name"
-              value={formData.cashier_name || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <p className="text-center text-[10px] text-muted-foreground italic mt-1">
-            {formData.cashier_title || "Title"}
-          </p>
-        </div>
-      </div>
-
-      {/* Campus Location and Mailing Address */}
-      <div className="border-2 border-muted-foreground/20 rounded-sm p-4 space-y-4 bg-white/80 dark:bg-slate-900/80">
-        <div className="border-b border-muted/40 pb-1.5 mb-3">
-          <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
-            Campus Location and Mailing Address
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-          <InlineField label="Barangay" labelWidth="w-20">
-            <Input
-              name="barangay"
-              value={formData.barangay || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="Town/City" labelWidth="w-20">
-            <Input
-              name="town_city"
-              value={formData.town_city || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="District ID" labelWidth="w-20">
-            <Input
-              name="district_id"
-              value={formData.district_id || ""}
-              onChange={handleChange}
-              className="h-7 w-20 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="Zip Code" labelWidth="w-20">
-            <Input
-              name="zip_code"
-              value={formData.zip_code || ""}
-              onChange={handleChange}
-              className="h-7 w-20 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="Province" labelWidth="w-20">
-            <Input
-              name="province"
-              value={formData.province || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <InlineField label="Region" labelWidth="w-20">
-            <Select
-              value={formData.region || ""}
-              onValueChange={(v) =>
-                setFormData((prev) => ({ ...prev, region: v }))
-              }
+            <Button
+              type="button"
+              onClick={handleNew}
+              variant="outline"
+              className="h-9 rounded-xl text-xs font-semibold gap-2"
             >
-              <SelectTrigger className="h-7 text-[11px] rounded-sm border-muted-foreground/30">
-                <SelectValue placeholder="Select Region" />
-              </SelectTrigger>
-              <SelectContent>
-                {[
-                  "NCR",
-                  "CAR",
-                  "Region I",
-                  "Region II",
-                  "Region III",
-                  "Region IV-A",
-                  "Region IV-B",
-                  "Region V",
-                  "Region VI",
-                  "Region VII",
-                  "Region VIII",
-                  "Region IX",
-                  "Region X",
-                  "Region XI",
-                  "Region XII",
-                  "Region XIII",
-                  "BARMM",
-                ].map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </InlineField>
-        </div>
-
-        <div className="border-t border-muted/30 pt-3 space-y-3">
-          <InlineField label="Mailing Address" labelWidth="w-28">
-            <Input
-              name="mailing_address"
-              value={formData.mailing_address || ""}
-              onChange={handleChange}
-              className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-            />
-          </InlineField>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-            <InlineField label="Email" labelWidth="w-28">
-              <Input
-                name="email"
-                value={formData.email || ""}
-                onChange={handleChange}
-                className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-              />
-            </InlineField>
-            <InlineField label="Website" labelWidth="w-20">
-              <Input
-                name="website"
-                value={formData.website || ""}
-                onChange={handleChange}
-                className="h-7 text-[11px] rounded-sm border-muted-foreground/30"
-              />
-            </InlineField>
-            <InlineField label="Telephone no." labelWidth="w-28">
-              <Input
-                name="telephone_no"
-                value={formData.telephone_no || ""}
-                onChange={handleChange}
-                className="h-7 w-40 text-[11px] rounded-sm border-muted-foreground/30"
-              />
-            </InlineField>
-            <InlineField label="Fax no." labelWidth="w-20">
-              <Input
-                name="fax_no"
-                value={formData.fax_no || ""}
-                onChange={handleChange}
-                className="h-7 w-40 text-[11px] rounded-sm border-muted-foreground/30"
-              />
-            </InlineField>
+              <Plus className="h-4 w-4" />
+              New
+            </Button>
           </div>
-        </div>
-      </div>
+
+          <div className="mt-3 relative">
+            <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search campus…"
+              className="h-9 rounded-xl pl-9 border-border/60 shadow-sm"
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <ScrollArea className="h-112 pr-3">
+            {filtered.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border/60 p-6 text-center">
+                <p className="text-sm font-semibold">No results</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Try a different keyword, or create a new campus.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filtered.map((campus) => {
+                  const active = selectedId === campus.id;
+                  return (
+                    <button
+                      key={campus.id}
+                      type="button"
+                      onClick={() => selectCampus(campus)}
+                      className={cn(
+                        "w-full text-left rounded-2xl border p-3 transition-colors",
+                        active
+                          ? "border-emerald-500/40 bg-emerald-500/10"
+                          : "border-border/60 hover:bg-muted/40"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "grid h-8 w-8 place-items-center rounded-xl",
+                                active ? "bg-emerald-600 text-white" : "bg-muted text-foreground"
+                              )}
+                            >
+                              <Building2 className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold truncate">
+                                {campus.campus_name || "Untitled campus"}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {campus.acronym ? campus.acronym : "—"} • {campus.short_name || "No short name"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        {active && (
+                          <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      {/* Right: editor */}
+      <Card className="rounded-2xl border-border/60 overflow-hidden">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="space-y-0.5">
+              <CardTitle className="text-sm font-semibold tracking-tight">
+                Campus details
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {selectedId ? "Editing selected campus." : "Creating a new campus."}
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                type="button"
+                onClick={handlePrimaryAction}
+                disabled={saving}
+                className="h-9 rounded-xl text-xs font-semibold gap-2"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                {selectedId ? "Save changes" : "Create campus"}
+              </Button>
+              <Button
+                type="button"
+                onClick={handleDelete}
+                disabled={!selectedId}
+                variant="outline"
+                className="h-9 rounded-xl text-xs font-semibold gap-2 hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          </div>
+
+          {message && (
+            <div
+              className={`mt-3 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border ${
+                message.type === "success"
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                  : "bg-destructive/10 border-destructive/30 text-destructive"
+              }`}
+            >
+              {message.type === "success" ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <AlertCircle className="h-3.5 w-3.5" />
+              )}
+              {message.text}
+            </div>
+          )}
+
+          {fieldErrors.institution_id && (
+            <p className="mt-3 text-xs text-destructive font-medium border border-destructive/30 rounded-xl px-3 py-2 bg-destructive/5">
+              {fieldErrors.institution_id}
+            </p>
+          )}
+        </CardHeader>
+
+        <CardContent className="space-y-7">
+          {/* Identity */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Landmark className="h-4 w-4" />
+              <span className="font-semibold text-foreground">Identity</span>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Acronym</Label>
+                <Input
+                  name="acronym"
+                  value={formData.acronym}
+                  onChange={handleChange}
+                  className={cn(
+                    "h-9 rounded-xl border-border/60 shadow-sm font-semibold",
+                    fieldErrors.acronym && "border-destructive ring-1 ring-destructive/30"
+                  )}
+                />
+                {fieldErrors.acronym && (
+                  <p className="text-[11px] text-destructive">{fieldErrors.acronym}</p>
+                )}
+              </div>
+              <div className="space-y-1 lg:col-span-2">
+                <Label className="text-[11px] text-muted-foreground">Campus name</Label>
+                <Input
+                  name="campus_name"
+                  value={formData.campus_name || ""}
+                  onChange={handleChange}
+                  className={cn(
+                    "h-9 rounded-xl border-border/60 shadow-sm",
+                    fieldErrors.campus_name && "border-destructive ring-1 ring-destructive/30"
+                  )}
+                />
+                {fieldErrors.campus_name && (
+                  <p className="text-[11px] text-destructive">{fieldErrors.campus_name}</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Short name</Label>
+                <Input
+                  name="short_name"
+                  value={formData.short_name || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1 lg:col-span-2">
+                <Label className="text-[11px] text-muted-foreground">Short name (by site)</Label>
+                <Input
+                  name="short_name_by_site"
+                  value={formData.short_name_by_site || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Offices */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CreditCard className="h-4 w-4" />
+              <span className="font-semibold text-foreground">Offices</span>
+            </div>
+            <Separator />
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+              {[
+                {
+                  key: "registrar",
+                  title: "Registrar",
+                  icon: Landmark,
+                  officeName: "registrar_office_name",
+                  person: "registrar_name",
+                  titleField: "registrar_title",
+                  applies: "registrar_applies_to_all",
+                },
+                {
+                  key: "accounting",
+                  title: "Accounting",
+                  icon: CreditCard,
+                  officeName: "accounting_office_name",
+                  person: "accountant_name",
+                  titleField: "accountant_title",
+                  applies: "accounting_applies_to_all",
+                },
+                {
+                  key: "cashier",
+                  title: "Cashier",
+                  icon: Building2,
+                  officeName: "cashier_office_name",
+                  person: "cashier_name",
+                  titleField: "cashier_title",
+                  applies: "cashier_applies_to_all",
+                },
+              ].map((s) => {
+                const Icon = s.icon;
+                return (
+                  <Card key={s.key} className="rounded-2xl border-border/60">
+                    <CardHeader className="py-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="grid h-9 w-9 place-items-center rounded-xl bg-muted">
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold tracking-tight">{s.title}</p>
+                            <p className="text-xs text-muted-foreground">Campus-level office</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Applies to all</span>
+                          <Checkbox
+                            checked={!!(formData as any)[s.applies]}
+                            onCheckedChange={(v) => handleCheckChange(s.applies, !!v)}
+                            className="h-4 w-4"
+                          />
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pb-5">
+                      <div className="space-y-1">
+                        <Label className="text-[11px] text-muted-foreground">Office name</Label>
+                        <Input
+                          name={s.officeName}
+                          value={(formData as any)[s.officeName] || ""}
+                          onChange={handleChange}
+                          className="h-9 rounded-xl border-border/60 shadow-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[11px] text-muted-foreground">{s.title}</Label>
+                        <Input
+                          name={s.person}
+                          value={(formData as any)[s.person] || ""}
+                          onChange={handleChange}
+                          className="h-9 rounded-xl border-border/60 shadow-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[11px] text-muted-foreground">Title</Label>
+                        <Input
+                          name={s.titleField}
+                          value={(formData as any)[s.titleField] || ""}
+                          onChange={handleChange}
+                          className="h-9 rounded-xl border-border/60 shadow-sm"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Location & contact */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span className="font-semibold text-foreground">Location & contact</span>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Barangay</Label>
+                <Input
+                  name="barangay"
+                  value={formData.barangay || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Town / City</Label>
+                <Input
+                  name="town_city"
+                  value={formData.town_city || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Province</Label>
+                <Input
+                  name="province"
+                  value={formData.province || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Region</Label>
+                <Input
+                  name="region"
+                  value={formData.region || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <Label className="text-[11px] text-muted-foreground">Mailing address</Label>
+                <Input
+                  name="mailing_address"
+                  value={formData.mailing_address || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Email</Label>
+                <Input
+                  name="email"
+                  value={formData.email || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Website</Label>
+                <Input
+                  name="website"
+                  value={formData.website || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Telephone</Label>
+                <Input
+                  name="telephone_no"
+                  value={formData.telephone_no || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Fax</Label>
+                <Input
+                  name="fax_no"
+                  value={formData.fax_no || ""}
+                  onChange={handleChange}
+                  className="h-9 rounded-xl border-border/60 shadow-sm"
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Legacy blocks removed (replaced by modern editor UI above). */}
     </div>
   );
 }

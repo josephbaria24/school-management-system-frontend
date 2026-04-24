@@ -77,10 +77,6 @@ export default function AcademicInstitutionPage() {
 
   return (
     <div className="h-full bg-background relative overflow-x-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
-      <div className="absolute top-48 -right-48 w-96 h-96 bg-primary/10 rounded-full blur-[100px] -z-10" />
-      <div className="absolute bottom-48 -left-48 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] -z-10" />
 
       <div className="w-full px-2 pt-2 pb-4">
         {!institution && (

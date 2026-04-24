@@ -2,12 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Calendar,
   ChevronDown,
@@ -17,6 +20,8 @@ import {
   Trash2,
   Pencil,
   LogOut,
+  Search,
+  CalendarRange,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -48,6 +53,7 @@ export default function SchoolCalendarPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(true);
+  const [query, setQuery] = useState("");
 
   const loadRows = useCallback(async () => {
     setLoading(true);
@@ -161,244 +167,277 @@ export default function SchoolCalendarPage() {
     resetFormForNew();
   };
 
+  const filteredRows = rows.filter((row) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const hay = `${formatDateDisplay(row.calendar_date)} ${row.description ?? ""} ${
+      row.non_working_day ? "non-working" : ""
+    }`.toLowerCase();
+    return hay.includes(q);
+  });
+
   return (
     <div className="h-full bg-background relative overflow-x-hidden">
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
       <div className="w-full px-2 pt-2 pb-4">
-        <div className="mb-6 space-y-1">
-          <h1 className="text-lg font-bold tracking-tight uppercase">
-            School Calendar
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            This module allows you to enter the school calendar.
-          </p>
-        </div>
-
-        <Card className="border-2 border-primary/20 shadow-2xl rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
-          <div className="bg-emerald-700 dark:bg-emerald-900 text-white px-4 py-1.5 flex items-center justify-between border-b border-primary/30">
-            <div className="flex items-center gap-2">
-              <div className="bg-white dark:bg-slate-100 p-0.5 rounded-sm">
-                <Calendar className="h-4 w-4 text-emerald-700 dark:text-emerald-900" />
-              </div>
-              <span className="text-xs font-bold uppercase tracking-wider">
-                School Calendar
-              </span>
-            </div>
-            <div />
-          </div>
-
-          <div className="p-3 bg-white/70 dark:bg-slate-950/60 h-[640px]">
-            <div className="grid grid-cols-12 gap-3 h-[580px]">
-              {/* Left: Schedules list */}
-              <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full">
-                <div className="flex items-center justify-between gap-2 bg-emerald-600 dark:bg-emerald-800 text-white px-2 py-1.5">
-                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
-                    <Calendar className="h-3.5 w-3.5" />
-                    Schedules
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-semibold uppercase">
-                      Year
-                    </span>
-                    <div className="flex flex-col">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-6 p-0 text-white hover:bg-white/20"
-                        onClick={() => bumpYear(1)}
-                      >
-                        <ChevronUp className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-6 p-0 text-white hover:bg-white/20"
-                        onClick={() => bumpYear(-1)}
-                      >
-                        <ChevronDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    <Input
-                      type="number"
-                      className="h-7 w-16 text-xs bg-white text-foreground text-center"
-                      value={year}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value, 10);
-                        if (!Number.isNaN(v)) setYear(v);
-                      }}
-                    />
-                  </div>
+        <Card className="w-full overflow-hidden rounded-2xl border border-border/60 bg-background shadow-[0_12px_40px_-24px_rgba(2,6,23,0.45)]">
+          <CardHeader className="border-b border-border/60 bg-muted/5 pb-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                  <Calendar className="h-5 w-5" />
                 </div>
-                <div className="grid grid-cols-12 bg-slate-200 dark:bg-slate-800 text-[10px] font-bold uppercase border-b border-border/60">
-                  <div className="col-span-3 px-2 py-1 border-r border-border/60">
-                    Date
-                  </div>
-                  <div className="col-span-6 px-2 py-1 border-r border-border/60">
-                    Description
-                  </div>
-                  <div className="col-span-3 px-2 py-1 text-center">
-                    Non-working
-                  </div>
-                </div>
-                <div className="flex-1 overflow-y-auto min-h-0">
-                  {loading ? (
-                    <div className="p-4 text-xs text-muted-foreground">
-                      Loading…
-                    </div>
-                  ) : rows.length === 0 ? (
-                    <div className="p-4 text-xs text-muted-foreground italic">
-                      No entries for {year}.
-                    </div>
-                  ) : (
-                    rows.map((row) => (
-                      <button
-                        key={row.id}
-                        type="button"
-                        onClick={() => setSelectedId(row.id)}
-                        className={cn(
-                          "w-full grid grid-cols-12 text-left text-xs border-b border-border/50",
-                          selectedId === row.id
-                            ? "bg-emerald-100 dark:bg-emerald-950/50 font-medium"
-                            : "hover:bg-muted/50"
-                        )}
-                      >
-                        <div className="col-span-3 px-2 py-1.5 border-r border-border/40 truncate">
-                          {formatDateDisplay(row.calendar_date)}
-                        </div>
-                        <div className="col-span-6 px-2 py-1.5 border-r border-border/40 truncate">
-                          {row.description || "—"}
-                        </div>
-                        <div className="col-span-3 px-2 py-1.5 text-center">
-                          {row.non_working_day ? "Yes" : "No"}
-                        </div>
-                      </button>
-                    ))
-                  )}
+                <div className="space-y-0.5">
+                  <CardTitle className="text-base font-semibold tracking-tight">
+                    School Calendar
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Setup manager • Schedule key dates and holidays
+                  </p>
                 </div>
               </div>
 
-              {/* Right: General information */}
-              <div className="col-span-7 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full">
-                <div className="flex items-center justify-between bg-emerald-600 dark:bg-emerald-800 text-white px-2 py-1.5 text-[10px] font-bold uppercase">
-                  <span>General Information</span>
-                  <span className="opacity-90">
-                    {isNewRecord ? "Create New Record!" : "Edit Record"}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5 p-2 border-b border-border/60 bg-muted/30">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-[10px] gap-1"
-                    disabled={saving}
-                    onClick={resetFormForNew}
-                  >
-                    <FilePlus2 className="h-3 w-3" />
+              <div className="hidden sm:flex items-center gap-2">
+                <Badge variant="secondary" className="rounded-xl">
+                  {year}
+                </Badge>
+                {isNewRecord ? (
+                  <Badge variant="outline" className="rounded-xl">
                     New
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-[10px] gap-1"
-                    disabled={saving}
-                    onClick={handleSave}
-                  >
-                    <Save className="h-3 w-3" />
-                    Save
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-[10px] gap-1 text-destructive hover:text-destructive"
-                    disabled={saving || !selectedId}
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    Delete
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-[10px] gap-1"
-                    disabled={saving || !selectedId}
-                    onClick={() => {
-                      if (selected) {
-                        setCalendarDate(
-                          String(selected.calendar_date).slice(0, 10)
-                        );
-                        setDescription(selected.description ?? "");
-                        setNonWorkingDay(!!selected.non_working_day);
-                        setIsNewRecord(false);
-                      }
-                    }}
-                  >
-                    <Pencil className="h-3 w-3" />
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-[10px] gap-1 ml-auto"
-                    asChild
-                  >
-                    <Link href="/">
-                      <LogOut className="h-3 w-3 mr-1" />
-                      Close
-                    </Link>
-                  </Button>
-                </div>
+                  </Badge>
+                ) : (
+                  <Badge className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-600">
+                    Editing
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </CardHeader>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Date</Label>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Input
-                        type="date"
-                        className="h-8 max-w-[200px] text-sm"
-                        value={calendarDate}
-                        onChange={(e) => setCalendarDate(e.target.value)}
-                      />
-                      <span className="text-[10px] text-muted-foreground">
-                        Format: MM/DD/YYYY (use date picker)
-                      </span>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[26rem_minmax(0,1fr)] gap-6 lg:min-h-[calc(100svh-14.5rem)]">
+              {/* Left: list */}
+              <Card className="rounded-2xl border-border/60 overflow-hidden">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold tracking-tight">Schedules</p>
+                      <p className="text-xs text-muted-foreground">
+                        {filteredRows.length} shown • {rows.length} total
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9 rounded-xl"
+                        onClick={() => bumpYear(-1)}
+                        aria-label="Previous year"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          className="h-9 w-24 rounded-xl text-xs text-center border-border/60 shadow-sm"
+                          value={year}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isNaN(v)) setYear(v);
+                          }}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9 rounded-xl"
+                        onClick={() => bumpYear(1)}
+                        aria-label="Next year"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-1 flex-1 min-h-[200px] flex flex-col">
-                    <Label className="text-xs">Description</Label>
-                    <Textarea
-                      className="min-h-[180px] text-sm resize-y"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Enter description…"
+                  <div className="mt-3 relative">
+                    <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Search date or description…"
+                      className="h-9 rounded-xl pl-9 border-border/60 shadow-sm"
                     />
                   </div>
+                </CardHeader>
 
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="nwd"
-                      checked={nonWorkingDay}
-                      onCheckedChange={(v) => setNonWorkingDay(!!v)}
-                    />
-                    <Label
-                      htmlFor="nwd"
-                      className="text-sm font-medium text-destructive cursor-pointer"
-                    >
-                      Non-Working Day?
-                    </Label>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-12 bg-muted/40 text-[11px] font-semibold text-muted-foreground border border-border/60 rounded-xl overflow-hidden shadow-sm">
+                    <div className="col-span-3 px-3 py-2 border-r border-border/60">Date</div>
+                    <div className="col-span-7 px-3 py-2 border-r border-border/60">Description</div>
+                    <div className="col-span-2 px-3 py-2 text-center">NWD</div>
                   </div>
-                </div>
-              </div>
+                  <div className="mt-2 border border-border/60 rounded-2xl overflow-hidden">
+                    <ScrollArea className="h-[calc(100svh-24rem)] lg:h-[calc(100svh-20.5rem)] min-h-120">
+                      <div className="pr-6">
+                        {loading && (
+                          <div className="px-4 py-8 text-sm text-muted-foreground">
+                            Loading entries…
+                          </div>
+                        )}
+                        {!loading && filteredRows.length === 0 && (
+                          <div className="px-4 py-10 text-center">
+                            <p className="text-sm font-semibold">No entries</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Add dates like holidays, events, or non-working days.
+                            </p>
+                          </div>
+                        )}
+                        {!loading &&
+                          filteredRows.map((row, idx) => (
+                            <button
+                              key={row.id}
+                              type="button"
+                              onClick={() => setSelectedId(row.id)}
+                              className={cn(
+                                "w-full grid grid-cols-12 text-left text-xs border-b border-border/40 transition-colors",
+                                selectedId === row.id
+                                  ? "bg-emerald-500/10"
+                                  : idx % 2 === 0
+                                    ? "bg-background hover:bg-muted/40"
+                                    : "bg-muted/10 hover:bg-muted/40"
+                              )}
+                            >
+                              <div className="col-span-3 px-3 py-2 border-r border-border/40 truncate">
+                                {formatDateDisplay(row.calendar_date)}
+                              </div>
+                              <div className="col-span-7 px-3 py-2 border-r border-border/40 truncate">
+                                {row.description || "—"}
+                              </div>
+                              <div className="col-span-2 px-3 py-2 text-center">
+                                {row.non_working_day ? "Yes" : "No"}
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Right: editor */}
+              <Card className="rounded-2xl border-border/60 overflow-hidden">
+                <CardHeader className="pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold tracking-tight">General information</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isNewRecord ? "Create a new calendar entry." : "Update the selected entry."}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        type="button"
+                        onClick={resetFormForNew}
+                        disabled={saving}
+                        variant="outline"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
+                      >
+                        <FilePlus2 className="h-4 w-4" />
+                        New
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
+                      >
+                        <Save className="h-4 w-4" />
+                        {selectedId ? "Save changes" : "Create"}
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={saving || !selectedId}
+                        variant="outline"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
+                        asChild
+                      >
+                        <Link href="/">
+                          <LogOut className="h-4 w-4" />
+                          Close
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-0">
+                  <ScrollArea className="h-[calc(100svh-22rem)] lg:h-[calc(100svh-19rem)] min-h-120">
+                    <div className="space-y-6 pr-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <CalendarRange className="h-4 w-4" />
+                          <span className="font-semibold text-foreground">Date</span>
+                        </div>
+                        <Separator />
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] text-muted-foreground">Calendar date</Label>
+                          <Input
+                            type="date"
+                            className="h-9 rounded-xl text-xs border-border/60 shadow-sm max-w-xs"
+                            value={calendarDate}
+                            onChange={(e) => setCalendarDate(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <p className="text-sm font-semibold tracking-tight">Description</p>
+                        <Separator />
+                        <Textarea
+                          className="min-h-44 rounded-2xl text-sm resize-y border-border/60 shadow-sm"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Enter description…"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <p className="text-sm font-semibold tracking-tight">Status</p>
+                        <Separator />
+                        <div className="flex items-center gap-3 rounded-2xl border border-border/60 p-4 bg-muted/10">
+                          <Checkbox
+                            id="nwd"
+                            checked={nonWorkingDay}
+                            onCheckedChange={(v) => setNonWorkingDay(!!v)}
+                          />
+                          <div className="min-w-0">
+                            <Label htmlFor="nwd" className="text-sm font-semibold cursor-pointer">
+                              Non-working day
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              Mark holidays and official non-working dates.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
             </div>
-          </div>
+          </CardContent>
         </Card>
       </div>
     </div>

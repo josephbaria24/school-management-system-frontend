@@ -517,36 +517,43 @@ export function EmployeesFacultyModule({
 
   return (
     <div className="h-full bg-background relative overflow-x-hidden">
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
       <div className="w-full px-2 pt-2 pb-4">
-        <div className="mb-4 space-y-1">
-          <h1 className="text-base font-bold tracking-tight uppercase">
-            {pageTitle}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {pageDescription}
-          </p>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="setup-type-page-title">{pageTitle}</h1>
+            <p className="setup-type-page-desc">{pageDescription}</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="setup-type-kicker-pill flex h-9 items-center rounded-xl border border-border/60 bg-background/70 px-3 shadow-sm backdrop-blur">
+              Setup Manager module
+            </div>
+          </div>
         </div>
 
-        <Card className="border-2 border-primary/20 shadow-xl rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
-          <div className="bg-emerald-700 dark:bg-emerald-900 text-white px-3 py-1.5 flex items-center gap-2 border-b border-primary/30">
-            <div className="bg-white dark:bg-slate-100 p-0.5 rounded-sm">
+        <Card className="overflow-hidden rounded-2xl bg-background border-border/40 shadow-sm">
+          <div className="px-4 py-3 flex items-center gap-3 border-b border-border/40 bg-muted/5">
+            <div className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 p-2 rounded-xl border border-emerald-500/20 shadow-sm">
               {isFacultyMode ? (
-                <UserSquare2 className="h-4 w-4 text-emerald-700 dark:text-emerald-900" />
+                <UserSquare2 className="h-4 w-4" />
               ) : (
-                <UserCog className="h-4 w-4 text-emerald-700 dark:text-emerald-900" />
+                <UserCog className="h-4 w-4" />
               )}
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider">
-              {pageTitle}
-            </span>
+            <div className="leading-tight min-w-0">
+              <div className="setup-type-module-title truncate">{pageTitle}</div>
+              <div className="setup-type-module-sub">
+                {isFacultyMode
+                  ? "Faculty assignment, teaching load, and supporting options"
+                  : "Records, profile media, and faculty teaching context"}
+              </div>
+            </div>
           </div>
 
-          <div className="p-2 bg-white/80 dark:bg-slate-950/60">
+          <div className="p-3 bg-background/60">
             {message && (
               <div
                 className={cn(
-                  "mb-2 px-3 py-2 rounded-sm text-xs border",
+                  "mb-3 px-4 py-3 rounded-2xl text-xs border shadow-sm",
                   messageVariant === "error"
                     ? "border-destructive/50 bg-destructive/10 text-destructive"
                     : "border-border bg-muted/60"
@@ -556,15 +563,15 @@ export function EmployeesFacultyModule({
               </div>
             )}
 
-            <div className="grid grid-cols-12 gap-2 min-h-[620px]">
+            <div className="grid grid-cols-12 gap-3 min-h-[620px]">
               {/* Left: employee form */}
-              <div className="col-span-12 lg:col-span-3 flex flex-col border border-border rounded-sm bg-background min-h-0 max-h-[85vh] lg:max-h-none">
-                <div className="text-[10px] font-bold uppercase px-2 py-1 bg-emerald-600 text-white shrink-0">
+              <div className="col-span-12 lg:col-span-3 flex flex-col rounded-2xl bg-card border border-border/40 shadow-sm min-h-0 max-h-[85vh] lg:max-h-none overflow-hidden">
+                <div className="setup-type-section-title shrink-0 border-b border-border/60 bg-muted/5 px-3 py-2">
                   Employee information
                 </div>
-                <div className="flex-1 overflow-y-auto p-2 space-y-2 min-h-0">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-28 h-32 border-2 border-muted-foreground/30 rounded-md bg-muted/20 flex items-center justify-center overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-0">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className="w-28 h-32 border border-border/60 rounded-xl bg-muted/20 flex items-center justify-center overflow-hidden shadow-inner ring-1 ring-black/4 dark:ring-white/6">
                       {form.photo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -607,7 +614,7 @@ export function EmployeesFacultyModule({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 text-[10px]"
+                      className="h-8 rounded-xl text-xs font-semibold gap-1.5"
                       disabled={photoBusy}
                       onClick={() => photoRef.current?.click()}
                     >
@@ -640,7 +647,7 @@ export function EmployeesFacultyModule({
                     </Label>
                     <Input
                       className={cn(
-                        "h-7 text-xs",
+                        "h-8 rounded-xl text-xs border-border/60 shadow-sm",
                         fieldErrors.employee_id &&
                           "border-destructive ring-1 ring-destructive/30"
                       )}
@@ -668,7 +675,7 @@ export function EmployeesFacultyModule({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-7 text-xs">
+                      <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm">
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
@@ -689,7 +696,7 @@ export function EmployeesFacultyModule({
                     </Label>
                     <Input
                       className={cn(
-                        "h-7 text-xs",
+                        "h-8 rounded-xl text-xs border-border/60 shadow-sm",
                         fieldErrors.last_name &&
                           "border-destructive ring-1 ring-destructive/30"
                       )}
@@ -712,7 +719,7 @@ export function EmployeesFacultyModule({
                     </Label>
                     <Input
                       className={cn(
-                        "h-7 text-xs",
+                        "h-8 rounded-xl text-xs border-border/60 shadow-sm",
                         fieldErrors.first_name &&
                           "border-destructive ring-1 ring-destructive/30"
                       )}
@@ -731,7 +738,7 @@ export function EmployeesFacultyModule({
                   <div className="space-y-0.5">
                     <Label className="text-[10px]">Middle name</Label>
                     <Input
-                      className="h-7 text-xs"
+                      className="h-8 rounded-xl text-xs border-border/60 shadow-sm"
                       value={form.middle_name}
                       onChange={(e) =>
                         setForm((s) => ({ ...s, middle_name: e.target.value }))
@@ -742,7 +749,7 @@ export function EmployeesFacultyModule({
                     <div className="space-y-0.5">
                       <Label className="text-[10px]">M.I.</Label>
                       <Input
-                        className="h-7 text-xs"
+                        className="h-8 rounded-xl text-xs border-border/60 shadow-sm"
                         value={form.middle_initial}
                         onChange={(e) =>
                           setForm((s) => ({
@@ -755,7 +762,7 @@ export function EmployeesFacultyModule({
                     <div className="space-y-0.5">
                       <Label className="text-[10px]">Suffix</Label>
                       <Input
-                        className="h-7 text-xs"
+                        className="h-8 rounded-xl text-xs border-border/60 shadow-sm"
                         value={form.suffix}
                         onChange={(e) =>
                           setForm((s) => ({ ...s, suffix: e.target.value }))
@@ -767,7 +774,7 @@ export function EmployeesFacultyModule({
                     <Label className="text-[10px]">Birthday</Label>
                     <Input
                       type="date"
-                      className="h-7 text-xs"
+                      className="h-8 rounded-xl text-xs border-border/60 shadow-sm"
                       value={form.birthday}
                       onChange={(e) =>
                         setForm((s) => ({ ...s, birthday: e.target.value }))
@@ -785,7 +792,7 @@ export function EmployeesFacultyModule({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-7 text-xs">
+                      <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm">
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
@@ -809,7 +816,7 @@ export function EmployeesFacultyModule({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-7 text-xs">
+                      <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm">
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
@@ -845,7 +852,7 @@ export function EmployeesFacultyModule({
                           }));
                         }}
                       >
-                        <SelectTrigger className="h-7 text-xs flex-1 min-w-0">
+                        <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm flex-1 min-w-0">
                           <SelectValue placeholder="—" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
@@ -861,7 +868,7 @@ export function EmployeesFacultyModule({
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="h-7 w-7 shrink-0 border-amber-500/80"
+                        className="h-8 w-8 shrink-0 rounded-xl border border-amber-500/50 shadow-sm"
                         title="Maintain positions"
                         onClick={() => setMaintainPosOpen(true)}
                       >
@@ -893,7 +900,7 @@ export function EmployeesFacultyModule({
                           }));
                         }}
                       >
-                        <SelectTrigger className="h-7 text-xs flex-1 min-w-0">
+                        <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm flex-1 min-w-0">
                           <SelectValue placeholder="—" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
@@ -909,7 +916,7 @@ export function EmployeesFacultyModule({
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="h-7 w-7 shrink-0 border-amber-500/80"
+                        className="h-8 w-8 shrink-0 rounded-xl border border-amber-500/50 shadow-sm"
                         title="Maintain departments"
                         onClick={() => setMaintainDeptOpen(true)}
                       >
@@ -932,7 +939,7 @@ export function EmployeesFacultyModule({
 
                   <div className="space-y-1">
                     <Label className="text-[10px]">Signature</Label>
-                    <div className="h-16 border border-dashed border-muted-foreground/40 rounded-md flex items-center justify-center bg-muted/10 overflow-hidden">
+                    <div className="h-16 border border-dashed border-border/60 rounded-xl flex items-center justify-center bg-muted/15 overflow-hidden">
                       {form.signature_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -979,7 +986,7 @@ export function EmployeesFacultyModule({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 text-[10px] w-full"
+                      className="h-8 rounded-xl text-xs font-semibold w-full gap-1.5"
                       disabled={sigBusy}
                       onClick={() => sigRef.current?.click()}
                     >
@@ -992,19 +999,24 @@ export function EmployeesFacultyModule({
                     </Button>
                   </div>
                 </div>
-                <div className="px-2 py-1.5 border-t border-border text-[10px] font-bold text-destructive shrink-0">
-                  Total record(s): {rows.length}
+                <div className="px-3 py-2 border-t border-border/60 bg-muted/15 shrink-0 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    Total records
+                  </span>
+                  <span className="text-[11px] font-semibold tabular-nums">
+                    {rows.length}
+                  </span>
                 </div>
               </div>
 
               {/* Right: grid + faculty tabs */}
               <div className="col-span-12 lg:col-span-9 flex flex-col gap-2 min-h-0 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5 border border-border rounded-sm p-1.5 bg-muted/20">
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border/60 p-2 bg-muted/15 shadow-sm">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-7 text-[10px]"
+                    className="h-9 rounded-xl text-xs font-semibold gap-2"
                     disabled={saving}
                     onClick={resetNew}
                   >
@@ -1015,7 +1027,7 @@ export function EmployeesFacultyModule({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-7 text-[10px]"
+                    className="h-9 rounded-xl text-xs font-semibold gap-2"
                     disabled={saving}
                     onClick={handleSave}
                   >
@@ -1026,7 +1038,7 @@ export function EmployeesFacultyModule({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-7 text-[10px] text-destructive"
+                    className="h-9 rounded-xl text-xs font-semibold gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                     disabled={saving || !selectedId}
                     onClick={handleDelete}
                   >
@@ -1037,7 +1049,7 @@ export function EmployeesFacultyModule({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-[10px] opacity-50"
+                    className="h-9 rounded-xl text-xs opacity-50"
                     disabled
                     title="Coming soon"
                   >
@@ -1047,7 +1059,7 @@ export function EmployeesFacultyModule({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-[10px] opacity-50"
+                    className="h-9 rounded-xl text-xs opacity-50"
                     disabled
                     title="Coming soon"
                   >
@@ -1066,30 +1078,58 @@ export function EmployeesFacultyModule({
                   </div>
                 </div>
 
-                <div className="flex-1 min-h-[220px] border border-border rounded-sm overflow-auto bg-background">
+                <div className="flex-1 min-h-[220px] rounded-2xl border border-border/60 overflow-auto bg-card shadow-sm premium-surface">
                   <table className="w-full text-[10px] border-collapse min-w-[1100px]">
                     <thead>
-                      <tr className="bg-emerald-600 text-white uppercase font-bold text-left">
-                        <th className="px-1 py-1 border-r border-white/20 sticky left-0 bg-emerald-600 z-10">
+                      <tr className="sticky top-0 z-20 bg-muted/50 text-left shadow-sm">
+                        <th className="setup-type-table-header sticky left-0 z-30 border-b border-r border-border/60 bg-muted/95 px-2 py-2 text-left backdrop-blur-sm">
                           ID
                         </th>
-                        <th className="px-1 py-1 border-r border-white/20">Prefix</th>
-                        <th className="px-1 py-1 border-r border-white/20">Last</th>
-                        <th className="px-1 py-1 border-r border-white/20">First</th>
-                        <th className="px-1 py-1 border-r border-white/20">Mid</th>
-                        <th className="px-1 py-1 border-r border-white/20">MI</th>
-                        <th className="px-1 py-1 border-r border-white/20">Ext</th>
-                        <th className="px-1 py-1 border-r border-white/20">Birth</th>
-                        <th className="px-1 py-1 border-r border-white/20">Gender</th>
-                        <th className="px-1 py-1 border-r border-white/20">Civil</th>
-                        <th className="px-1 py-1 border-r border-white/20">Position</th>
-                        <th className="px-1 py-1 border-r border-white/20">Dept</th>
-                        <th className="px-1 py-1 border-r border-white/20">Rank</th>
-                        <th className="px-1 py-1 border-r border-white/20 text-center w-8">
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Prefix
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Last
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          First
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Mid
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          MI
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Ext
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Birth
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Gender
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Civil
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Position
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Dept
+                        </th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Rank
+                        </th>
+                        <th className="setup-type-table-header w-8 border-b border-r border-border/60 px-2 py-2 text-center">
                           FT
                         </th>
-                        <th className="px-1 py-1 border-r border-white/20">Campus</th>
-                        <th className="px-1 py-1">College</th>
+                        <th className="setup-type-table-header border-b border-r border-border/60 px-2 py-2 text-left">
+                          Campus
+                        </th>
+                        <th className="setup-type-table-header border-b border-border/60 px-2 py-2 text-left">
+                          College
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1119,67 +1159,67 @@ export function EmployeesFacultyModule({
                               }
                             }}
                             className={cn(
-                              "cursor-pointer border-b border-border/40",
-                              idx % 2 === 1 && "bg-emerald-50/50 dark:bg-emerald-950/20",
+                              "premium-row cursor-pointer border-b border-border/40 transition-colors",
+                              idx % 2 === 1 && "bg-muted/10",
                               selectedId === r.id &&
-                                "bg-amber-100/90 dark:bg-amber-950/30 font-medium"
+                                "bg-emerald-500/10 font-medium ring-1 ring-inset ring-emerald-500/15"
                             )}
                           >
                             <td
                               className={cn(
-                                "px-1 py-0.5 border-r border-border/30 sticky left-0 z-[1] font-mono",
+                                "setup-font-mono-data px-2 py-1 border-r border-border/50 sticky left-0 z-1 backdrop-blur-sm",
                                 selectedId === r.id
-                                  ? "bg-amber-100 dark:bg-amber-950/40"
+                                  ? "bg-emerald-500/15"
                                   : idx % 2 === 1
-                                    ? "bg-emerald-50 dark:bg-emerald-950/20"
-                                    : "bg-background"
+                                    ? "bg-muted/10"
+                                    : "bg-background/95"
                               )}
                             >
                               {r.employee_id}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[52px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[52px]">
                               {r.title ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[72px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[72px]">
                               {r.last_name}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[72px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[72px]">
                               {r.first_name}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[56px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[56px]">
                               {r.middle_name ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30">
+                            <td className="px-2 py-1 border-r border-border/30">
                               {r.middle_initial ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30">
+                            <td className="px-2 py-1 border-r border-border/30">
                               {r.suffix ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 whitespace-nowrap">
+                            <td className="px-2 py-1 border-r border-border/30 whitespace-nowrap">
                               {r.birthday
                                 ? String(r.birthday).slice(0, 10)
                                 : "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[48px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[48px]">
                               {r.gender ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[56px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[56px]">
                               {r.civil_status ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[100px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[100px]">
                               {r.position_title_ref ??
                                 r.position_label ??
                                 "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[80px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[80px]">
                               {r.department_name ??
                                 r.department_label ??
                                 "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[72px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[72px]">
                               {r.faculty_rank ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 text-center">
+                            <td className="px-2 py-1 border-r border-border/30 text-center">
                               <Checkbox
                                 checked={r.is_full_time === true}
                                 disabled
@@ -1187,10 +1227,10 @@ export function EmployeesFacultyModule({
                                 aria-hidden
                               />
                             </td>
-                            <td className="px-1 py-0.5 border-r border-border/30 truncate max-w-[80px]">
+                            <td className="px-2 py-1 border-r border-border/30 truncate max-w-[80px]">
                               {r.campus_acronym ?? "—"}
                             </td>
-                            <td className="px-1 py-0.5 truncate max-w-[100px]">
+                            <td className="px-2 py-1 truncate max-w-[100px]">
                               {r.college_code ?? r.college_name ?? "—"}
                             </td>
                           </tr>
@@ -1200,44 +1240,44 @@ export function EmployeesFacultyModule({
                   </table>
                 </div>
 
-                <div className="flex-1 min-h-[200px] border border-border rounded-sm bg-background flex flex-col overflow-hidden">
+                <div className="flex-1 min-h-[200px] rounded-2xl border border-border/60 bg-card shadow-sm flex flex-col overflow-hidden premium-card premium-surface">
                   <Tabs defaultValue="faculty" className="flex flex-col flex-1 min-h-0">
-                    <TabsList className="h-8 rounded-none border-b border-border bg-muted/40 p-0 w-full justify-start">
+                    <TabsList className="h-auto flex-wrap gap-1 p-1.5 w-full justify-start rounded-none border-b border-border/60 bg-muted/20">
                       <TabsTrigger
                         value="faculty"
-                        className="text-[10px] font-bold uppercase rounded-none data-[state=active]:bg-background"
+                        className="rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground"
                       >
                         Faculty / teaching load
                       </TabsTrigger>
                       <TabsTrigger
                         value="subjects"
-                        className="text-[10px] font-bold uppercase rounded-none data-[state=active]:bg-background"
+                        className="rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground"
                       >
                         Subjects taught
                       </TabsTrigger>
                       <TabsTrigger
                         value="history"
-                        className="text-[10px] font-bold uppercase rounded-none data-[state=active]:bg-background"
+                        className="rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground"
                       >
                         Teaching load history
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent
                       value="faculty"
-                      className="m-0 flex-1 overflow-y-auto p-2 bg-emerald-50/40 dark:bg-emerald-950/10 outline-none"
+                      className="m-0 flex-1 overflow-y-auto p-3 bg-muted/10 outline-none"
                     >
                       {!form.is_faculty ? (
-                        <p className="text-xs text-muted-foreground italic border border-dashed rounded-sm bg-background p-3">
+                        <p className="text-sm text-muted-foreground italic border border-dashed border-border/60 rounded-xl bg-background/80 p-4 shadow-sm">
                           Check &quot;Faculty information&quot; on the left to edit
                           faculty fields.
                         </p>
                       ) : (
                         <>
-                          <div className="border border-emerald-300/70 dark:border-emerald-700 rounded-sm bg-background overflow-hidden">
-                            <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-emerald-600 text-white">
+                          <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden border border-border/40">
+                            <div className="setup-type-section-title border-b border-border/60 bg-muted/5 px-3 py-2">
                               Faculty / Teaching Load Information
                             </div>
-                            <div className="p-2 grid grid-cols-12 gap-2 items-end">
+                            <div className="p-3 grid grid-cols-12 gap-2 items-end">
                             <div className="space-y-0.5 col-span-12 md:col-span-5">
                               <Label className="text-[10px]">
                                 Faculty rank
@@ -1245,7 +1285,7 @@ export function EmployeesFacultyModule({
                               </Label>
                               <Input
                                 className={cn(
-                                  "h-7 text-xs",
+                                  "h-8 rounded-xl text-xs border-border/60 shadow-sm",
                                   fieldErrors.faculty_rank &&
                                     "border-destructive ring-1 ring-destructive/30"
                                 )}
@@ -1267,7 +1307,7 @@ export function EmployeesFacultyModule({
                             </div>
                             <div className="space-y-1 col-span-12 md:col-span-7">
                               <Label className="text-[10px]">Employment</Label>
-                              <div className="flex gap-4 h-7 items-center rounded-sm border px-2">
+                              <div className="flex gap-4 h-9 items-center rounded-xl border border-border/60 bg-background px-3 shadow-sm">
                                 <label className="flex items-center gap-1.5 text-xs cursor-pointer">
                                   <input
                                     type="radio"
@@ -1316,7 +1356,7 @@ export function EmployeesFacultyModule({
                               >
                                 <SelectTrigger
                                   className={cn(
-                                    "h-7 text-xs",
+                                    "h-8 rounded-xl text-xs border-border/60 shadow-sm",
                                     fieldErrors.campus_id &&
                                       "border-destructive ring-1 ring-destructive/30"
                                   )}
@@ -1358,7 +1398,7 @@ export function EmployeesFacultyModule({
                               >
                                 <SelectTrigger
                                   className={cn(
-                                    "h-7 text-xs",
+                                    "h-8 rounded-xl text-xs border-border/60 shadow-sm",
                                     fieldErrors.college_id &&
                                       "border-destructive ring-1 ring-destructive/30"
                                   )}
@@ -1397,7 +1437,7 @@ export function EmployeesFacultyModule({
                                   }))
                                 }
                               >
-                                <SelectTrigger className="h-7 text-xs">
+                                <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm">
                                   <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1501,7 +1541,7 @@ export function EmployeesFacultyModule({
                                   }))
                                 }
                               >
-                                <SelectTrigger className="h-7 text-xs">
+                                <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm">
                                   <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1605,7 +1645,7 @@ export function EmployeesFacultyModule({
                                   }))
                                 }
                               >
-                                <SelectTrigger className="h-7 text-xs">
+                                <SelectTrigger className="h-8 rounded-xl text-xs border-border/60 shadow-sm">
                                   <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1703,17 +1743,21 @@ export function EmployeesFacultyModule({
                     </TabsContent>
                     <TabsContent
                       value="subjects"
-                      className="m-0 flex-1 p-4 text-xs text-muted-foreground italic outline-none"
+                      className="m-0 flex-1 p-4 text-sm text-muted-foreground italic outline-none"
                     >
-                      Subject assignments will connect to curriculum data in a
-                      later phase.
+                      <div className="rounded-xl border border-border/60 bg-background/80 p-4 shadow-sm">
+                        Subject assignments will connect to curriculum data in a
+                        later phase.
+                      </div>
                     </TabsContent>
                     <TabsContent
                       value="history"
-                      className="m-0 flex-1 p-4 text-xs text-muted-foreground italic outline-none"
+                      className="m-0 flex-1 p-4 text-sm text-muted-foreground italic outline-none"
                     >
-                      Teaching load history will be available when scheduling
-                      and loads are integrated.
+                      <div className="rounded-xl border border-border/60 bg-background/80 p-4 shadow-sm">
+                        Teaching load history will be available when scheduling
+                        and loads are integrated.
+                      </div>
                     </TabsContent>
                   </Tabs>
                 </div>

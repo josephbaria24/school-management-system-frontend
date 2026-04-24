@@ -245,34 +245,38 @@ export default function ScholarshipProvidersPage() {
 
   return (
     <div className="h-full bg-background relative overflow-x-hidden">
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
       <div className="w-full px-2 pt-2 pb-4">
-        <div className="mb-6 space-y-1">
-          <h1 className="text-base font-bold tracking-tight uppercase">
-            Scholarship providers
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Maintain scholarship provider codes, names, groups, and financial aid
-            options.
-          </p>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="setup-type-page-title">Scholarship Providers</h1>
+            <p className="setup-type-page-desc">
+              Maintain provider codes, names, groups, and financial aid options.
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="setup-type-kicker-pill flex h-9 items-center rounded-xl border border-border/60 bg-background/70 px-3 shadow-sm backdrop-blur">
+              Setup Manager module
+            </div>
+          </div>
         </div>
 
-        <Card className="border-2 border-primary/20 shadow-2xl rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
-          <div className="bg-emerald-700 dark:bg-emerald-900 text-white px-4 py-1.5 flex items-center justify-between border-b border-primary/30">
+        <Card className="overflow-hidden rounded-2xl bg-background premium-card">
+          <div className="px-4 py-3 flex items-center justify-between border-b border-border/60 bg-muted/5">
             <div className="flex items-center gap-2">
-              <div className="bg-white dark:bg-slate-100 p-0.5 rounded-sm">
-                <HandCoins className="h-4 w-4 text-emerald-700 dark:text-emerald-900" />
+              <div className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 p-2 rounded-xl border border-emerald-500/20 shadow-sm">
+                <HandCoins className="h-4 w-4" />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider">
-                Scholarship providers
-              </span>
+              <div className="leading-tight">
+                <div className="setup-type-module-title">Scholarship providers</div>
+                <div className="setup-type-module-sub">Providers list and editor</div>
+              </div>
             </div>
           </div>
 
-          <div className="p-3 bg-white/70 dark:bg-slate-950/60">
+          <div className="p-3 bg-background/60">
             <div className="grid grid-cols-12 gap-3 min-h-[520px]">
-              <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
-                <div className="bg-emerald-600 dark:bg-emerald-800 text-white px-2 py-1.5 text-[10px] font-bold uppercase shrink-0">
+              <div className="col-span-5 flex flex-col rounded-2xl overflow-hidden bg-card shadow-sm h-full min-h-0 premium-card">
+                <div className="setup-type-section-title shrink-0 border-b border-border/60 bg-muted/5 px-3 py-2">
                   Scholarship provider information
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
@@ -280,7 +284,7 @@ export default function ScholarshipProvidersPage() {
                     <Label className="text-xs">Code</Label>
                     <Input
                       className={cn(
-                        "h-8 text-sm font-mono uppercase",
+                        "h-9 rounded-xl text-sm font-mono uppercase border-border/60 shadow-sm",
                         fieldErrors.provider_code &&
                           "border-destructive ring-1 ring-destructive/30"
                       )}
@@ -303,7 +307,7 @@ export default function ScholarshipProvidersPage() {
                     <Label className="text-xs">Provider name</Label>
                     <Input
                       className={cn(
-                        "h-8 text-sm",
+                        "h-9 rounded-xl text-sm border-border/60 shadow-sm",
                         fieldErrors.provider_name &&
                           "border-destructive ring-1 ring-destructive/30"
                       )}
@@ -326,7 +330,7 @@ export default function ScholarshipProvidersPage() {
                     <div className="space-y-1">
                       <Label className="text-xs">Short name</Label>
                       <Input
-                        className="h-8 text-xs"
+                        className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
                         value={form.short_name}
                         onChange={(e) =>
                           setForm((f) => ({ ...f, short_name: e.target.value }))
@@ -336,7 +340,7 @@ export default function ScholarshipProvidersPage() {
                     <div className="space-y-1">
                       <Label className="text-xs">Acronym</Label>
                       <Input
-                        className="h-8 text-xs font-mono uppercase"
+                        className="h-9 rounded-xl text-xs font-mono uppercase border-border/60 shadow-sm"
                         value={form.acronym}
                         onChange={(e) =>
                           setForm((f) => ({ ...f, acronym: e.target.value }))
@@ -351,7 +355,7 @@ export default function ScholarshipProvidersPage() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 text-[10px] gap-0.5 px-1"
+                        className="h-7 rounded-xl text-[10px] gap-1 px-2 hover:bg-emerald-500/10"
                         onClick={() => setGroupDialogOpen(true)}
                       >
                         <Plus className="h-3 w-3" />
@@ -371,7 +375,7 @@ export default function ScholarshipProvidersPage() {
                         }))
                       }
                     >
-                      <SelectTrigger className="h-8 text-xs">
+                      <SelectTrigger className="h-9 rounded-xl text-xs border-border/60 shadow-sm">
                         <SelectValue placeholder="— None —" />
                       </SelectTrigger>
                       <SelectContent>
@@ -387,7 +391,7 @@ export default function ScholarshipProvidersPage() {
                   <div className="space-y-1">
                     <Label className="text-xs">Remarks</Label>
                     <Textarea
-                      className="text-xs min-h-[100px] resize-y"
+                      className="rounded-xl text-xs min-h-[110px] resize-y border-border/60 shadow-sm"
                       value={form.remarks}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, remarks: e.target.value }))
@@ -406,7 +410,7 @@ export default function ScholarshipProvidersPage() {
                       Inactive
                     </Label>
                   </div>
-                  <div className="flex items-center gap-2 border-t border-border pt-3">
+                  <div className="flex items-center gap-2 border-t border-border/60 pt-3">
                     <Checkbox
                       id="autocredit"
                       checked={form.auto_credit_financial_aid}
@@ -422,12 +426,12 @@ export default function ScholarshipProvidersPage() {
                     </Label>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5 p-2 border-t border-border bg-muted/30 shrink-0">
+                <div className="flex flex-wrap gap-2 p-3 border-t border-border/60 bg-muted/20 shrink-0">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-7 text-[10px] gap-1"
+                    className="h-9 rounded-xl text-xs font-semibold gap-2"
                     disabled={saving}
                     onClick={resetNew}
                   >
@@ -438,7 +442,7 @@ export default function ScholarshipProvidersPage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-7 text-[10px] gap-1"
+                    className="h-9 rounded-xl text-xs font-semibold gap-2"
                     disabled={saving}
                     onClick={handleSave}
                   >
@@ -449,7 +453,7 @@ export default function ScholarshipProvidersPage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-7 text-[10px] gap-1 text-destructive"
+                    className="h-9 rounded-xl text-xs font-semibold gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                     disabled={saving || !selectedId}
                     onClick={handleDelete}
                   >
@@ -459,27 +463,29 @@ export default function ScholarshipProvidersPage() {
                 </div>
               </div>
 
-              <div className="col-span-7 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
-                <div className="grid grid-cols-12 bg-emerald-600 dark:bg-emerald-800 text-white text-[10px] font-bold uppercase shrink-0">
-                  <div className="col-span-1 px-1 py-1 border-r border-white/30 font-mono text-center">
+              <div className="col-span-7 flex flex-col rounded-2xl overflow-hidden bg-card shadow-sm h-full min-h-0 premium-card">
+                <div className="sticky top-0 z-10 grid shrink-0 grid-cols-12 border-b border-border/60 bg-muted/50">
+                  <div className="setup-type-table-header col-span-1 border-r border-border/60 px-2 py-2 text-center font-mono">
                     Code
                   </div>
-                  <div className="col-span-4 px-1 py-1 border-r border-white/30 truncate">
+                  <div className="setup-type-table-header col-span-4 border-r border-border/60 px-2 py-2 text-left truncate">
                     Provider name
                   </div>
-                  <div className="col-span-1 px-1 py-1 border-r border-white/30 truncate">
+                  <div className="setup-type-table-header col-span-1 border-r border-border/60 px-2 py-2 text-left truncate">
                     Short
                   </div>
-                  <div className="col-span-1 px-1 py-1 border-r border-white/30 font-mono text-center">
+                  <div className="setup-type-table-header col-span-1 border-r border-border/60 px-2 py-2 text-center font-mono">
                     Acr.
                   </div>
-                  <div className="col-span-2 px-1 py-1 border-r border-white/30 truncate">
+                  <div className="setup-type-table-header col-span-2 border-r border-border/60 px-2 py-2 text-left truncate">
                     Group
                   </div>
-                  <div className="col-span-1 px-1 py-1 border-r border-white/30 text-center">
+                  <div className="setup-type-table-header col-span-1 border-r border-border/60 px-2 py-2 text-center">
                     Inact.
                   </div>
-                  <div className="col-span-2 px-1 py-1 truncate">Remarks</div>
+                  <div className="setup-type-table-header col-span-2 truncate px-2 py-2 text-left">
+                    Remarks
+                  </div>
                 </div>
                 <div className="flex-1 overflow-auto min-h-0">
                   {loading ? (
@@ -504,28 +510,28 @@ export default function ScholarshipProvidersPage() {
                           }
                         }}
                         className={cn(
-                          "w-full grid grid-cols-12 text-left text-[11px] border-b border-border/50 items-stretch cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          idx % 2 === 1 && "bg-emerald-50/80 dark:bg-emerald-950/20",
+                          "premium-row w-full grid grid-cols-12 text-left text-[11px] border-b border-border/40 items-stretch cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors",
+                          idx % 2 === 1 && "bg-muted/10",
                           selectedId === row.id &&
-                            "bg-emerald-200/90 dark:bg-emerald-900/40 font-medium ring-1 ring-emerald-400/50"
+                            "bg-emerald-500/10 font-medium ring-1 ring-emerald-500/20"
                         )}
                       >
-                        <div className="col-span-1 px-1 py-1.5 border-r border-border/40 font-mono truncate text-center">
+                        <div className="setup-font-mono-data col-span-1 truncate border-r border-border/60 px-2 py-2 text-center">
                           {row.provider_code}
                         </div>
-                        <div className="col-span-4 px-1 py-1.5 border-r border-border/40 truncate">
+                        <div className="col-span-4 px-2 py-2 border-r border-border/60 truncate">
                           {row.provider_name}
                         </div>
-                        <div className="col-span-1 px-1 py-1.5 border-r border-border/40 truncate">
+                        <div className="col-span-1 px-2 py-2 border-r border-border/60 truncate">
                           {row.short_name ?? "—"}
                         </div>
-                        <div className="col-span-1 px-1 py-1.5 border-r border-border/40 font-mono text-center truncate">
+                        <div className="setup-font-mono-data col-span-1 truncate border-r border-border/60 px-2 py-2 text-center">
                           {row.acronym ?? "—"}
                         </div>
-                        <div className="col-span-2 px-1 py-1.5 border-r border-border/40 truncate">
+                        <div className="col-span-2 px-2 py-2 border-r border-border/60 truncate">
                           {row.group_code ?? row.group_name ?? "—"}
                         </div>
-                        <div className="col-span-1 px-1 py-1.5 border-r border-border/40 flex justify-center items-center">
+                        <div className="col-span-1 px-2 py-2 border-r border-border/60 flex justify-center items-center">
                           <Checkbox
                             checked={row.is_inactive}
                             disabled
@@ -534,7 +540,7 @@ export default function ScholarshipProvidersPage() {
                           />
                         </div>
                         <div
-                          className="col-span-2 px-1 py-1.5 truncate text-muted-foreground"
+                          className="col-span-2 px-2 py-2 truncate text-muted-foreground"
                           title={row.remarks ?? ""}
                         >
                           {row.remarks
@@ -562,7 +568,7 @@ export default function ScholarshipProvidersPage() {
             if (!open) setNewGroupErrors({});
           }}
         >
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md premium-card premium-surface">
             <DialogHeader>
               <DialogTitle className="text-sm">New scholarship group</DialogTitle>
             </DialogHeader>
@@ -571,7 +577,7 @@ export default function ScholarshipProvidersPage() {
                 <Label className="text-xs">Group code</Label>
                 <Input
                   className={cn(
-                    "h-8 text-xs font-mono",
+                    "h-9 rounded-xl text-xs font-mono border-border/60 shadow-sm",
                     newGroupErrors.group_code &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -596,7 +602,7 @@ export default function ScholarshipProvidersPage() {
                 <Label className="text-xs">Group name</Label>
                 <Input
                   className={cn(
-                    "h-8 text-xs",
+                    "h-9 rounded-xl text-xs border-border/60 shadow-sm",
                     newGroupErrors.group_name &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}

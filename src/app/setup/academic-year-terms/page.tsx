@@ -2,12 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BookOpen, Lock, Plus, Save, Pencil, Trash2, X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import {
+  BookOpen,
+  Lock,
+  Plus,
+  Save,
+  Trash2,
+  X,
+  Search,
+  CalendarRange,
+  EyeOff,
+  Eye,
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 type TermRow = {
@@ -79,6 +94,7 @@ export default function AcademicYearAndTermsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "hidden" | "locked">("all");
+  const [query, setQuery] = useState("");
 
   const selected = useMemo(
     () => rows.find((r) => r.id === selectedId) ?? null,
@@ -86,11 +102,22 @@ export default function AcademicYearAndTermsPage() {
   );
 
   const visibleRows = useMemo(() => {
-    if (activeFilter === "all") return rows;
-    if (activeFilter === "locked") return rows.filter((r) => r.locked);
-    if (activeFilter === "hidden") return rows.filter((r) => !!r.hidden);
-    return rows.filter((r) => !r.locked && !r.hidden);
-  }, [rows, activeFilter]);
+    const base =
+      activeFilter === "all"
+        ? rows
+        : activeFilter === "locked"
+          ? rows.filter((r) => r.locked)
+          : activeFilter === "hidden"
+            ? rows.filter((r) => !!r.hidden)
+            : rows.filter((r) => !r.locked && !r.hidden);
+
+    const q = query.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter((r) => {
+      const hay = `${r.campus ?? ""} ${r.academic_year ?? ""} ${r.term ?? ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [rows, activeFilter, query]);
 
   const fetchRows = async () => {
     setLoading(true);
@@ -242,337 +269,439 @@ export default function AcademicYearAndTermsPage() {
 
   return (
     <div className="h-full bg-background relative overflow-x-hidden">
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
-      <div className="absolute top-48 -right-48 w-96 h-96 bg-primary/10 rounded-full blur-[100px] -z-10" />
-      <div className="absolute bottom-48 -left-48 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] -z-10" />
 
       <div className="w-full px-2 pt-2 pb-4">
-        <Card className="w-full border-2 border-primary/20 shadow-2xl rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
-          <div className="bg-emerald-700 dark:bg-emerald-900 text-white px-4 py-1.5 flex items-center justify-between border-b border-primary/30">
-            <div className="flex items-center gap-2">
-              <div className="bg-white dark:bg-slate-100 p-0.5 rounded-sm">
-                <BookOpen className="h-4 w-4 text-emerald-700 dark:text-emerald-900" />
+        <Card className="w-full overflow-hidden rounded-2xl border border-border/60 bg-background shadow-[0_12px_40px_-24px_rgba(2,6,23,0.45)]">
+          <CardHeader className="border-b border-border/60 bg-muted/5 pb-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <div className="space-y-0.5">
+                  <CardTitle className="text-base font-semibold tracking-tight">
+                    Academic Year & Terms
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Setup manager • Term windows and deadlines
+                  </p>
+                </div>
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider">Academic Year and Terms</span>
+
+              <div className="hidden sm:flex items-center gap-2">
+                <Badge variant="secondary" className="rounded-xl">
+                  Setup
+                </Badge>
+                {selectedId ? (
+                  <Badge className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-600">
+                    Editing
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="rounded-xl">
+                    New
+                  </Badge>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-xl"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <div className="w-4 h-4 rounded-sm bg-destructive/80 hover:bg-destructive cursor-pointer flex items-center justify-center">
-              <X className="h-3 w-3" />
-            </div>
-          </div>
+          </CardHeader>
 
-          <div className="p-3 bg-white/70 dark:bg-slate-950/60 h-[640px]">
-            <div className="grid grid-cols-12 gap-3 h-[580px]">
-              <div className="col-span-4 space-y-3 overflow-y-auto pr-1">
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Select the Campus</div>
-                  <div className="p-2">
-                    <Select
-                      value={formData.campus?.trim() || "__none__"}
-                      onValueChange={(v) => updateForm({ campus: v === "__none__" ? "" : v })}
-                    >
-                      <SelectTrigger className="h-7 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">Select campus</SelectItem>
-                        {campusOptionValues.map((acronym) => (
-                          <SelectItem key={acronym} value={acronym}>
-                            {(() => {
-                              const c = campuses.find((row) => row.acronym === acronym);
-                              return c?.campus_name ? `${c.acronym} - ${c.campus_name}` : acronym;
-                            })()}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Period of This Academic Year/Term</div>
-                  <div className="p-3 space-y-2">
-                    <div className="grid grid-cols-3 gap-2 items-center">
-                      <Label className="text-xs">Academic Year</Label>
-                      <Input
-                        className="col-span-2 h-7 text-xs"
-                        value={formData.academic_year}
-                        onChange={(e) => updateForm({ academic_year: e.target.value })}
-                      />
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[28rem_minmax(0,1fr)] xl:grid-cols-[30rem_minmax(0,1fr)] gap-6 lg:min-h-[calc(100svh-14.5rem)]">
+              {/* Left: editor */}
+              <Card className="rounded-2xl border-border/60 overflow-hidden">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold tracking-tight">Term details</p>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedId ? "Update the selected term window." : "Create a new academic year/term."}
+                      </p>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 items-center">
-                      <Label className="text-xs">School Term</Label>
-                      <Select value={formData.term} onValueChange={(v) => updateForm({ term: v })}>
-                        <SelectTrigger className="col-span-2 h-7 text-xs">
-                          <SelectValue placeholder="Select term" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1st Semester">1st Semester</SelectItem>
-                          <SelectItem value="2nd Semester">2nd Semester</SelectItem>
-                          <SelectItem value="3rd Term">3rd Term</SelectItem>
-                          <SelectItem value="Summer">Summer</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
+                      >
+                        <Save className="h-4 w-4" />
+                        {selectedId ? "Save changes" : "Create"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleNew}
+                        disabled={saving}
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        New
+                      </Button>
                     </div>
                   </div>
-                </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <ScrollArea className="h-[calc(100svh-22rem)] lg:h-[calc(100svh-19rem)] min-h-120">
+                    <div className="space-y-6 pr-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <CalendarRange className="h-4 w-4" />
+                          <span className="font-semibold text-foreground">Campus & term</span>
+                        </div>
+                        <Separator />
 
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Period</div>
-                  <div className="p-3 grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">Start</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.start_date}
-                        onChange={(e) => updateForm({ start_date: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">End</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.end_date}
-                        onChange={(e) => updateForm({ end_date: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] text-muted-foreground">Campus</Label>
+                          <Select
+                            value={formData.campus?.trim() || "__none__"}
+                            onValueChange={(v) => updateForm({ campus: v === "__none__" ? "" : v })}
+                          >
+                            <SelectTrigger className="h-9 rounded-xl text-xs border-border/60 shadow-sm">
+                              <SelectValue placeholder="Select campus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__">Select campus</SelectItem>
+                              {campusOptionValues.map((acronym) => (
+                                <SelectItem key={acronym} value={acronym}>
+                                  {(() => {
+                                    const c = campuses.find((row) => row.acronym === acronym);
+                                    return c?.campus_name ? `${c.acronym} - ${c.campus_name}` : acronym;
+                                  })()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Status</div>
-                  <div className="p-3 flex items-center justify-between text-xs">
-                    <span className="text-xs inline-flex items-center gap-2">
-                      <Lock className="h-3.5 w-3.5 text-amber-500" />
-                      Locked
-                    </span>
-                    <Checkbox
-                      checked={formData.locked}
-                      onCheckedChange={(v) => updateForm({ locked: !!v })}
-                    />
-                  </div>
-                </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Academic year</Label>
+                            <Input
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.academic_year}
+                              onChange={(e) => updateForm({ academic_year: e.target.value })}
+                              placeholder="e.g. 2026-2027"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Term</Label>
+                            <Select value={formData.term} onValueChange={(v) => updateForm({ term: v })}>
+                              <SelectTrigger className="h-9 rounded-xl text-xs border-border/60 shadow-sm">
+                                <SelectValue placeholder="Select term" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1st Semester">1st Semester</SelectItem>
+                                <SelectItem value="2nd Semester">2nd Semester</SelectItem>
+                                <SelectItem value="3rd Term">3rd Term</SelectItem>
+                                <SelectItem value="Summer">Summer</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Enrollment Period</div>
-                  <div className="p-2 grid grid-cols-2 gap-2 items-end">
-                    <div>
-                      <Label className="text-xs">Start</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.enrollment_start || ""}
-                        onChange={(e) => updateForm({ enrollment_start: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">End</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.enrollment_end || ""}
-                        onChange={(e) => updateForm({ enrollment_end: e.target.value })}
-                      />
-                    </div>
-                    <p className="col-span-2 text-[10px] text-muted-foreground">Registration will only be effective during the above dates.</p>
-                  </div>
-                </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <CalendarRange className="h-4 w-4" />
+                            <span className="font-semibold text-foreground">Period</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Lock className="h-4 w-4 text-amber-500" />
+                            <span>Locked</span>
+                            <Checkbox
+                              checked={formData.locked}
+                              onCheckedChange={(v) => updateForm({ locked: !!v })}
+                            />
+                          </div>
+                        </div>
+                        <Separator />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Start</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.start_date}
+                              onChange={(e) => updateForm({ start_date: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">End</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.end_date}
+                              onChange={(e) => updateForm({ end_date: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Late Enrolment Date</div>
-                  <div className="p-2 space-y-1">
-                    <Input
-                      type="date"
-                      className="h-7 text-xs"
-                      value={formData.late_enrolment_date || ""}
-                      onChange={(e) => updateForm({ late_enrolment_date: e.target.value })}
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      All Certificate of Registration which falls past this date shall be classed as Late Enrollment.
-                    </p>
-                  </div>
-                </div>
+                      <div className="space-y-3">
+                        <p className="text-sm font-semibold tracking-tight">Enrollment</p>
+                        <Separator />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Enrollment start</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.enrollment_start || ""}
+                              onChange={(e) => updateForm({ enrollment_start: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Enrollment end</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.enrollment_end || ""}
+                              onChange={(e) => updateForm({ enrollment_end: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] text-muted-foreground">Late enrollment date</Label>
+                          <Input
+                            type="date"
+                            className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                            value={formData.late_enrolment_date || ""}
+                            onChange={(e) => updateForm({ late_enrolment_date: e.target.value })}
+                          />
+                          <p className="text-[11px] text-muted-foreground/80">
+                            Beyond this date, registration is considered late.
+                          </p>
+                        </div>
+                      </div>
 
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Add/Change Subject(s) Period</div>
-                  <div className="p-2 grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">Start</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.add_change_start || ""}
-                        onChange={(e) => updateForm({ add_change_start: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">End</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.add_change_end || ""}
-                        onChange={(e) => updateForm({ add_change_end: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
+                      <div className="space-y-3">
+                        <p className="text-sm font-semibold tracking-tight">Add / Drop / Incomplete</p>
+                        <Separator />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Add/Change start</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.add_change_start || ""}
+                              onChange={(e) => updateForm({ add_change_start: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Add/Change end</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.add_change_end || ""}
+                              onChange={(e) => updateForm({ add_change_end: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Dropping start</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.dropping_start || ""}
+                              onChange={(e) => updateForm({ dropping_start: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">Dropping end</Label>
+                            <Input
+                              type="date"
+                              className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                              value={formData.dropping_end || ""}
+                              onChange={(e) => updateForm({ dropping_end: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] text-muted-foreground">Incomplete grades due</Label>
+                          <Input
+                            type="date"
+                            className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                            value={formData.incomplete_due_date || ""}
+                            onChange={(e) => updateForm({ incomplete_due_date: e.target.value })}
+                          />
+                        </div>
+                      </div>
 
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Dropping of Subject(s) Period</div>
-                  <div className="p-2 grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">Start</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.dropping_start || ""}
-                        onChange={(e) => updateForm({ dropping_start: e.target.value })}
-                      />
+                      <div className="space-y-3">
+                        <p className="text-sm font-semibold tracking-tight">Encoding of grades</p>
+                        <Separator />
+                        <div className="space-y-3">
+                          {[
+                            { key: "first", label: "First" },
+                            { key: "second", label: "Second" },
+                            { key: "third", label: "Third" },
+                            { key: "fourth", label: "Fourth" },
+                          ].map((period) => (
+                            <div key={period.key} className="grid grid-cols-1 sm:grid-cols-[5rem_1fr_1fr] gap-2 items-center">
+                              <span className="text-xs text-muted-foreground font-medium">{period.label}</span>
+                              <Input
+                                type="date"
+                                className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                                value={(formData as any)[`encoding_${period.key}_start`] || ""}
+                                onChange={(e) => updateForm({ [`encoding_${period.key}_start`]: e.target.value } as any)}
+                              />
+                              <Input
+                                type="date"
+                                className="h-9 rounded-xl text-xs border-border/60 shadow-sm"
+                                value={(formData as any)[`encoding_${period.key}_end`] || ""}
+                                onChange={(e) => updateForm({ [`encoding_${period.key}_end`]: e.target.value } as any)}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <Label className="text-xs">End</Label>
-                      <Input
-                        type="date"
-                        className="h-7 text-xs"
-                        value={formData.dropping_end || ""}
-                        onChange={(e) => updateForm({ dropping_end: e.target.value })}
-                      />
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
+              {/* Right: list */}
+              <Card className="rounded-2xl border-border/60 overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold tracking-tight">Records</p>
+                      <p className="text-xs text-muted-foreground">
+                        {visibleRows.length} shown • {rows.length} total
+                      </p>
                     </div>
-                  </div>
-                </div>
 
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Due Date for Incomplete Grades</div>
-                  <div className="p-2 space-y-2">
-                    <Input
-                      type="date"
-                      className="h-7 text-xs"
-                      value={formData.incomplete_due_date || ""}
-                      onChange={(e) => updateForm({ incomplete_due_date: e.target.value })}
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      All incomplete INC grades in this semester will turn to failing when beyond this date.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border border-border rounded-sm overflow-hidden bg-background">
-                  <div className="bg-slate-200 dark:bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">Encoding of Grades</div>
-                  <div className="p-2 space-y-2">
-                    {[
-                      { key: "first", label: "First" },
-                      { key: "second", label: "Second" },
-                      { key: "third", label: "Third" },
-                      { key: "fourth", label: "Fourth" },
-                    ].map((period) => (
-                      <div key={period.key} className="grid grid-cols-12 gap-2 items-center">
-                        <span className="col-span-3 text-xs">{period.label}:</span>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="relative">
+                        <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
-                          type="date"
-                          className="col-span-4 h-7 text-xs"
-                          value={(formData as any)[`encoding_${period.key}_start`] || ""}
-                          onChange={(e) => updateForm({ [`encoding_${period.key}_start`]: e.target.value } as any)}
-                        />
-                        <Input
-                          type="date"
-                          className="col-span-5 h-7 text-xs"
-                          value={(formData as any)[`encoding_${period.key}_end`] || ""}
-                          onChange={(e) => updateForm({ [`encoding_${period.key}_end`]: e.target.value } as any)}
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                          placeholder="Search year, term, campus…"
+                          className="h-9 rounded-xl pl-9 border-border/60 shadow-sm w-full sm:w-[18rem]"
                         />
                       </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2"
+                        disabled={!selectedId}
+                        onClick={() => {
+                          if (!selected) return;
+                          updateForm({ hidden: !formData.hidden });
+                          setTimeout(() => handleSave(), 0);
+                        }}
+                      >
+                        {formData.hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        {formData.hidden ? "Unhide" : "Hide"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 rounded-xl text-xs font-semibold gap-2 hover:bg-destructive/10 hover:text-destructive"
+                        onClick={deleteSelected}
+                        disabled={saving || !selectedId}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {[
+                      { key: "all", label: "All" },
+                      { key: "active", label: "Active" },
+                      { key: "hidden", label: "Hidden" },
+                      { key: "locked", label: "Locked" },
+                    ].map((tab) => (
+                      <Button
+                        key={tab.key}
+                        type="button"
+                        size="sm"
+                        variant={activeFilter === tab.key ? "default" : "outline"}
+                        className={cn(
+                          "h-8 rounded-xl text-xs font-semibold px-3",
+                          activeFilter === tab.key && "bg-emerald-600 hover:bg-emerald-700"
+                        )}
+                        onClick={() => setActiveFilter(tab.key as typeof activeFilter)}
+                      >
+                        {tab.label}
+                      </Button>
                     ))}
                   </div>
-                </div>
-              </div>
+                </CardHeader>
 
-              <div className="col-span-8 border border-border rounded-sm overflow-hidden bg-background h-full">
-                <div className="px-2 py-1 border-b border-border/60 bg-slate-100 dark:bg-slate-900 flex items-center gap-2">
-                  {[
-                    { key: "all", label: "All" },
-                    { key: "active", label: "Active" },
-                    { key: "hidden", label: "Hidden" },
-                    { key: "locked", label: "Locked" },
-                  ].map((tab) => (
-                    <Button
-                      key={tab.key}
-                      type="button"
-                      size="sm"
-                      variant={activeFilter === tab.key ? "default" : "outline"}
-                      className="h-6 text-[10px] px-3"
-                      onClick={() => setActiveFilter(tab.key as typeof activeFilter)}
-                    >
-                      {tab.label}
-                    </Button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-12 bg-emerald-500 dark:bg-emerald-800 text-white text-[10px] font-bold uppercase">
-                  <div className="col-span-3 px-2 py-1 border-r border-white/30">Academic Year</div>
-                  <div className="col-span-3 px-2 py-1 border-r border-white/30">Term</div>
-                  <div className="col-span-2 px-2 py-1 border-r border-white/30">Start</div>
-                  <div className="col-span-2 px-2 py-1 border-r border-white/30">End</div>
-                  <div className="col-span-2 px-2 py-1">Lock</div>
-                </div>
-                <div className="h-[530px] overflow-auto">
-                  {(loading ? [] : visibleRows).map((row) => (
-                    <button
-                      key={row.id}
-                      type="button"
-                      onClick={() => setSelectedId(row.id)}
-                      className={`w-full grid grid-cols-12 text-left text-xs border-b border-border/60 ${
-                        selectedId === row.id ? "bg-emerald-50 dark:bg-emerald-950/40" : "hover:bg-muted/50"
-                      }`}
-                    >
-                      <div className="col-span-3 px-2 py-1.5 border-r border-border/60 truncate">{row.academic_year}</div>
-                      <div className="col-span-3 px-2 py-1.5 border-r border-border/60 truncate">{row.term}</div>
-                      <div className="col-span-2 px-2 py-1.5 border-r border-border/60">{row.start_date ? String(row.start_date).slice(0, 10) : ""}</div>
-                      <div className="col-span-2 px-2 py-1.5 border-r border-border/60">{row.end_date ? String(row.end_date).slice(0, 10) : ""}</div>
-                      <div className="col-span-2 px-2 py-1.5">{row.locked ? "Yes" : "No"}</div>
-                    </button>
-                  ))}
-                  {loading && (
-                    <div className="px-3 py-6 text-xs text-muted-foreground">Loading records...</div>
-                  )}
-                  {!loading && visibleRows.length === 0 && (
-                    <div className="px-3 py-6 text-xs text-muted-foreground">No records yet.</div>
-                  )}
-                </div>
-              </div>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-12 bg-muted/40 text-[11px] font-semibold text-muted-foreground border border-border/60 rounded-xl overflow-hidden shadow-sm">
+                    <div className="col-span-3 px-3 py-2 border-r border-border/60">Academic Year</div>
+                    <div className="col-span-3 px-3 py-2 border-r border-border/60">Term</div>
+                    <div className="col-span-2 px-3 py-2 border-r border-border/60">Start</div>
+                    <div className="col-span-2 px-3 py-2 border-r border-border/60">End</div>
+                    <div className="col-span-2 px-3 py-2">Locked</div>
+                  </div>
+                  <div className="mt-2 border border-border/60 rounded-2xl overflow-hidden">
+                    <ScrollArea className="h-[calc(100svh-24rem)] lg:h-[calc(100svh-20.5rem)] min-h-120">
+                      {loading && (
+                        <div className="px-4 py-8 text-sm text-muted-foreground">
+                          Loading records…
+                        </div>
+                      )}
+                      {!loading && visibleRows.length === 0 && (
+                        <div className="px-4 py-10 text-center">
+                          <p className="text-sm font-semibold">No records</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Create a new academic year/term to get started.
+                          </p>
+                        </div>
+                      )}
+                      {!loading &&
+                        visibleRows.map((row, idx) => (
+                          <button
+                            key={row.id}
+                            type="button"
+                            onClick={() => setSelectedId(row.id)}
+                            className={cn(
+                              "w-full grid grid-cols-12 text-left text-xs border-b border-border/40 transition-colors pr-6",
+                              selectedId === row.id
+                                ? "bg-emerald-500/10"
+                                : idx % 2 === 0
+                                  ? "bg-background hover:bg-muted/40"
+                                  : "bg-muted/10 hover:bg-muted/40"
+                            )}
+                          >
+                            <div className="col-span-3 px-3 py-2 border-r border-border/40 truncate">
+                              {row.academic_year}
+                            </div>
+                            <div className="col-span-3 px-3 py-2 border-r border-border/40 truncate">
+                              {row.term}
+                            </div>
+                            <div className="col-span-2 px-3 py-2 border-r border-border/40">
+                              {row.start_date ? String(row.start_date).slice(0, 10) : ""}
+                            </div>
+                            <div className="col-span-2 px-3 py-2 border-r border-border/40">
+                              {row.end_date ? String(row.end_date).slice(0, 10) : ""}
+                            </div>
+                            <div className="col-span-2 px-3 py-2">
+                              {row.locked ? "Yes" : "No"}
+                            </div>
+                          </button>
+                        ))}
+                    </ScrollArea>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-
-            <div className="pt-3 flex items-center justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave} disabled={saving}>
-                <Save className="h-3.5 w-3.5" />
-                Save
-              </Button>
-              <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleNew} disabled={saving}>
-                <Plus className="h-3.5 w-3.5" />
-                New
-              </Button>
-              <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave} disabled={saving}>
-                <Pencil className="h-3.5 w-3.5" />
-                Edit
-              </Button>
-              <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={deleteSelected} disabled={saving || !selectedId}>
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs"
-                disabled={!selectedId}
-                onClick={() => {
-                  if (!selected) return;
-                  updateForm({ hidden: !formData.hidden });
-                  setTimeout(() => handleSave(), 0);
-                }}
-              >
-                {formData.hidden ? "Unhide" : "Hide"}
-              </Button>
-            </div>
-          </div>
+          </CardContent>
         </Card>
       </div>
     </div>

@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -22,6 +24,18 @@ import {
   UserRound,
   Users,
   Wallpaper,
+  UserPlus2,
+  ShieldAlert,
+  HardDrive,
+  Layout,
+  KeyRound,
+  Eye,
+  Edit3,
+  CheckCircle2,
+  SearchCode,
+  Hash,
+  FileText,
+  Loader2,
 } from "lucide-react";
 
 type UserRow = {
@@ -776,420 +790,519 @@ export function UserRightsSetupModule() {
   };
 
   return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="border border-[#79b898] bg-white">
-        <div className="flex items-center justify-between bg-gradient-to-b from-[#def8ea] to-[#9fdbbc] border-b border-[#79b898] px-2 py-1">
-          <div>
-            <h1 className="text-[31px] leading-none tracking-tight text-[#1f5e45] font-semibold uppercase">
-              USER RIGHTS
-            </h1>
-            <p className="text-[11px] text-[#35684f] -mt-0.5">
-              This module allows you to create new user, users group and modify privileges.
+    <div className="h-full bg-background relative overflow-x-hidden">
+      <div className="flex flex-col h-full p-2 gap-3">
+        {/* ── Page Header ── */}
+        <div className="flex flex-wrap items-start justify-between gap-4 px-1">
+          <div className="space-y-1">
+            <h1 className="setup-type-page-title">User Rights</h1>
+            <p className="setup-type-page-desc max-w-2xl">
+              Centralized security management. Create users, define groups, and manage granular privilege modules
+              across the institution.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="h-6 text-[10px] border-[#9ed9c1] bg-white">
-              <Lock className="h-3 w-3" />
-              Lockdown
-            </Button>
-            <Button size="sm" variant="outline" className="h-6 text-[10px] border-[#9ed9c1] bg-white">
-              <LogOut className="h-3 w-3" />
-              Exit
-            </Button>
+          <div className="hidden sm:flex flex-col items-end gap-2">
+            <div className="setup-type-kicker-pill flex h-9 items-center rounded-xl border border-border/60 bg-background/70 px-3 shadow-sm backdrop-blur">
+              Security & Access Control
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm hover:bg-destructive/10 hover:text-destructive">
+                <Lock className="h-3.5 w-3.5" /> Lockdown
+              </Button>
+              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm">
+                <LogOut className="h-3.5 w-3.5" /> Exit
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-12 min-h-[610px]">
-          <div className="col-span-12 lg:col-span-3 border-r border-[#79b898]">
-            <div className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[11px] px-1 py-0.5 font-semibold">
-              List of Users and Users Group
-            </div>
-            <div className="p-1 border-b border-[#cfe6da]">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search user..."
-                className="h-6 text-[11px]"
-              />
-            </div>
-            <div className="h-[548px] overflow-auto p-1 text-[11px]">
-              <button
-                type="button"
-                onClick={() => setTreeOpen((s) => ({ ...s, root: !s.root }))}
-                className="w-full flex items-center gap-1 font-semibold text-[#1f5e45] hover:bg-[#e7f8ef] px-0.5 py-0.5"
-              >
-                {treeOpen.root ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                <Users className="h-3.5 w-3.5" />
-                Users and Groups
-              </button>
-              {treeOpen.root && (
-                <div className="pl-4 mt-0.5 space-y-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setTreeOpen((s) => ({ ...s, users: !s.users }))}
-                    className="w-full flex items-center gap-1 font-semibold text-[#1f5e45] hover:bg-[#e7f8ef] px-0.5 py-0.5 text-left"
-                  >
-                    {treeOpen.users ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                    <FolderOpen className="h-3.5 w-3.5" />
-                    Users ({userRows.length})
-                  </button>
-                  {treeOpen.users && (
-                    <div className="pl-3 space-y-0.5">
-                      {filteredUsers.map((u) => (
-                        <button
-                          type="button"
-                          key={u.id}
-                          onClick={() => {
-                            setSelectedUserId(u.id);
-                            setActiveTab("users");
-                          }}
-                          className={cn(
-                            "w-full text-left px-1 py-0.5 flex items-center gap-1 hover:bg-[#e7f8ef]",
-                            u.id === selectedUserId && "bg-[#d9f3e5]"
-                          )}
-                        >
-                          <UserRound className="h-3 w-3 text-[#1f7a57]" />
-                          <span className="truncate">{u.employee_name}</span>
-                        </button>
-                      ))}
-                      {filteredUsers.length === 0 && (
-                        <div className="text-[11px] text-muted-foreground px-1 py-1.5 italic">
-                          No users found.
-                        </div>
-                      )}
-                    </div>
-                  )}
+        <Card className="flex-1 flex flex-col overflow-hidden rounded-2xl bg-background border border-border/40 shadow-sm min-h-0">
 
-                  <button
-                    type="button"
-                    onClick={() => setTreeOpen((s) => ({ ...s, groups: !s.groups }))}
-                    className="w-full flex items-center gap-1 font-semibold text-[#1f5e45] hover:bg-[#e7f8ef] px-0.5 py-0.5 text-left"
-                  >
-                    {treeOpen.groups ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                    <FolderOpen className="h-3.5 w-3.5" />
-                    Groups ({filteredGroups.length})
-                  </button>
-                  {treeOpen.groups && (
-                    <div className="pl-3 space-y-0.5">
-                      {filteredGroups.map((group) => (
-                        <button
-                          type="button"
-                          key={group}
-                          onClick={() => {
-                            setSelectedGroupName(group);
-                            setActiveTab("privileges");
-                          }}
-                          className={cn(
-                            "w-full text-left px-1 py-0.5 flex items-center gap-1 hover:bg-[#e7f8ef]",
-                            selectedGroupName === group && "bg-[#d9f3e5]"
-                          )}
-                        >
-                          <Users className="h-3 w-3 text-[#1f7a57]" />
-                          <span className="truncate">{group}</span>
-                        </button>
-                      ))}
-                      {filteredGroups.length === 0 && (
-                        <div className="text-[11px] text-muted-foreground px-1 py-1.5 italic">
-                          No groups found.
-                        </div>
-                      )}
-                    </div>
-                  )}
+
+          <div className="flex-1 grid grid-cols-12 min-h-0 overflow-hidden">
+            {/* ── Sidebar Tree ── */}
+            <div className="col-span-12 lg:col-span-3 border-r border-border/60 flex flex-col min-h-0 bg-muted/5">
+              <div className="px-3 py-2.5 border-b border-border/60 bg-muted/5 flex items-center gap-2 shrink-0">
+                <Users className="h-4 w-4 text-emerald-600" />
+                <span className="text-xs font-bold text-foreground/80 uppercase tracking-wider">Navigation</span>
+              </div>
+              <div className="p-2 border-b border-border/60 bg-background/50 sticky top-0 z-10">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search users/groups..."
+                    className="h-8 pl-8 text-xs rounded-xl border-border/60 bg-background shadow-sm focus-visible:ring-emerald-500/20"
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-9">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "users" | "privileges")}>
-              <TabsList className="h-7 rounded-none bg-[#e6f8ef] border-b border-[#79b898] p-0 w-full justify-start">
-                <TabsTrigger value="users" className="h-7 rounded-none text-[11px] px-3 data-[state=active]:bg-[#f6fcf8]">
-                  Users: [{selectedUser?.employee_name ?? ""}]
-                </TabsTrigger>
-                <TabsTrigger value="privileges" className="h-7 rounded-none text-[11px] px-3 data-[state=active]:bg-[#f6fcf8]">
-                  Privileges: [{activeGroupName}]
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <div className="flex items-center gap-1 p-1 border-b border-[#79b898] bg-gradient-to-b from-[#e4f8ee] to-[#9ed9c1]">
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-6 text-[11px] border-[#9ed9c1] bg-white"
-                onClick={openAddUserDialog}
-              >
-                <Plus className="h-3 w-3" />
-                Add New User
-              </Button>
-              <Button size="sm" variant="outline" className="h-6 text-[11px] border-[#9ed9c1] bg-white"><Trash2 className="h-3 w-3" />Delete User</Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-6 text-[11px] border-[#9ed9c1] bg-white"
-                onClick={openGroupPicker}
-              >
-                <Users className="h-3 w-3" />
-                Users Group
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-6 text-[11px] border-[#9ed9c1] bg-white"
-                onClick={openEditUsernameDialog}
-              >
-                <UserCog className="h-3 w-3" />
-                Edit Username
-              </Button>
-              <Button size="sm" variant="outline" className="h-6 text-[11px] border-[#9ed9c1] bg-white"><RefreshCw className="h-3 w-3" />Reset Password</Button>
-              <Button size="sm" variant="outline" className="h-6 text-[11px] border-[#9ed9c1] bg-white"><ShieldCheck className="h-3 w-3" />Program Access</Button>
-              <Button size="sm" variant="outline" className="h-6 text-[11px] border-[#9ed9c1] bg-white"><Wallpaper className="h-3 w-3" />Wallpaper</Button>
-            </div>
-
-            <div className="overflow-auto h-[548px]">
-              {activeTab === "users" ? (
-                <table className="w-full text-[11px] border-collapse min-w-[1560px]">
-                  <thead>
-                    <tr className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white uppercase">
-                      {[
-                        "User ID",
-                        "Employee Name",
-                        "Username",
-                        "Users Group",
-                        "Position Title",
-                        "Department",
-                        "Date Created",
-                        "Logged Version",
-                        "Logged Date",
-                        "Logged Computer Name",
-                        "Logged IP Address",
-                        "Logged MAC Address",
-                        "Level",
-                      ].map((h) => (
-                        <th key={h} className="text-left px-2 py-1 border border-white/25">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userRows.map((r, idx) => (
-                      <tr key={r.id} className={cn(idx % 2 ? "bg-[#f8fdf9]" : "bg-white", r.id === selectedUserId && "bg-[#d9f3e5]")}>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.id}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.employee_name}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.username}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.user_group}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.position_title}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.department}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.date_created ?? ""}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.logged_version ?? ""}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.logged_date ?? ""}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.computer_name ?? ""}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.ip_address ?? ""}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.mac_address ?? ""}</td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc]">{r.level}</td>
-                      </tr>
-                    ))}
-                    {userRows.length === 0 && (
-                      <tr>
-                        <td colSpan={13} className="px-2 py-3 border border-[#d4e8dc] text-muted-foreground italic">
-                          No user-rights records available.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              ) : (
-                <table className="w-full text-[11px] border-collapse min-w-[1150px]">
-                  <thead>
-                    <tr className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white uppercase">
-                      {["Module", "Description", "Read", "Write", "Delete", "Print", "Export", "Ref. ID"].map((h) => (
-                        <th key={h} className="text-left px-2 py-1 border border-white/25">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {privilegeDisplayRows.map((r, idx) => {
-                      const prev = privilegeDisplayRows[idx - 1];
-                      const showModule = idx === 0 || prev?.module !== r.module;
-                      return (
-                      <tr
-                        key={`${String(r.id)}-${r.ref_id}-${idx}`}
-                        className={cn(
-                          idx % 2 ? "bg-[#f8fdf9]" : "bg-white",
-                          r.isModuleHeader && "font-semibold bg-[#eef8f2]"
+              </div>
+              <div className="flex-1 overflow-auto px-2 py-2 text-[11px] space-y-1 scrollbar-thin">
+                <button
+                  type="button"
+                  onClick={() => setTreeOpen((s) => ({ ...s, root: !s.root }))}
+                  className="w-full flex items-center gap-2 font-bold text-foreground/80 hover:bg-emerald-500/5 px-2 py-1.5 rounded-lg transition-colors group outline-none"
+                >
+                  <div className="shrink-0 transition-transform group-hover:scale-110">
+                    {treeOpen.root ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                  </div>
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                  Access Directory
+                </button>
+                {treeOpen.root && (
+                  <div className="pl-3 mt-1 space-y-1 font-medium">
+                    <button
+                      type="button"
+                      onClick={() => setTreeOpen((s) => ({ ...s, users: !s.users }))}
+                      className="w-full flex items-center gap-2 font-semibold text-muted-foreground hover:text-emerald-700 hover:bg-emerald-500/5 px-2 py-1.5 rounded-lg transition-colors outline-none"
+                    >
+                      <div className="shrink-0">
+                        {treeOpen.users ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                      </div>
+                      <UserRound className="h-3.5 w-3.5" />
+                      Users
+                      <span className="ml-auto text-[10px] bg-muted px-1.5 rounded-md font-mono text-muted-foreground/70">
+                        {userRows.length}
+                      </span>
+                    </button>
+                    {treeOpen.users && (
+                      <div className="pl-5 space-y-0.5 border-l border-emerald-500/10 ml-3.5 py-1">
+                        {filteredUsers.map((u) => (
+                          <button
+                            type="button"
+                            key={u.id}
+                            onClick={() => {
+                              setSelectedUserId(u.id);
+                              setActiveTab("users");
+                            }}
+                            className={cn(
+                              "w-full text-left px-2 py-1.5 flex items-center gap-2 rounded-lg transition-all group outline-none",
+                              u.id === selectedUserId 
+                                ? "bg-emerald-500/10 text-emerald-700 font-bold ring-1 ring-inset ring-emerald-500/20 shadow-xs" 
+                                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                            )}
+                          >
+                            <UserRound className={cn("h-3 w-3", u.id === selectedUserId ? "text-emerald-600" : "text-muted-foreground/40")} />
+                            <span className="truncate">{u.employee_name}</span>
+                          </button>
+                        ))}
+                        {filteredUsers.length === 0 && (
+                          <div className="text-[10px] text-muted-foreground/60 px-2 py-2 italic font-light">
+                            No match found
+                          </div>
                         )}
-                      >
-                        <td className="px-2 py-0.5 border border-[#d4e8dc] whitespace-nowrap">{showModule ? r.module : ""}</td>
-                        <td
-                          onDoubleClick={() => applyAllPermissionsInRow(r)}
-                          title="Double-click to check all permissions in this row"
-                          className={cn(
-                            "px-2 py-0.5 border border-[#d4e8dc] whitespace-nowrap cursor-pointer select-none",
-                            !r.isModuleHeader && "pl-6"
-                          )}
-                        >
-                          {r.description}
-                        </td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc] text-center">
-                          <input
-                            type="checkbox"
-                            checked={r.read}
-                            onChange={(e) => handlePrivilegeCheckboxChange(r, "read", e.target.checked)}
-                          />
-                        </td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc] text-center">
-                          <input
-                            type="checkbox"
-                            checked={r.write}
-                            onChange={(e) => handlePrivilegeCheckboxChange(r, "write", e.target.checked)}
-                          />
-                        </td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc] text-center">
-                          <input
-                            type="checkbox"
-                            checked={r.delete}
-                            onChange={(e) => handlePrivilegeCheckboxChange(r, "delete", e.target.checked)}
-                          />
-                        </td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc] text-center">
-                          <input
-                            type="checkbox"
-                            checked={r.print}
-                            onChange={(e) => handlePrivilegeCheckboxChange(r, "print", e.target.checked)}
-                          />
-                        </td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc] text-center">
-                          <input
-                            type="checkbox"
-                            checked={r.export}
-                            onChange={(e) => handlePrivilegeCheckboxChange(r, "export", e.target.checked)}
-                          />
-                        </td>
-                        <td className="px-2 py-0.5 border border-[#d4e8dc] whitespace-nowrap">{r.ref_id}</td>
-                      </tr>
-                    )})}
-                    {activeGroupPrivileges.length === 0 && (
-                      <tr>
-                        <td colSpan={8} className="px-2 py-3 border border-[#d4e8dc] text-muted-foreground italic">
-                          No privileges available for this group.
-                        </td>
-                      </tr>
+                      </div>
                     )}
-                  </tbody>
-                </table>
-              )}
+
+                    <button
+                      type="button"
+                      onClick={() => setTreeOpen((s) => ({ ...s, groups: !s.groups }))}
+                      className="w-full flex items-center gap-2 font-semibold text-muted-foreground hover:text-emerald-700 hover:bg-emerald-500/5 px-2 py-1.5 rounded-lg transition-colors outline-none"
+                    >
+                      <div className="shrink-0">
+                        {treeOpen.groups ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                      </div>
+                      <Users className="h-3.5 w-3.5" />
+                      Groups
+                      <span className="ml-auto text-[10px] bg-muted px-1.5 rounded-md font-mono text-muted-foreground/70">
+                        {groupRows.length}
+                      </span>
+                    </button>
+                    {treeOpen.groups && (
+                      <div className="pl-5 space-y-0.5 border-l border-emerald-500/10 ml-3.5 py-1">
+                        {filteredGroups.map((group) => (
+                          <button
+                            type="button"
+                            key={group}
+                            onClick={() => {
+                              setSelectedGroupName(group);
+                              setActiveTab("privileges");
+                            }}
+                            className={cn(
+                              "w-full text-left px-2 py-1.5 flex items-center gap-2 rounded-lg transition-all outline-none",
+                              selectedGroupName === group 
+                                ? "bg-emerald-500/10 text-emerald-700 font-bold ring-1 ring-inset ring-emerald-500/20 shadow-xs" 
+                                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                            )}
+                          >
+                            <Users className={cn("h-3 w-3", selectedGroupName === group ? "text-emerald-600" : "text-muted-foreground/40")} />
+                            <span className="truncate">{group}</span>
+                          </button>
+                        ))}
+                        {filteredGroups.length === 0 && (
+                          <div className="text-[10px] text-muted-foreground/60 px-2 py-2 italic font-light">
+                            No groups found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Main Workspace ── */}
+            <div className="col-span-12 lg:col-span-9 flex flex-col min-h-0 bg-background/40">
+              <div className="border-b border-border/60 bg-muted/5">
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "users" | "privileges")}>
+                  <TabsList className="h-10 rounded-none bg-transparent p-0 w-full justify-start border-none">
+                    <TabsTrigger 
+                      value="users" 
+                      className="h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-emerald-500/5 data-[state=active]:text-emerald-700 text-[11px] font-bold px-5 transition-all outline-none"
+                    >
+                      Users & Accounts
+                      {selectedUser && (
+                        <span className="ml-2 text-[9px] font-normal opacity-70 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/10">
+                          {selectedUser.employee_name}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="privileges" 
+                      className="h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-emerald-500/5 data-[state=active]:text-emerald-700 text-[11px] font-bold px-5 transition-all outline-none"
+                    >
+                      Module Privileges
+                      <span className="ml-2 text-[9px] font-normal opacity-70 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/10">
+                        {activeGroupName || "Global"}
+                      </span>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 p-2.5 border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-20 overflow-x-auto no-scrollbar">
+                <Button
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs rounded-lg shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={openAddUserDialog}
+                >
+                  <UserPlus2 className="h-3.5 w-3.5" />
+                  New User
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-3.5 w-3.5" /> Delete User
+                </Button>
+                
+                <div className="w-px h-5 bg-border/60 mx-1 shrink-0" />
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm"
+                  onClick={openGroupPicker}
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  Users Group
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm"
+                  onClick={openEditUsernameDialog}
+                >
+                  <UserCog className="h-3.5 w-3.5" />
+                  Edit Username
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm">
+                  <KeyRound className="h-3.5 w-3.5" /> Password Reset
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Program Access
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg border-border/60 shadow-sm ml-auto opacity-50 hover:opacity-100">
+                  <Wallpaper className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+
+              <div className="flex-1 overflow-auto min-h-0 bg-background relative">
+                {activeTab === "users" ? (
+                  <div className="h-full">
+                    <table className="w-full text-[11px] border-collapse min-w-[1600px]">
+                      <thead>
+                        <tr className="sticky top-0 z-30 bg-muted/90 backdrop-blur shadow-sm uppercase text-[10px] font-bold text-muted-foreground/80 tracking-wider">
+                          {[
+                            "User ID",
+                            "Employee Name",
+                            "Username",
+                            "Users Group",
+                            "Position Title",
+                            "Department",
+                            "Date Created",
+                            "Logged Version",
+                            "Logged Date",
+                            "Computer",
+                            "IP Address",
+                            "MAC Address",
+                            "Level",
+                          ].map((h) => (
+                            <th key={h} className="text-left px-3 py-2.5 border-r border-border/40 last:border-r-0">
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userRows.map((r, idx) => (
+                          <tr 
+                            key={r.id} 
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => setSelectedUserId(r.id)}
+                            className={cn(
+                              "premium-row cursor-pointer transition-colors outline-none",
+                              idx % 2 === 1 ? "bg-muted/10" : "bg-background",
+                              r.id === selectedUserId && "bg-emerald-500/10 font-medium ring-1 ring-inset ring-emerald-500/20 shadow-xs"
+                            )}
+                          >
+                            <td className="setup-font-mono-data border-r border-border/40 px-3 py-2.5 font-bold opacity-70">{r.id}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 font-medium text-foreground">{r.employee_name}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 font-mono text-emerald-700 bg-emerald-500/5">{r.username}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 flex items-center gap-1.5 font-medium">
+                              <Users className="h-3 w-3 text-muted-foreground/60" />
+                              {r.user_group}
+                            </td>
+                            <td className="px-3 py-2.5 border-r border-border/40 italic text-muted-foreground">{r.position_title}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 text-muted-foreground font-medium">{r.department}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 tabular-nums">{r.date_created || "—"}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 text-center font-mono opacity-60 italic">{r.logged_version || "—"}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 opacity-70">{r.logged_date || "—"}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 flex items-center gap-1.5 opacity-60">
+                              <HardDrive className="h-3 w-3" /> {r.computer_name || "—"}
+                            </td>
+                            <td className="px-3 py-2.5 border-r border-border/40 font-mono opacity-60">{r.ip_address || "—"}</td>
+                            <td className="px-3 py-2.5 border-r border-border/40 font-mono opacity-40 uppercase">{r.mac_address || "—"}</td>
+                            <td className="px-3 py-2.5"><span className="bg-muted px-1.5 py-0.5 rounded border border-border/50 text-[10px] font-medium">{r.level}</span></td>
+                          </tr>
+                        ))}
+                        {userRows.length === 0 && (
+                          <tr>
+                            <td colSpan={13} className="px-4 py-20 text-center text-muted-foreground italic bg-muted/5">
+                              <ShieldAlert className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                              No user-rights records available.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="h-full">
+                    <table className="w-full text-[11px] border-collapse min-w-[1150px]">
+                      <thead>
+                        <tr className="sticky top-0 z-30 bg-muted/90 backdrop-blur shadow-sm uppercase text-[10px] font-bold text-muted-foreground/80 tracking-wider">
+                          {["Module", "Task Action Item", "Read", "Write", "Delete", "Print", "XLSX", "Ref. ID"].map((h) => (
+                            <th key={h} className="text-left px-3 py-2.5 border-r border-border/40 last:border-r-0">
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {privilegeDisplayRows.map((r, idx) => {
+                          const prev = privilegeDisplayRows[idx - 1];
+                          const showModule = idx === 0 || prev?.module !== r.module;
+                          return (
+                            <tr
+                              key={`${String(r.id)}-${r.ref_id}-${idx}`}
+                              className={cn(
+                                "premium-row transition-colors group",
+                                idx % 2 === 1 ? "bg-muted/10" : "bg-background",
+                                r.isModuleHeader && "font-bold bg-emerald-500/5 text-emerald-800"
+                              )}
+                            >
+                              <td className="px-3 py-1.5 border-r border-border/40 font-black text-emerald-900/80">
+                                {showModule && (
+                                  <div className="flex items-center gap-1.5 uppercase tracking-tighter">
+                                    <Layout className="h-3.5 w-3.5 opacity-40" />
+                                    {r.module}
+                                  </div>
+                                )}
+                              </td>
+                              <td
+                                onDoubleClick={() => applyAllPermissionsInRow(r)}
+                                title="Double-click to check all permissions in this row"
+                                className={cn(
+                                  "px-3 py-1.5 border-r border-border/40 whitespace-nowrap cursor-pointer select-none transition-colors font-medium",
+                                  !r.isModuleHeader ? "pl-8 text-muted-foreground hover:text-foreground" : "font-black"
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {!r.isModuleHeader && <div className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-emerald-400 shrink-0" />}
+                                  {r.description}
+                                </div>
+                              </td>
+                              {["read", "write", "delete", "print", "export"].map((key) => (
+                                <td key={key} className="px-3 py-1.5 border-r border-border/40 text-center">
+                                  <label className="flex items-center justify-center cursor-pointer group/check">
+                                    <input
+                                      type="checkbox"
+                                      checked={(r as any)[key]}
+                                      onChange={(e) => handlePrivilegeCheckboxChange(r, key as any, e.target.checked)}
+                                      className="h-4 w-4 rounded-sm border-emerald-500/30 text-emerald-600 focus:ring-emerald-500 transition-all cursor-pointer opacity-70 group-hover/check:opacity-100"
+                                    />
+                                  </label>
+                                </td>
+                              ))}
+                              <td className="px-3 py-1.5 font-mono text-[9px] opacity-30 group-hover:opacity-100 truncate">{r.ref_id}</td>
+                            </tr>
+                          )})}
+                        {activeGroupPrivileges.length === 0 && (
+                          <tr>
+                            <td colSpan={8} className="px-4 py-20 text-center text-muted-foreground italic bg-muted/5">
+                              <ShieldAlert className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                              No privileges defined for this group.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                    <div className="sticky bottom-0 z-20 bg-emerald-600 text-white px-4 py-2 text-[10px] font-bold flex items-center justify-between shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
+                      <div className="flex items-center gap-3">
+                        <Layout className="h-3.5 w-3.5" />
+                        SYSTEM PERMISSION GRID V1.0
+                        <span className="opacity-40 font-normal">|</span>
+                        <span className="bg-white/20 px-1.5 rounded font-mono">STABLE</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="flex items-center gap-1.5">
+                          <Users className="h-3 w-3" />
+                          GROUP: {activeGroupName.toUpperCase()}
+                        </span>
+                        <span className="opacity-40">|</span>
+                        <span>{activeGroupPrivileges.length} ENTRIES LOADED</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
-        <DialogContent className="max-w-[860px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-[13px] font-bold">New User</DialogTitle>
+        <DialogContent className="max-w-[860px] p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+          <DialogHeader className="bg-primary px-4 py-3 border-b border-white/10 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/15 rounded-xl border border-white/20">
+                <UserPlus2 className="h-5 w-5 text-white" />
+              </div>
+              <div className="text-left">
+                <DialogTitle className="text-base font-bold text-white tracking-tight leading-tight">Create User Account</DialogTitle>
+                <p className="text-[10px] text-white/70 font-medium">Link Employee profile to System Access List</p>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="p-2 bg-white">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="text-[12px] font-semibold w-12">Find...</div>
-              <Input
-                value={employeeSearch}
-                onChange={(e) => setEmployeeSearch(e.target.value)}
-                className="h-7 text-[12px]"
-                placeholder="Search employee"
-              />
-              <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white">
-                <Search className="h-3.5 w-3.5" />
-                Search
+          <div className="p-4 bg-background space-y-4">
+            <div className="flex items-center gap-3 bg-muted/40 p-3 rounded-2xl border border-border/40">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                <Input
+                  value={employeeSearch}
+                  onChange={(e) => setEmployeeSearch(e.target.value)}
+                  className="h-10 pl-10 text-xs rounded-xl border-border/60 bg-background shadow-inner focus-visible:ring-emerald-500/30"
+                  placeholder="Filter employees by name, ID or department..."
+                />
+              </div>
+              <Button size="sm" className="h-10 px-4 gap-2 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 shrink-0" onClick={loadEmployees}>
+                {employeeLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                Refresh List
               </Button>
             </div>
 
-            <div className="grid grid-cols-12 gap-2 mb-2">
-              <div className="col-span-2 border border-[#9ed9c1] h-[118px] grid place-items-center text-[12px] text-muted-foreground">
-                No Picture
+            <div className="grid grid-cols-12 gap-5 min-h-[160px]">
+              <div className="col-span-12 md:col-span-3">
+                <div className="aspect-[4/5] rounded-2xl bg-muted/20 border border-dashed border-border/60 flex flex-col items-center justify-center gap-2 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <UserRound className="h-12 w-12 text-muted-foreground/30 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">No Profile Pic</span>
+                </div>
               </div>
-              <div className="col-span-10 space-y-1">
-                <div className="grid grid-cols-12 items-center gap-2">
-                  <div className="col-span-2 text-[12px] font-semibold">Nickname</div>
-                  <Input
-                    className="col-span-10 h-7 text-[12px]"
-                    value={
-                      selectedEmployee
-                        ? makeNickname(selectedEmployee.employee_name, selectedEmployee.employee_id)
-                        : ""
-                    }
-                    readOnly
-                  />
-                </div>
-                <div className="grid grid-cols-12 items-center gap-2">
-                  <div className="col-span-2 text-[12px] font-semibold">Employee ID</div>
-                  <Input className="col-span-10 h-7 text-[12px]" value={selectedEmployee?.employee_id ?? ""} readOnly />
-                </div>
-                <div className="grid grid-cols-12 items-center gap-2">
-                  <div className="col-span-2 text-[12px] font-semibold">Employee Name</div>
-                  <Input className="col-span-10 h-7 text-[12px]" value={selectedEmployee?.employee_name ?? ""} readOnly />
-                </div>
-                <div className="grid grid-cols-12 items-center gap-2">
-                  <div className="col-span-2 text-[12px] font-semibold">Title</div>
-                  <Input className="col-span-10 h-7 text-[12px]" value={selectedEmployee?.position_title ?? ""} readOnly />
-                </div>
-                <div className="grid grid-cols-12 items-center gap-2">
-                  <div className="col-span-2 text-[12px] font-semibold">Department</div>
-                  <Input className="col-span-10 h-7 text-[12px]" value={selectedEmployee?.department ?? ""} readOnly />
-                </div>
+              
+              <div className="col-span-12 md:col-span-9 grid grid-cols-2 gap-x-4 gap-y-3 p-1">
+                {[
+                  { label: "Suggested Username", value: selectedEmployee ? makeNickname(selectedEmployee.employee_name, selectedEmployee.employee_id) : "", icon: UserRound, mono: true, emerald: true },
+                  { label: "Employee ID", value: selectedEmployee?.employee_id ?? "", icon: Hash, mono: true },
+                  { label: "Employee Name", value: selectedEmployee?.employee_name ?? "", icon: FileText, bold: true },
+                  { label: "Position / Designation", value: selectedEmployee?.position_title ?? "", icon: ShieldCheck },
+                  { label: "Department / Office", value: selectedEmployee?.department ?? "", icon: FolderOpen, span: 2 },
+                ].map((f, idx) => (
+                  <div key={idx} className={cn("space-y-1.5", f.span === 2 && "col-span-2")}>
+                    <Label className="text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wide">
+                      <f.icon className="h-3 w-3" /> {f.label}
+                    </Label>
+                    <div className={cn(
+                      "h-9 px-3 flex items-center rounded-xl border border-border/40 text-xs shadow-sm bg-muted/10",
+                      f.mono && "font-mono tracking-tight",
+                      f.emerald && "bg-emerald-500/5 text-emerald-700 border-emerald-500/20 font-bold",
+                      f.bold && "font-bold text-foreground"
+                    )}>
+                      {f.value || <span className="opacity-30 italic">Not selected</span>}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="border border-[#79b898]">
-              <div className="grid grid-cols-12 bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[10px] font-bold uppercase">
-                <div className="col-span-2 px-2 py-1 border-r border-white/25">Employee ID</div>
-                <div className="col-span-6 px-2 py-1 border-r border-white/25">Employee Name</div>
-                <div className="col-span-4 px-2 py-1">Position Title</div>
+            <div className="rounded-2xl border border-border/60 overflow-hidden shadow-sm bg-background/50">
+              <div className="bg-muted/80 px-3 py-2 border-b border-border/60 flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-widest flex items-center gap-2">
+                  <SearchCode className="h-3 w-3 text-emerald-600" /> Select Employee Candidate
+                </span>
+                <span className="text-[10px] font-mono opacity-60">Result(s): {filteredEmployees.length}</span>
               </div>
-              <div className="max-h-[260px] overflow-auto">
-                {employeeLoading ? (
-                  <div className="px-2 py-3 text-[12px] text-muted-foreground">Loading employees...</div>
-                ) : filteredEmployees.length === 0 ? (
-                  <div className="px-2 py-3 text-[12px] text-muted-foreground">No employees found.</div>
-                ) : (
-                  filteredEmployees.map((e, idx) => (
-                    <button
-                      type="button"
-                      key={e.employee_id}
-                      onClick={() => setSelectedEmployeeId(e.employee_id)}
-                      className={cn(
-                        "w-full grid grid-cols-12 text-left text-[11px] border-b border-[#d4e8dc]",
-                        idx % 2 ? "bg-[#f8fdf9]" : "bg-white",
-                        selectedEmployeeId === e.employee_id && "bg-[#d9f3e5]"
-                      )}
-                    >
-                      <div className="col-span-2 px-2 py-0.5 border-r border-[#d4e8dc]">{e.employee_id}</div>
-                      <div className="col-span-6 px-2 py-0.5 border-r border-[#d4e8dc] truncate">{e.employee_name}</div>
-                      <div className="col-span-4 px-2 py-0.5 truncate">{e.position_title}</div>
-                    </button>
-                  ))
-                )}
-              </div>
-              <div className="px-2 py-1 text-[11px] font-bold border-t border-[#79b898] text-[#c00]">
-                TOTAL RECORD(S): {filteredEmployees.length}
+              <div className="max-h-[300px] overflow-auto scrollbar-thin">
+                <table className="w-full text-left text-[11px] border-collapse relative">
+                  <thead className="sticky top-0 z-10 bg-background shadow-[0_1px_0_rgba(0,0,0,0.1)]">
+                    <tr className="text-[10px] font-bold text-muted-foreground/60 uppercase">
+                      <th className="px-3 py-2 border-r border-border/40">ID</th>
+                      <th className="px-3 py-2 border-r border-border/40">Name</th>
+                      <th className="px-3 py-2">Position</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {employeeLoading ? (
+                      <tr><td colSpan={3} className="px-4 py-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto opacity-30" /></td></tr>
+                    ) : filteredEmployees.length === 0 ? (
+                      <tr><td colSpan={3} className="px-4 py-8 text-center text-muted-foreground opacity-50">No candidates available</td></tr>
+                    ) : (
+                      filteredEmployees.map((e, idx) => (
+                        <tr
+                          key={e.employee_id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedEmployeeId(e.employee_id)}
+                          className={cn(
+                            "cursor-pointer border-b border-border/40 hover:bg-emerald-500/5 transition-colors group outline-none",
+                            idx % 2 === 1 && "bg-muted/5",
+                            selectedEmployeeId === e.employee_id && "bg-emerald-500/10 font-bold"
+                          )}
+                        >
+                          <td className="px-3 py-2 border-r border-border/40 font-mono text-[10px] opacity-70">{e.employee_id}</td>
+                          <td className="px-3 py-2 border-r border-border/40 font-bold text-foreground/80">{e.employee_name}</td>
+                          <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px] italic">{e.position_title}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 mt-2">
+            <div className="flex items-center justify-end gap-3 pt-2">
               <Button
-                size="sm"
                 variant="outline"
-                className="h-7 text-[11px] border-[#9ed9c1] bg-white"
-                onClick={createUserFromEmployee}
-              >
-                CREATE
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-[11px] border-[#9ed9c1] bg-white"
+                className="h-10 px-6 font-semibold text-xs border-border/60 hover:bg-muted/50 rounded-xl"
                 onClick={() => setAddUserOpen(false)}
               >
-                CANCEL
+                DISCARD
+              </Button>
+              <Button
+                className="h-10 px-8 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 rounded-xl transition-all active:scale-95"
+                onClick={createUserFromEmployee}
+              >
+                GENERATE USER PROFILE
               </Button>
             </div>
           </div>
@@ -1197,169 +1310,214 @@ export function UserRightsSetupModule() {
       </Dialog>
 
       <Dialog open={groupPickerOpen} onOpenChange={setGroupPickerOpen}>
-        <DialogContent className="max-w-[650px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-[13px] font-bold">Select Group:</DialogTitle>
+        <DialogContent className="max-w-[650px] p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+          <DialogHeader className="bg-primary px-4 py-3 border-b border-white/10 shrink-0">
+             <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/15 rounded-xl border border-white/20">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+              <div className="text-left">
+                <DialogTitle className="text-base font-bold text-white tracking-tight leading-tight">Users Group Manager</DialogTitle>
+                <p className="text-[10px] text-white/70 font-medium">Assigned group defines the core privilege set</p>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="p-2 bg-white">
-            <div className="border border-[#79b898]">
-              <div className="grid grid-cols-12 bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[10px] font-bold uppercase">
-                <div className="col-span-1 px-2 py-1 border-r border-white/25" />
-                <div className="col-span-11 px-2 py-1">Users Group Name</div>
+          <div className="p-4 bg-background space-y-4">
+            <div className="rounded-2xl border border-border/60 overflow-hidden shadow-sm bg-background/50">
+              <div className="bg-muted/80 px-3 py-2 border-b border-border/60 flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-widest flex items-center gap-2">
+                  <ShieldCheck className="h-3.5 w-3.5 opacity-50 text-emerald-600" /> Available System Groups
+                </span>
+                <span className="text-[10px] font-mono opacity-60">Count: {groupRows.length}</span>
               </div>
-              <div className="max-h-[250px] overflow-auto">
-                {groupRows.length === 0 ? (
-                  <div className="px-2 py-3 text-[12px] text-muted-foreground">No groups found.</div>
-                ) : (
-                  groupRows.map((g, idx) => (
-                    <button
-                      type="button"
-                      key={g.name}
-                      onClick={() => setSelectedGroupName(g.name)}
-                      className={cn(
-                        "w-full grid grid-cols-12 text-left text-[11px] border-b border-[#d4e8dc]",
-                        idx % 2 ? "bg-[#f8fdf9]" : "bg-white",
-                        selectedGroupName === g.name && "bg-[#d9f3e5]"
-                      )}
-                    >
-                      <div className="col-span-1 px-2 py-0.5 border-r border-[#d4e8dc]">
-                        <Users className="h-3 w-3 text-[#1f7a57]" />
-                      </div>
-                      <div className="col-span-11 px-2 py-0.5 truncate">{g.name}</div>
-                    </button>
-                  ))
-                )}
+              <div className="max-h-[300px] overflow-auto scrollbar-thin">
+                <table className="w-full text-left text-[11px] border-collapse font-medium">
+                  <tbody>
+                    {groupRows.length === 0 ? (
+                      <tr><td className="px-4 py-8 text-center text-muted-foreground italic">No security groups found.</td></tr>
+                    ) : (
+                      groupRows.map((g, idx) => (
+                        <tr
+                          key={g.name}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedGroupName(g.name)}
+                          className={cn(
+                            "cursor-pointer border-b border-border/40 hover:bg-emerald-500/5 transition-colors group outline-none",
+                            idx % 2 === 1 && "bg-muted/5",
+                            selectedGroupName === g.name && "bg-emerald-500/10 font-bold"
+                          )}
+                        >
+                          <td className="px-4 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className={cn(
+                                "w-2.5 h-2.5 rounded-full ring-2 ring-offset-2 ring-transparent transition-all",
+                                selectedGroupName === g.name ? "bg-emerald-500 ring-emerald-500/20 scale-125 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted shadow-inner"
+                              )} />
+                              <span className="text-xs uppercase font-bold tracking-widest">{g.name}</span>
+                            </div>
+                            {selectedGroupName === g.name && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-[12px] mt-2">
-              <button type="button" className="text-[#1f5e45] hover:underline" onClick={openNewGroupDialog}>
-                New Group
-              </button>
-              <span>|</span>
-              <button type="button" className="text-[#1f5e45] hover:underline" onClick={openEditGroupDialog}>
-                Edit Group
-              </button>
-              <span>|</span>
-              <button type="button" className="text-red-700 hover:underline" onClick={deleteSelectedGroup}>
-                Delete Group
-              </button>
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-3">
+                <Button variant="link" className="text-emerald-700 h-auto p-0 font-bold text-[11px] hover:text-emerald-800 decoration-emerald-500/30" onClick={openNewGroupDialog}>
+                   <Plus className="h-3 w-3" /> New Group
+                </Button>
+                <span className="text-muted-foreground/30 text-[10px]">|</span>
+                <Button variant="link" className="text-emerald-700 h-auto p-0 font-bold text-[11px] hover:text-emerald-800 decoration-emerald-500/30" onClick={openEditGroupDialog}>
+                   <Edit3 className="h-3 w-3" /> Edit Group
+                </Button>
+                <span className="text-muted-foreground/30 text-[10px]">|</span>
+                <Button variant="link" className="text-destructive/70 h-auto p-0 font-bold text-[11px] hover:text-destructive decoration-destructive/30" onClick={deleteSelectedGroup}>
+                   <Trash2 className="h-3 w-3" /> Delete Group
+                </Button>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 mt-2">
-              <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white" onClick={applySelectedGroup}>
-                OK
-              </Button>
-              <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white" onClick={() => setGroupPickerOpen(false)}>
-                Cancel
-              </Button>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="outline" className="h-9 px-6 font-semibold text-xs rounded-xl border-border/60" onClick={() => setGroupPickerOpen(false)}>CANCEL</Button>
+              <Button className="h-9 px-8 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-500/10 transition-all active:scale-95" onClick={applySelectedGroup}>APPLY GROUP</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={editUsernameOpen} onOpenChange={setEditUsernameOpen}>
-        <DialogContent className="max-w-[430px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-[13px] font-bold">Edit Username</DialogTitle>
+        <DialogContent className="max-w-[430px] p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+          <DialogHeader className="bg-primary px-4 py-3 border-b border-white/10 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/15 rounded-xl border border-white/20">
+                <UserCog className="h-5 w-5 text-white" />
+              </div>
+              <DialogTitle className="text-base font-bold text-white tracking-tight leading-tight">Edit Username</DialogTitle>
+            </div>
           </DialogHeader>
-          <div className="p-3 bg-white space-y-2">
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold">User ID</div>
-              <Input className="col-span-9 h-7 text-[12px]" value={selectedUser?.id ?? ""} readOnly />
+          <div className="p-4 bg-background space-y-4">
+            <div className="space-y-4">
+              <div className="space-y-1.5 px-1">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">User ID Reference</Label>
+                <div className="h-10 px-3 flex items-center rounded-xl border border-border/40 text-xs font-mono bg-muted/30 opacity-60 shadow-inner">
+                  {selectedUser?.id ?? "—"}
+                </div>
+              </div>
+              <div className="space-y-1.5 px-1">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                  <Edit3 className="h-3 w-3 text-emerald-600" /> New System Identifier
+                </Label>
+                <Input
+                  className="h-11 px-3 rounded-xl border-border/60 bg-background text-xs font-bold font-mono tracking-tight text-emerald-700 focus-visible:ring-emerald-500/30 shadow-sm"
+                  value={usernameDraft}
+                  onChange={(e) => setUsernameDraft(e.target.value)}
+                  placeholder="Enter new username..."
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold">Username</div>
-              <Input
-                className="col-span-9 h-7 text-[12px]"
-                value={usernameDraft}
-                onChange={(e) => setUsernameDraft(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-end gap-2 mt-3">
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-[11px] border-[#9ed9c1] bg-white"
-                onClick={saveEditedUsername}
-              >
-                Save
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-[11px] border-[#9ed9c1] bg-white"
-                onClick={() => setEditUsernameOpen(false)}
-              >
-                Cancel
-              </Button>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="outline" className="h-10 px-6 font-semibold text-xs rounded-xl border-border/60 hover:bg-muted/50" onClick={() => setEditUsernameOpen(false)}>CANCEL</Button>
+              <Button className="h-10 px-8 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-500/10 transition-all active:scale-95" onClick={saveEditedUsername}>UPDATE RECORD</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={newGroupOpen} onOpenChange={setNewGroupOpen}>
-        <DialogContent className="max-w-[620px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-[13px] font-bold">New Group</DialogTitle>
+        <DialogContent className="max-w-[620px] p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+          <DialogHeader className="bg-primary px-4 py-3 border-b border-white/10 shrink-0">
+             <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/15 rounded-xl border border-white/20">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+              <DialogTitle className="text-base font-bold text-white tracking-tight leading-tight">Create Security Group</DialogTitle>
+            </div>
           </DialogHeader>
-          <div className="p-3 bg-white space-y-2">
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold">Group Name</div>
-              <Input className="col-span-9 h-7 text-[12px]" value={groupForm.name} onChange={(e) => setGroupForm((s) => ({ ...s, name: e.target.value }))} />
-            </div>
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold">Description</div>
-              <Input className="col-span-9 h-7 text-[12px]" value={groupForm.description} onChange={(e) => setGroupForm((s) => ({ ...s, description: e.target.value }))} />
-            </div>
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold leading-tight">Group Wallpaper</div>
-              <div className="col-span-9 flex items-center gap-2">
-                <Input className="h-7 text-[12px] flex-1" value={groupForm.wallpaper} onChange={(e) => setGroupForm((s) => ({ ...s, wallpaper: e.target.value }))} />
-                <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white">Browse...</Button>
+          <div className="p-5 bg-background space-y-4">
+            <div className="grid grid-cols-12 gap-4 font-semibold">
+              <div className="col-span-12 space-y-1.5 px-1">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Group Base Name</Label>
+                <Input 
+                  className="h-11 rounded-xl border-border/60 bg-background text-xs font-bold tracking-widest focus-visible:ring-emerald-500/30 uppercase shadow-sm" 
+                  value={groupForm.name} 
+                  onChange={(e) => setGroupForm((s) => ({ ...s, name: e.target.value }))}
+                  placeholder="e.g. ADMINISTRATORS"
+                />
+              </div>
+              <div className="col-span-12 space-y-1.5 px-1">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Detailed Description</Label>
+                <Input 
+                  className="h-11 rounded-xl border-border/60 bg-background text-xs focus-visible:ring-emerald-500/30 shadow-sm" 
+                  value={groupForm.description} 
+                  onChange={(e) => setGroupForm((s) => ({ ...s, description: e.target.value }))}
+                  placeholder="Internal notes on group purpose..."
+                />
+              </div>
+              <div className="col-span-12 space-y-1.5 px-1">
+                 <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Group Assets (Wallpaper)</Label>
+                 <div className="flex items-center gap-3">
+                    <div className="h-11 flex-1 px-3 flex items-center rounded-xl border border-border/40 text-[10px] font-mono bg-muted/20 opacity-50 truncate overflow-hidden shadow-inner font-medium">
+                      {groupForm.wallpaper || "system_default_v1.png"}
+                    </div>
+                    <Button variant="outline" className="h-11 px-4 text-xs font-bold border-border/60 rounded-xl shadow-sm hover:bg-muted/50 shrink-0">BROWSE...</Button>
+                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 mt-3">
-              <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white" onClick={createGroup}>
-                OK
-              </Button>
-              <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white" onClick={() => setNewGroupOpen(false)}>
-                Cancel
-              </Button>
+            <div className="flex items-center justify-end gap-3 pt-3">
+               <Button variant="outline" className="h-11 px-6 font-semibold text-xs rounded-xl border-border/60" onClick={() => setNewGroupOpen(false)}>ABORT</Button>
+               <Button className="h-11 px-8 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95" onClick={createGroup}>PROVISION GROUP</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={editGroupOpen} onOpenChange={setEditGroupOpen}>
-        <DialogContent className="max-w-[620px] p-0 gap-0 overflow-hidden border-2 border-[#0e8f63]">
-          <DialogHeader className="bg-gradient-to-b from-[#16b67a] to-[#0f8f62] text-white px-3 py-1 border-b border-[#0c7752]">
-            <DialogTitle className="text-[13px] font-bold">Edit Group</DialogTitle>
+        <DialogContent className="max-w-[620px] p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+          <DialogHeader className="bg-primary px-4 py-3 border-b border-white/10 shrink-0">
+             <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/15 rounded-xl border border-white/20">
+                <Edit3 className="h-5 w-5 text-white" />
+              </div>
+              <DialogTitle className="text-base font-bold text-white tracking-tight leading-tight">Edit Group Profile</DialogTitle>
+            </div>
           </DialogHeader>
-          <div className="p-3 bg-white space-y-2">
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold">Group Name</div>
-              <Input className="col-span-9 h-7 text-[12px]" value={groupForm.name} onChange={(e) => setGroupForm((s) => ({ ...s, name: e.target.value }))} />
-            </div>
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold">Description</div>
-              <Input className="col-span-9 h-7 text-[12px]" value={groupForm.description} onChange={(e) => setGroupForm((s) => ({ ...s, description: e.target.value }))} />
-            </div>
-            <div className="grid grid-cols-12 items-center gap-2">
-              <div className="col-span-3 text-[12px] font-semibold leading-tight">Group Wallpaper</div>
-              <div className="col-span-9 flex items-center gap-2">
-                <Input className="h-7 text-[12px] flex-1" value={groupForm.wallpaper} onChange={(e) => setGroupForm((s) => ({ ...s, wallpaper: e.target.value }))} />
-                <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white">Browse...</Button>
+          <div className="p-5 bg-background space-y-4">
+            <div className="grid grid-cols-12 gap-4 font-semibold">
+              <div className="col-span-12 space-y-1.5 px-1">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Update Identity</Label>
+                <Input 
+                  className="h-11 rounded-xl border-border/60 bg-background text-xs font-bold tracking-widest focus-visible:ring-emerald-500/30 uppercase shadow-sm" 
+                  value={groupForm.name} 
+                  onChange={(e) => setGroupForm((s) => ({ ...s, name: e.target.value }))}
+                />
+              </div>
+              <div className="col-span-12 space-y-1.5 px-1">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Update Description</Label>
+                <Input 
+                  className="h-11 rounded-xl border-border/60 bg-background text-xs focus-visible:ring-emerald-500/30 shadow-sm" 
+                  value={groupForm.description} 
+                  onChange={(e) => setGroupForm((s) => ({ ...s, description: e.target.value }))}
+                />
+              </div>
+              <div className="col-span-12 space-y-1.5 px-1">
+                 <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Configuration Assets</Label>
+                 <div className="flex items-center gap-3">
+                    <div className="h-11 flex-1 px-3 flex items-center rounded-xl border border-border/40 text-[10px] font-mono bg-muted/20 opacity-50 truncate overflow-hidden shadow-inner font-medium">
+                      {groupForm.wallpaper || "system_default_v1.png"}
+                    </div>
+                    <Button variant="outline" className="h-11 px-4 text-xs font-bold border-border/60 rounded-xl shadow-sm hover:bg-muted/50 shrink-0">BROWSE...</Button>
+                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 mt-3">
-              <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white" onClick={saveEditedGroup}>
-                OK
-              </Button>
-              <Button size="sm" variant="outline" className="h-7 text-[11px] border-[#9ed9c1] bg-white" onClick={() => setEditGroupOpen(false)}>
-                Cancel
-              </Button>
+            <div className="flex items-center justify-end gap-3 pt-3">
+               <Button variant="outline" className="h-11 px-6 font-semibold text-xs rounded-xl border-border/60" onClick={() => setEditGroupOpen(false)}>CANCEL</Button>
+               <Button className="h-11 px-8 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95" onClick={saveEditedGroup}>COMMIT CHANGES</Button>
             </div>
           </div>
         </DialogContent>
