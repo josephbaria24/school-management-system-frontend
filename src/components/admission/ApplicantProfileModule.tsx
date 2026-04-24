@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,9 +14,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const NONE = "__none__";
+const APPLICANT_PROFILE_DRAFT_KEY = "admission:applicant-profile:draft:v1";
 
 type AcademicYearTerm = {
   id: number;
@@ -50,6 +52,11 @@ type ProgramCurriculum = {
   description: string | null;
 };
 
+type ProgramMajorStudyRow = {
+  major_study: string;
+  source?: string;
+};
+
 const lowerTabs = [
   "Personal Information",
   "Family Background",
@@ -65,6 +72,7 @@ const rightMiniTabs = [
 ] as const;
 
 export function ApplicantProfileModule() {
+  const formRootRef = useRef<HTMLDivElement | null>(null);
   const [yearTerms, setYearTerms] = useState<AcademicYearTerm[]>([]);
   const [campuses, setCampuses] = useState<Campus[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
@@ -83,6 +91,77 @@ export function ApplicantProfileModule() {
   const [activeMiniTab, setActiveMiniTab] = useState<(typeof rightMiniTabs)[number]>(
     "Resident/Permanent Address",
   );
+
+  const getFieldSaveKey = (
+    el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
+    idx: number,
+  ) => {
+    const existing = el.getAttribute("data-applicant-save-key");
+    if (existing) return existing;
+    const explicit = el.name || el.id;
+    const key = explicit
+      ? `${el.tagName.toLowerCase()}::${explicit}`
+      : `${el.tagName.toLowerCase()}::auto-${idx}`;
+    el.setAttribute("data-applicant-save-key", key);
+    return key;
+  };
+
+  const saveApplicantProfileDraft = () => {
+    const root = formRootRef.current;
+    if (!root) return;
+
+    const fields = Array.from(
+      root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+        "input, textarea, select",
+      ),
+    );
+
+    const inputDraft: Record<string, string | boolean> = {};
+    fields.forEach((el, idx) => {
+      if (el instanceof HTMLInputElement && (el.type === "button" || el.type === "submit")) return;
+      const key = getFieldSaveKey(el, idx);
+      if (el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio")) {
+        inputDraft[key] = el.checked;
+      } else {
+        inputDraft[key] = el.value;
+      }
+    });
+
+    const controlledDraft = {
+      yearTermId,
+      campusId,
+      choiceCampusIds,
+      choiceProgramIds,
+      choiceProgramSearches,
+      choiceMajorValues,
+      choiceMajorSearches,
+      choiceMajorOptions,
+      activeLowerTab,
+      activeMiniTab,
+    };
+
+    localStorage.setItem(
+      APPLICANT_PROFILE_DRAFT_KEY,
+      JSON.stringify({
+        controlledDraft,
+        inputDraft,
+        savedAt: new Date().toISOString(),
+      }),
+    );
+
+    toast({
+      title: "Draft saved",
+      description: "Applicant profile inputs saved locally on this browser.",
+    });
+  };
+
+  const clearApplicantProfileDraft = () => {
+    localStorage.removeItem(APPLICANT_PROFILE_DRAFT_KEY);
+    toast({
+      title: "Draft cleared",
+      description: "Saved applicant profile draft has been removed.",
+    });
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -115,6 +194,68 @@ export function ApplicantProfileModule() {
       }
     };
     void load();
+  }, []);
+
+  useEffect(() => {
+    const raw = localStorage.getItem(APPLICANT_PROFILE_DRAFT_KEY);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as {
+        controlledDraft?: Partial<{
+          yearTermId: string;
+          campusId: string;
+          choiceCampusIds: string[];
+          choiceProgramIds: string[];
+          choiceProgramSearches: string[];
+          choiceMajorValues: string[];
+          choiceMajorSearches: string[];
+          choiceMajorOptions: string[][];
+          activeLowerTab: (typeof lowerTabs)[number];
+          activeMiniTab: (typeof rightMiniTabs)[number];
+        }>;
+        inputDraft?: Record<string, string | boolean>;
+      };
+
+      const d = parsed.controlledDraft;
+      if (d) {
+        if (typeof d.yearTermId === "string") setYearTermId(d.yearTermId);
+        if (typeof d.campusId === "string") setCampusId(d.campusId);
+        if (Array.isArray(d.choiceCampusIds) && d.choiceCampusIds.length === 4) setChoiceCampusIds(d.choiceCampusIds);
+        if (Array.isArray(d.choiceProgramIds) && d.choiceProgramIds.length === 4) setChoiceProgramIds(d.choiceProgramIds);
+        if (Array.isArray(d.choiceProgramSearches) && d.choiceProgramSearches.length === 4)
+          setChoiceProgramSearches(d.choiceProgramSearches);
+        if (Array.isArray(d.choiceMajorValues) && d.choiceMajorValues.length === 4) setChoiceMajorValues(d.choiceMajorValues);
+        if (Array.isArray(d.choiceMajorSearches) && d.choiceMajorSearches.length === 4)
+          setChoiceMajorSearches(d.choiceMajorSearches);
+        if (Array.isArray(d.choiceMajorOptions) && d.choiceMajorOptions.length === 4) setChoiceMajorOptions(d.choiceMajorOptions);
+        if (d.activeLowerTab && lowerTabs.includes(d.activeLowerTab)) setActiveLowerTab(d.activeLowerTab);
+        if (d.activeMiniTab && rightMiniTabs.includes(d.activeMiniTab)) setActiveMiniTab(d.activeMiniTab);
+      }
+
+      requestAnimationFrame(() => {
+        const root = formRootRef.current;
+        if (!root || !parsed.inputDraft) return;
+        const fields = Array.from(
+          root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+            "input, textarea, select",
+          ),
+        );
+        fields.forEach((el, idx) => {
+          if (el instanceof HTMLInputElement && (el.type === "button" || el.type === "submit")) return;
+          const key = getFieldSaveKey(el, idx);
+          const savedValue = parsed.inputDraft?.[key];
+          if (savedValue === undefined) return;
+          if (el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio")) {
+            el.checked = Boolean(savedValue);
+            return;
+          }
+          el.value = String(savedValue);
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+      });
+    } catch {
+      // Ignore malformed draft data.
+    }
   }, []);
 
   const setChoiceCampus = (idx: number, value: string) => {
@@ -165,16 +306,29 @@ export function ApplicantProfileModule() {
       return;
     }
     try {
-      const res = await fetch(`${API}/api/program-curriculums?academic_program_id=${programId}`);
-      if (!res.ok) throw new Error("failed to load majors");
-      const rows = (await res.json()) as ProgramCurriculum[];
-      const uniq = Array.from(
-        new Set(
-          rows
-            .map((r) => r.major_discipline?.trim() || r.description?.trim() || "")
-            .filter(Boolean),
-        ),
-      );
+      const majorStudyRes = await fetch(`${API}/api/academic-programs/${programId}/major-studies`);
+      let uniq: string[] = [];
+
+      if (majorStudyRes.ok) {
+        const rows = (await majorStudyRes.json()) as ProgramMajorStudyRow[];
+        uniq = Array.from(
+          new Set(rows.map((r) => r.major_study?.trim() || "").filter(Boolean)),
+        );
+      }
+
+      if (uniq.length === 0) {
+        const res = await fetch(`${API}/api/program-curriculums?academic_program_id=${programId}`);
+        if (!res.ok) throw new Error("failed to load majors");
+        const rows = (await res.json()) as ProgramCurriculum[];
+        uniq = Array.from(
+          new Set(
+            rows
+              .map((r) => r.major_discipline?.trim() || r.description?.trim() || "")
+              .filter(Boolean),
+          ),
+        );
+      }
+
       setChoiceMajorOptions((prev) => prev.map((v, i) => (i === idx ? uniq : v)));
       setChoiceMajorValues((prev) =>
         prev.map((v, i) => (i === idx ? (uniq[0] ? uniq[0] : NONE) : v)),
@@ -880,7 +1034,25 @@ export function ApplicantProfileModule() {
           </p>
         </div>
 
-        <div className="p-1.5 space-y-2">
+        <div ref={formRootRef} className="p-1.5 space-y-2">
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-7 text-[10px] rounded-none border-[#7ca1d8]"
+              onClick={saveApplicantProfileDraft}
+            >
+              Save Draft
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-7 text-[10px] rounded-none border-[#7ca1d8]"
+              onClick={clearApplicantProfileDraft}
+            >
+              Clear Draft
+            </Button>
+          </div>
           <div className="border border-[#7ca1d8] bg-[#f4f8ff]">
             <div className="bg-gradient-to-b from-[#6ea4df] to-[#3d75bc] text-white text-[10px] font-bold px-2 py-0.5">
               Application Information
