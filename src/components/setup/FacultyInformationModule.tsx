@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { UserSquare2 } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { User, UserSquare2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -11,7 +12,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+
+/** Read-only value slot — matches height/radius of inputs for visual consistency */
+function ReadOnlyField({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-h-10 w-full items-center rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm font-medium text-foreground shadow-sm",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const NONE = "__none__";
@@ -98,251 +120,427 @@ export function FacultyInformationModule() {
   }, [colleges, selected?.campus_id]);
 
   return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="w-full border border-[#79b898] bg-white shadow-sm">
-        <div className="flex items-center justify-between bg-gradient-to-b from-[#def8ea] to-[#9fdbbc] border-b border-[#79b898] px-3 py-2">
-          <div className="flex items-center gap-2">
-            <div className="rounded bg-white p-0.5 border border-[#79b898]">
-              <UserSquare2 className="h-5 w-5 text-[#1f7a57]" />
-            </div>
-            <div>
-              <h1 className="text-[14px] font-bold uppercase tracking-wide text-[#1f5e45]">
-                Faculty Information &amp; Management Module
-              </h1>
-              <p className="text-[10px] text-[#1f5e45]/80">
-                Use this module to set-up the list of faculty college/department assignment.
-              </p>
-            </div>
+    <div className="h-full bg-background relative overflow-x-hidden">
+      <div className="w-full px-2 pt-2 pb-4">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="setup-type-page-title">Faculty information</h1>
+            <p className="setup-type-page-desc">
+              Review faculty assignments and teaching-load fields. Data is read-only
+              here; edit on Employees &amp; Faculty Info.
+            </p>
           </div>
-          <div className="text-[11px] font-semibold text-[#9d6b00] border border-[#9d6b00]/30 bg-white/80 px-2 py-1">
-            Enrollment System v2.0
-          </div>
-        </div>
-
-        <div className="grid grid-cols-12 gap-1 p-1 bg-[#e6f8ef] border-b border-[#79b898]">
-          <div className="col-span-12 lg:col-span-5 border border-[#79b898] bg-[#f2fbf7]">
-            <div className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[10px] px-2 py-0.5 font-bold uppercase">
-              Employee General Information
+          <div className="hidden sm:flex flex-col items-end gap-2">
+            <div className="setup-type-kicker-pill flex h-9 items-center rounded-xl border border-border/60 bg-background/70 px-3 shadow-sm backdrop-blur">
+              Setup Manager module
             </div>
-            <div className="grid grid-cols-12 gap-1 p-2 text-[11px]">
-              <div className="col-span-3 border border-[#9dbde4] bg-white h-[102px]" />
-              <div className="col-span-9 space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="w-16 text-right text-[10px] font-semibold">Full Name</span>
-                  <Input className="h-7 text-[12px] font-bold text-[#b01010]" value={fullName} readOnly />
-                </div>
-                <div className="flex items-center gap-3 text-[11px]">
-                  <span className="w-16 text-right text-[10px] font-semibold">Gender</span>
-                  <label className="flex items-center gap-1">
-                    <input type="radio" checked={selected?.gender === "Male"} readOnly />
-                    Male
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="radio" checked={selected?.gender === "Female"} readOnly />
-                    Female
-                  </label>
-                  <span className="text-[#b01010] font-semibold">
-                    {selected?.birthday ? String(selected.birthday).slice(0, 10) : ""}
-                  </span>
-                </div>
-                <div className="grid grid-cols-[64px_1fr] items-center gap-2">
-                  <span className="text-right text-[10px] font-semibold">Position</span>
-                  <span className="text-[#b15c00] font-bold">
-                    {selected?.position_title_ref ?? selected?.position_label ?? ""}
-                  </span>
-                </div>
-                <div className="grid grid-cols-[64px_1fr] items-center gap-2">
-                  <span className="text-right text-[10px] font-semibold">Campus</span>
-                  <span className="text-[#b15c00] font-bold">{selected?.campus_acronym ?? ""}</span>
-                </div>
-                <div className="grid grid-cols-[64px_1fr] items-center gap-2">
-                  <span className="text-right text-[10px] font-semibold">Employee ID</span>
-                  <span className="text-[#b15c00] text-[28px] leading-none font-bold">
-                    {selected?.employee_id ?? ""}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-7 border border-[#79b898] bg-[#f2fbf7]">
-            <div className="bg-gradient-to-b from-[#6ec79b] to-[#2f9b68] text-white text-[10px] px-2 py-0.5 font-bold uppercase">
-              Faculty / Teaching Load Information
-            </div>
-            <div className="grid grid-cols-12 gap-1 p-2 text-[11px]">
-              <span className="col-span-3 text-right text-[10px] font-semibold self-center">Faculty Rank</span>
-              <Input className="col-span-5 h-7 text-[11px]" value={selected?.faculty_rank ?? ""} readOnly />
-              <div className="col-span-4 flex items-center justify-end gap-3 text-[11px]">
-                <label className="flex items-center gap-1">
-                  <input type="radio" checked={selected?.is_full_time === true} readOnly />
-                  Full-Time
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="radio" checked={selected?.is_full_time === false} readOnly />
-                  Part-Time
-                </label>
-              </div>
-
-              <span className="col-span-3 text-right text-[10px] font-semibold self-center">Campus</span>
-              <div className="col-span-9">
-                <Select value={selected?.campus_id ? String(selected.campus_id) : NONE} disabled>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>—</SelectItem>
-                    {campusOptions.map((c) => (
-                      <SelectItem key={c.id} value={String(c.id)}>
-                        {c.acronym} — {c.campus_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <span className="col-span-3 text-right text-[10px] font-semibold self-center">College</span>
-              <div className="col-span-9">
-                <Select value={selected?.college_id ? String(selected.college_id) : NONE} disabled>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>—</SelectItem>
-                    {collegeOptions.map((c) => (
-                      <SelectItem key={c.id} value={String(c.id)}>
-                        {c.college_code} — {c.college_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <span className="col-span-3 text-right text-[10px] font-semibold self-center">Teaching Load Educ Level</span>
-              <div className="col-span-9">
-                <Select value={selected?.teaching_load_educ_level || NONE} disabled>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>—</SelectItem>
-                    {teachingLoadOptions.map((o) => (
-                      <SelectItem key={o.id} value={o.value}>
-                        {o.value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <span className="col-span-3 text-right text-[10px] font-semibold self-center">Degree Discipline</span>
-              <div className="col-span-9">
-                <Select value={selected?.degree_discipline || NONE} disabled>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>—</SelectItem>
-                    {degreeDisciplineOptions.map((o) => (
-                      <SelectItem key={o.id} value={o.value}>
-                        {o.value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <span className="col-span-3 text-right text-[10px] font-semibold self-center">PRC Licensure</span>
-              <div className="col-span-9">
-                <Select value={selected?.prc_licensure || NONE} disabled>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>—</SelectItem>
-                    {prcLicensureOptions.map((o) => (
-                      <SelectItem key={o.id} value={o.value}>
-                        {o.value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="setup-type-kicker-pill rounded-xl border border-border/60 bg-muted/30 px-2.5 py-1">
+              Enrollment System v2.0
             </div>
           </div>
         </div>
 
-        <Tabs defaultValue="employees" className="w-full">
-          <TabsList className="h-7 rounded-none bg-[#e6f8ef] border-b border-[#79b898] p-0 w-full justify-start">
-            <TabsTrigger value="employees" className="h-7 rounded-none text-[11px] px-3 data-[state=active]:bg-[#f6fcf8]">
-              List of Employees
-            </TabsTrigger>
-            <TabsTrigger value="subjects" className="h-7 rounded-none text-[11px] px-3 data-[state=active]:bg-[#f6fcf8]">
-              Subjects Taught
-            </TabsTrigger>
-            <TabsTrigger value="history" className="h-7 rounded-none text-[11px] px-3 data-[state=active]:bg-[#f6fcf8]">
-              Teaching Load History
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="employees" className="m-0">
-            <div className="overflow-auto h-[430px] bg-white">
-              <table className="w-full text-[11px] border-collapse min-w-[980px]">
-                <thead>
-                  <tr className="bg-[#f2fbf7] border-b border-[#9ed9c1]">
-                    {["EMP. ID", "FULL NAME", "BIRTH DATE", "EMP. STATUS", "POSITION", "DEPT. NAME", "EMAIL", "RANK"].map((h) => (
-                      <th key={h} className="text-left px-2 py-1 border-r border-[#c2dfcf] font-semibold text-[10px]">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={8} className="px-2 py-3 text-muted-foreground">
-                        Loading...
-                      </td>
-                    </tr>
-                  ) : (
-                    rows.map((r, idx) => (
-                      <tr
-                        key={r.id}
-                        onClick={() => setSelectedId(r.id)}
-                        className={cn(
-                          "cursor-pointer border-b border-[#d4e8dc]",
-                          idx % 2 === 0 ? "bg-white" : "bg-[#f8fdf9]",
-                          selectedId === r.id && "bg-[#d9f3e5]"
+        <Card className="overflow-hidden rounded-2xl bg-background border-border/40 shadow-sm">
+          <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-border/40 bg-muted/5">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 p-2 rounded-xl border border-emerald-500/20 shadow-sm shrink-0">
+                <UserSquare2 className="h-4 w-4" />
+              </div>
+              <div className="leading-tight min-w-0">
+                <div className="setup-type-module-title">
+                  Faculty information &amp; management
+                </div>
+                <div className="setup-type-module-sub">
+                  College, campus, rank, and credential context for each faculty member
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-3 bg-background/60 space-y-3">
+            <div className="grid grid-cols-12 gap-3">
+              <div className="col-span-12 lg:col-span-5 flex flex-col rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden min-h-0">
+                <div className="setup-type-section-title shrink-0 border-b border-border/60 bg-muted/5 px-3 py-2.5">
+                  Employee general information
+                </div>
+                <div className="p-4 flex-1 flex flex-col">
+                  <div className="flex flex-col gap-5 sm:flex-row sm:items-start flex-1">
+                    <aside className="flex shrink-0 flex-col items-center gap-1.5">
+                      <div className="flex h-[148px] w-[120px] items-center justify-center overflow-hidden rounded-xl border border-border/60 bg-muted/20 shadow-inner ring-1 ring-black/4 dark:ring-white/6">
+                        <User className="h-12 w-12 text-muted-foreground/30" />
+                      </div>
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+                        Photo
+                      </span>
+                    </aside>
+
+                    <div className="min-w-0 flex-1 space-y-3.5">
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">
+                          Full name
+                        </Label>
+                        <ReadOnlyField className="capitalize font-semibold">
+                          {fullName.trim() ? fullName : "—"}
+                        </ReadOnlyField>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                        <div className="space-y-1">
+                          <Label className="text-[11px] font-medium text-muted-foreground">
+                            Gender
+                          </Label>
+                          <ReadOnlyField className="flex-wrap gap-x-4 gap-y-1 py-2">
+                            <label className="flex cursor-default items-center gap-1.5 text-sm">
+                              <input
+                                type="radio"
+                                className="accent-primary"
+                                checked={selected?.gender === "Male"}
+                                readOnly
+                              />
+                              <span>Male</span>
+                            </label>
+                            <label className="flex cursor-default items-center gap-1.5 text-sm">
+                              <input
+                                type="radio"
+                                className="accent-primary"
+                                checked={selected?.gender === "Female"}
+                                readOnly
+                              />
+                              <span>Female</span>
+                            </label>
+                          </ReadOnlyField>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[11px] font-medium text-muted-foreground">
+                            Birth date
+                          </Label>
+                          <ReadOnlyField className="tabular-nums">
+                            {selected?.birthday
+                              ? String(selected.birthday).slice(0, 10)
+                              : "—"}
+                          </ReadOnlyField>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                        <div className="space-y-1">
+                          <Label className="text-[11px] font-medium text-muted-foreground">
+                            Position
+                          </Label>
+                          <ReadOnlyField className="capitalize wrap-break-word">
+                            {selected?.position_title_ref ??
+                              selected?.position_label ??
+                              "—"}
+                          </ReadOnlyField>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[11px] font-medium text-muted-foreground">
+                            Campus
+                          </Label>
+                          <ReadOnlyField className="uppercase tracking-wide">
+                            {selected?.campus_acronym?.trim()
+                              ? selected.campus_acronym
+                              : "—"}
+                          </ReadOnlyField>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 rounded-xl border border-border/60 bg-muted/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                        <div className="space-y-0.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground">
+                            Employee ID
+                          </Label>
+                          <p className="text-[10px] text-muted-foreground/70">
+                            Official roster identifier
+                          </p>
+                        </div>
+                        <div className="text-left font-mono text-2xl font-bold tabular-nums tracking-tight text-primary sm:text-right sm:text-3xl">
+                          {selected?.employee_id ?? "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-12 lg:col-span-7 flex flex-col rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden min-h-0">
+                <div className="setup-type-section-title shrink-0 border-b border-border/60 bg-muted/5 px-3 py-2.5">
+                  Faculty / teaching load information
+                </div>
+                <div className="p-4 flex-1 flex flex-col">
+                  {/* Row 1: Faculty rank + Employment type */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        Faculty rank
+                      </Label>
+                      <Input
+                        className="h-10 rounded-xl text-xs border-border/60 shadow-sm"
+                        value={selected?.faculty_rank ?? ""}
+                        readOnly
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        Employment type
+                      </Label>
+                      <div className="flex flex-wrap items-center gap-5 rounded-xl border border-border/60 bg-background px-3 h-10 shadow-sm">
+                        <label className="flex items-center gap-1.5 cursor-default text-xs font-medium">
+                          <input
+                            type="radio"
+                            className="accent-primary"
+                            checked={selected?.is_full_time === true}
+                            readOnly
+                          />
+                          Full-time
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-default text-xs font-medium">
+                          <input
+                            type="radio"
+                            className="accent-primary"
+                            checked={selected?.is_full_time === false}
+                            readOnly
+                          />
+                          Part-time
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Campus + College */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        Campus
+                      </Label>
+                      <Select value={selected?.campus_id ? String(selected.campus_id) : NONE} disabled>
+                        <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE}>—</SelectItem>
+                          {campusOptions.map((c) => (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.acronym} — {c.campus_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        College
+                      </Label>
+                      <Select value={selected?.college_id ? String(selected.college_id) : NONE} disabled>
+                        <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE}>—</SelectItem>
+                          {collegeOptions.map((c) => (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.college_code} — {c.college_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Row 3: Teaching load educ level + Degree discipline */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        Teaching load educ. level
+                      </Label>
+                      <Select value={selected?.teaching_load_educ_level || NONE} disabled>
+                        <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE}>—</SelectItem>
+                          {teachingLoadOptions.map((o) => (
+                            <SelectItem key={o.id} value={o.value}>
+                              {o.value}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        Degree discipline
+                      </Label>
+                      <Select value={selected?.degree_discipline || NONE} disabled>
+                        <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE}>—</SelectItem>
+                          {degreeDisciplineOptions.map((o) => (
+                            <SelectItem key={o.id} value={o.value}>
+                              {o.value}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Row 4: PRC licensure (full width) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        PRC licensure
+                      </Label>
+                      <Select value={selected?.prc_licensure || NONE} disabled>
+                        <SelectTrigger className="h-10 rounded-xl text-xs border-border/60 shadow-sm bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE}>—</SelectItem>
+                          {prcLicensureOptions.map((o) => (
+                            <SelectItem key={o.id} value={o.value}>
+                              {o.value}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden premium-card">
+              <Tabs defaultValue="employees" className="w-full flex flex-col">
+                <TabsList className="h-auto flex-wrap gap-1 p-1.5 w-full justify-start rounded-none border-b border-border/60 bg-muted/20">
+                  <TabsTrigger
+                    value="employees"
+                    className="rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground"
+                  >
+                    List of employees
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="subjects"
+                    className="rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground"
+                  >
+                    Subjects taught
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="history"
+                    className="rounded-xl px-3 py-2 text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground"
+                  >
+                    Teaching load history
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="employees" className="m-0 outline-none">
+                  <div className="overflow-auto max-h-[min(430px,50svh)] bg-background">
+                    <table className="w-full text-[11px] border-collapse min-w-[980px]">
+                      <thead>
+                        <tr className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 shadow-sm">
+                          {[
+                            "Emp. ID",
+                            "Full name",
+                            "Birth date",
+                            "Emp. status",
+                            "Position",
+                            "Dept. name",
+                            "Email",
+                            "Rank",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="setup-type-table-header border-r border-border/60 px-2 py-2 text-left last:border-r-0"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loading ? (
+                          <tr>
+                            <td
+                              colSpan={8}
+                              className="px-4 py-6 text-sm text-muted-foreground"
+                            >
+                              Loading…
+                            </td>
+                          </tr>
+                        ) : (
+                          rows.map((r, idx) => (
+                            <tr
+                              key={r.id}
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => setSelectedId(r.id)}
+                              onKeyDown={(ev) => {
+                                if (ev.key === "Enter" || ev.key === " ") {
+                                  ev.preventDefault();
+                                  setSelectedId(r.id);
+                                }
+                              }}
+                              className={cn(
+                                "premium-row cursor-pointer border-b border-border/40 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                idx % 2 === 1 && "bg-muted/10",
+                                selectedId === r.id &&
+                                  "bg-emerald-500/10 font-medium ring-1 ring-inset ring-emerald-500/15"
+                              )}
+                            >
+                              <td className="setup-font-mono-data border-r border-border/50 px-2 py-1.5">
+                                {r.employee_id}
+                              </td>
+                              <td className="px-2 py-1.5 border-r border-border/50 font-medium text-primary underline-offset-2 decoration-primary/40 hover:underline">
+                                {`${r.last_name}, ${r.first_name}${r.middle_name ? ` ${r.middle_name}` : ""}`}
+                              </td>
+                              <td className="px-2 py-1.5 border-r border-border/50 tabular-nums text-muted-foreground">
+                                {r.birthday
+                                  ? String(r.birthday).slice(0, 10)
+                                  : "—"}
+                              </td>
+                              <td className="px-2 py-1.5 border-r border-border/50">
+                                Active
+                              </td>
+                              <td className="px-2 py-1.5 border-r border-border/50">
+                                {r.position_title_ref ?? r.position_label ?? "—"}
+                              </td>
+                              <td className="px-2 py-1.5 border-r border-border/50">
+                                {r.department_name ?? r.department_label ?? "—"}
+                              </td>
+                              <td className="px-2 py-1.5 border-r border-border/50 text-muted-foreground">
+                                —
+                              </td>
+                              <td className="px-2 py-1.5">
+                                {r.faculty_rank ?? "—"}
+                              </td>
+                            </tr>
+                          ))
                         )}
-                      >
-                        <td className="px-2 py-0.5 border-r border-[#d4e8dc]">{r.employee_id}</td>
-                        <td className="px-2 py-0.5 border-r border-[#d4e8dc]">
-                          {`${r.last_name}, ${r.first_name}${r.middle_name ? ` ${r.middle_name}` : ""}`}
-                        </td>
-                        <td className="px-2 py-0.5 border-r border-[#d4e8dc]">
-                          {r.birthday ? String(r.birthday).slice(0, 10) : ""}
-                        </td>
-                        <td className="px-2 py-0.5 border-r border-[#d4e8dc]">{"Active"}</td>
-                        <td className="px-2 py-0.5 border-r border-[#d4e8dc]">
-                          {r.position_title_ref ?? r.position_label ?? ""}
-                        </td>
-                        <td className="px-2 py-0.5 border-r border-[#d4e8dc]">
-                          {r.department_name ?? r.department_label ?? ""}
-                        </td>
-                        <td className="px-2 py-0.5 border-r border-[#d4e8dc]"></td>
-                        <td className="px-2 py-0.5">{r.faculty_rank ?? ""}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                      </tbody>
+                    </table>
+                  </div>
+                </TabsContent>
+                <TabsContent
+                  value="subjects"
+                  className="m-0 p-4 text-sm text-muted-foreground outline-none"
+                >
+                  <div className="rounded-xl border border-border/60 bg-background/80 p-4 shadow-sm italic">
+                    Subject assignments will be shown here.
+                  </div>
+                </TabsContent>
+                <TabsContent
+                  value="history"
+                  className="m-0 p-4 text-sm text-muted-foreground outline-none"
+                >
+                  <div className="rounded-xl border border-border/60 bg-background/80 p-4 shadow-sm italic">
+                    Teaching load history will be shown here.
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
-          </TabsContent>
-          <TabsContent value="subjects" className="m-0 p-4 text-xs text-muted-foreground">
-            Subject assignments will be shown here.
-          </TabsContent>
-          <TabsContent value="history" className="m-0 p-4 text-xs text-muted-foreground">
-            Teaching load history will be shown here.
-          </TabsContent>
-        </Tabs>
+          </div>
+        </Card>
       </div>
     </div>
   );

@@ -12,9 +12,9 @@ export default async function SetupManagerPage({ params }: Props) {
   if (!title) notFound();
 
   return (
-    <div className="h-full bg-[#edf4ff] p-1">
-      <div className="w-full border border-[#5a8fce] bg-white">
-        <div className="bg-gradient-to-b from-[#dbe9ff] to-[#91bceb] border-b border-[#5a8fce] px-2 py-1">
+    <div className="h-full bg-background p-1">
+      <div className="w-full border border-border/40 bg-background">
+        <div className="bg-muted/5 border-b border-border/40 px-2 py-1">
           <h1 className="text-[24px] leading-none tracking-tight text-[#556b7d] font-semibold uppercase">
             {title}
           </h1>

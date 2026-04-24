@@ -9,6 +9,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { 
+  LineChart, 
+  Search, 
+  Filter, 
+  MapPin, 
+  ChevronRight, 
+  BookOpen, 
+  Users,
+  Backpack,
+  ChartBar,
+  GraduationCap,
+  School
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -39,6 +56,10 @@ type ForecastRow = {
 
 const FORECAST_ROWS: ForecastRow[] = [];
 
+/**
+ * Modernized Forecasting Module
+ * Features a dual-panel layout for subject analysis and enrollment forecasting.
+ */
 export function ForecastingModule() {
   const [yearTerms, setYearTerms] = useState<AcademicYearTerm[]>([]);
   const [campuses, setCampuses] = useState<Campus[]>([]);
@@ -68,8 +89,8 @@ export function ForecastingModule() {
           if (c[0]) setCampusId(String(c[0].id));
         }
         if (courseRes.ok) setSubjects((await courseRes.json()) as CourseMaster[]);
-      } catch {
-        // render shell layout even when APIs are not yet ready
+      } catch (err) {
+        console.error("Failed to load forecasting data", err);
       }
     };
     void load();
@@ -86,125 +107,209 @@ export function ForecastingModule() {
   );
 
   return (
-    <div className="h-full bg-[#f2fbf7] p-1">
-      <div className="w-full border border-[#79b898] bg-white min-h-[640px]">
-        <div className="bg-gradient-to-b from-[#def8ea] to-[#9fdbbc] border-b border-[#79b898] px-3 py-2">
-          <h1 className="text-[24px] leading-none tracking-tight text-[#1f5e45] font-semibold">
-            Forecasting
-          </h1>
-          <p className="text-[11px] text-[#35684f] mt-0.5">
-            Use this module to forecast the figures for the next semester.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-0">
-          <div className="xl:col-span-12 border-b border-[#b6cfbf] px-2 py-1.5">
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-2 items-end">
-              <div className="xl:col-span-4 space-y-1">
-                <Label className="text-[11px] font-semibold text-[#232323]">Current AY Term</Label>
-                <Select value={currentTermId} onValueChange={setCurrentTermId}>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue placeholder="Select current term" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {yearTerms.map((y) => (
-                      <SelectItem key={y.id} value={String(y.id)}>
-                        {y.academic_year} {y.term}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+    <div className="p-6 space-y-6 bg-muted/5 min-h-screen font-geist">
+      {/* Module Header */}
+      <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+        <CardHeader className="p-0">
+          <div className="bg-background p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40">
+            <div className="flex items-center gap-4 text-foreground">
+              <div className="bg-emerald-600 p-2.5 rounded-xl shadow-sm">
+                <LineChart className="h-6 w-6 text-white" />
               </div>
-
-              <div className="xl:col-span-4 space-y-1">
-                <Label className="text-[11px] font-semibold text-[#232323]">Campus Name</Label>
-                <Select value={campusId} onValueChange={setCampusId}>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue placeholder="Select campus" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {campuses.map((c) => (
-                      <SelectItem key={c.id} value={String(c.id)}>
-                        {c.acronym} {c.campus_name ? `- ${c.campus_name}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="xl:col-span-4 space-y-1">
-                <Label className="text-[11px] font-semibold text-[#8b1717]">Next School Semester is ----&gt;&gt;</Label>
-                <Select value={nextTermId} onValueChange={setNextTermId}>
-                  <SelectTrigger className="h-7 text-[11px] bg-white">
-                    <SelectValue placeholder="School Year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {yearTerms.map((y) => (
-                      <SelectItem key={y.id} value={String(y.id)}>
-                        {y.academic_year} {y.term}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div>
+                <CardTitle className="text-lg font-bold tracking-tight text-emerald-950">Forecasting Module</CardTitle>
+                <p className="text-muted-foreground text-xs font-medium mt-0.5">
+                  Analyze trends and forecast figures for upcoming academic semesters.
+                </p>
               </div>
             </div>
+            
+            <div className="flex items-center gap-2">
+               <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                Status: Analysis Active
+              </Badge>
+            </div>
+          </div>
+          
+          <div className="bg-background px-6 py-4 border-b border-border/40 flex items-center justify-between flex-wrap gap-6 text-xs text-muted-foreground font-medium">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-emerald-600" />
+              <span>Colleges</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-foreground font-semibold">Forecasting</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5"><ChartBar className="h-3.5 w-3.5 text-indigo-500" /> Projected Growth: +0%</span>
+              <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5 text-emerald-500" /> Total Enrollees: {totalEnrolled}</span>
+            </div>
+          </div>
+        </CardHeader>
 
-            <p className="text-[11px] mt-1 font-semibold text-[#8b1717]">
-              Total Enrolled Student(s): <span className="ml-1">{totalEnrolled}</span>
-            </p>
-            <p className="text-[10px] text-muted-foreground">{campusName}</p>
+        <CardContent className="p-6 space-y-6">
+          {/* Controls Routing Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end bg-muted/20 p-6 rounded-2xl border border-border/40 shadow-inner">
+            <div className="lg:col-span-3 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Current SY Term</Label>
+              </div>
+              <Select value={currentTermId} onValueChange={setCurrentTermId}>
+                <SelectTrigger className="h-9 border-border/40 bg-white rounded-xl text-xs font-semibold shadow-sm">
+                  <SelectValue placeholder="Current term" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearTerms.map((y) => (
+                    <SelectItem key={y.id} value={String(y.id)} className="text-xs">
+                      SY: {y.academic_year} - {y.term}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="lg:col-span-4 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-2 w-2 rounded-full bg-indigo-500" />
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Target Campus</Label>
+              </div>
+              <Select value={campusId} onValueChange={setCampusId}>
+                <SelectTrigger className="h-9 border-border/40 bg-white rounded-xl text-xs font-semibold shadow-sm">
+                  <SelectValue placeholder="Select campus" />
+                </SelectTrigger>
+                <SelectContent>
+                  {campuses.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)} className="text-xs">
+                      {c.acronym} {c.campus_name ? `- ${c.campus_name}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="lg:col-span-3 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-2 w-2 rounded-full bg-red-500" />
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-red-700/80">Next Forecast Semester</Label>
+              </div>
+              <Select value={nextTermId} onValueChange={setNextTermId}>
+                <SelectTrigger className="h-9 border-red-100 bg-white rounded-xl text-xs font-bold text-red-900 shadow-sm">
+                  <SelectValue placeholder="Next term" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearTerms.map((y) => (
+                    <SelectItem key={y.id} value={String(y.id)} className="text-xs">
+                      {y.academic_year} {y.term}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="lg:col-span-2 space-y-1">
+               <div className="bg-background border border-border/40 p-3 rounded-xl shadow-sm">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-tighter">Campus Status</p>
+                  <p className="text-xs font-extrabold text-foreground truncate">{campusName || "No Campus Selected"}</p>
+               </div>
+            </div>
           </div>
 
-          <div className="xl:col-span-4 border-r border-[#8ca4bf]">
-            <div className="bg-gradient-to-b from-[#6ea4df] to-[#3d75bc] text-white text-[10px] font-bold px-2 py-1">
-              List of Offered Subject(s)...
-            </div>
-            <div className="grid grid-cols-[60px_140px_1fr] text-[10px] font-bold bg-[#e8f1fd] border-b border-[#cad9ec]">
-              <div className="px-2 py-1 border-r border-[#cad9ec]">SubjectID</div>
-              <div className="px-2 py-1 border-r border-[#cad9ec]">Subject Code</div>
-              <div className="px-2 py-1">Subject Title</div>
-            </div>
-            <div className="h-[560px] overflow-auto">
-              {subjects.map((s, idx) => (
-                <div
-                  key={`${s.id ?? s.course_code}-${idx}`}
-                  className="grid grid-cols-[60px_140px_1fr] text-[11px] border-b border-[#dce7f5] odd:bg-white even:bg-[#f7fbff]"
-                >
-                  <div className="px-2 py-1 border-r border-[#dce7f5]">{s.id ?? ""}</div>
-                  <div className="px-2 py-1 border-r border-[#dce7f5]">{s.course_code}</div>
-                  <div className="px-2 py-1">{s.course_title || ""}</div>
+          {/* Forecast Analysis Panels */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* SUBJECTS LIST PANEL */}
+            <Card className="lg:col-span-4 rounded-2xl border-indigo-100 shadow-sm overflow-hidden flex flex-col h-[550px]">
+              <CardHeader className="p-4 bg-indigo-50/70 border-b border-indigo-100/50">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-indigo-600" />
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-indigo-900">List of Offered Subjects</CardTitle>
                 </div>
-              ))}
-            </div>
-          </div>
+              </CardHeader>
+              
+              <div className="grid grid-cols-[60px_1fr] px-4 py-2.5 bg-indigo-100/20 text-[10px] font-extrabold uppercase tracking-widest text-indigo-800 border-b border-indigo-50">
+                <div className="flex items-center gap-1.5"><Filter className="h-3 w-3" /> ID</div>
+                <div className="flex items-center gap-1.5"><Search className="h-3 w-3" /> Subject Details</div>
+              </div>
 
-          <div className="xl:col-span-8">
-            <div className="grid grid-cols-[1.1fr_1fr_130px_130px] text-[10px] font-bold bg-gradient-to-b from-[#f7e8ad] to-[#ebcf7c] border-b border-[#c9ab56]">
-              <div className="px-2 py-1 border-r border-[#d9be74]">Academic Program</div>
-              <div className="px-2 py-1 border-r border-[#d9be74]">Major Study</div>
-              <div className="px-2 py-1 border-r border-[#d9be74]">YearLevel</div>
-              <div className="px-2 py-1">Expected Enrollee</div>
-            </div>
-            <div className="h-[560px] overflow-auto bg-[#b3b3b3]">
-              {FORECAST_ROWS.length === 0 ? null : (
-                <div className="min-w-[600px]">
-                  {FORECAST_ROWS.map((r, i) => (
-                    <div
-                      key={`${r.academic_program}-${i}`}
-                      className="grid grid-cols-[1.1fr_1fr_130px_130px] text-[11px] border-b border-[#d2d2d2] bg-white"
-                    >
-                      <div className="px-2 py-1 border-r border-[#e2e2e2]">{r.academic_program}</div>
-                      <div className="px-2 py-1 border-r border-[#e2e2e2]">{r.major_study}</div>
-                      <div className="px-2 py-1 border-r border-[#e2e2e2]">{r.year_level}</div>
-                      <div className="px-2 py-1">{r.expected_enrollee}</div>
+              <ScrollArea className="flex-1 bg-white">
+                <div className="p-0">
+                  {subjects.map((s, idx) => (
+                    <div key={idx} className="grid grid-cols-[60px_1fr] px-4 py-3 text-xs border-b border-border/10 hover:bg-indigo-50/30 transition-colors group">
+                      <span className="font-bold text-indigo-950/60 tracking-tighter">{s.id || idx + 100}</span>
+                      <div className="space-y-0.5">
+                        <p className="font-extrabold text-foreground leading-none">{s.course_code}</p>
+                        <p className="text-[10px] text-muted-foreground truncate group-hover:text-indigo-900 transition-colors">{s.course_title || "No Title Available"}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </ScrollArea>
+              
+              <div className="p-3 bg-muted/5 border-t border-indigo-50">
+                 <Badge variant="outline" className="bg-white text-indigo-700 border-indigo-100 rounded-lg py-1 px-3 shadow-xs">
+                    <span className="text-[10px] font-extrabold uppercase tracking-tighter">Total Subjects: {subjects.length}</span>
+                 </Badge>
+              </div>
+            </Card>
+
+            {/* FORECASTED ENROLLMENT PANEL */}
+            <Card className="lg:col-span-8 rounded-2xl border-emerald-100 shadow-sm overflow-hidden flex flex-col h-[550px]">
+              <CardHeader className="p-4 bg-emerald-50/70 border-b border-emerald-100/50">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-emerald-600" />
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-emerald-900">Projected Academic Program Enrollment</CardTitle>
+                </div>
+              </CardHeader>
+              
+              <div className="grid grid-cols-[1.5fr_1fr_100px_140px] px-4 py-2.5 bg-emerald-100/20 text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 border-b border-emerald-50">
+                <div className="flex items-center gap-1.5"><School className="h-3.5 w-3.5" /> Academic Program</div>
+                <div>Major Study</div>
+                <div className="text-center">YearLevel</div>
+                <div className="text-right pr-4">Expected Enrollee</div>
+              </div>
+
+              <ScrollArea className="flex-1 bg-white">
+                <div className="p-0 h-full">
+                  {FORECAST_ROWS.length === 0 ? (
+                    <div className="flex flex-col items-center justify-start pt-16 h-full text-muted-foreground/30 space-y-4 bg-muted/5 pb-12">
+                       <div className="bg-white p-6 rounded-full shadow-sm border border-border/20 group hover:border-emerald-200 transition-colors">
+                          <ChartBar className="h-14 w-14 text-emerald-600/30 group-hover:text-emerald-600/50 transition-all duration-500" />
+                       </div>
+                       <div className="text-center">
+                         <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">No Forecast Data Available</p>
+                         <p className="text-[10px] mt-1 font-medium italic text-muted-foreground/40">Adjust filters to generate projection data.</p>
+                       </div>
+                    </div>
+                  ) : (
+                    FORECAST_ROWS.map((r, i) => (
+                      <div key={i} className="grid grid-cols-[1.5fr_1fr_100px_140px] px-4 py-3 text-xs border-b border-border/10 hover:bg-emerald-50/30 transition-colors">
+                        <span className="font-extrabold text-foreground">{r.academic_program}</span>
+                        <span className="text-muted-foreground font-medium">{r.major_study}</span>
+                        <span className="text-center font-bold text-indigo-950/70">{r.year_level}</span>
+                        <div className="text-right pr-4">
+                           <Badge className="bg-emerald-100 text-emerald-900 border-emerald-200/50 rounded-lg hover:bg-emerald-200">
+                             {r.expected_enrollee}
+                           </Badge>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+              
+              <div className="p-4 bg-muted/5 border-t border-emerald-50 flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-800/60">Aggregate Projection:</span>
+                    <Badge variant="outline" className="bg-white text-emerald-700 border-emerald-100 rounded-lg py-1 px-3 shadow-xs">
+                       <span className="text-[10px] font-bold">{totalEnrolled} Students</span>
+                    </Badge>
+                 </div>
+                 <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-emerald-100/50 rounded-lg py-1 px-3 text-[10px] font-bold uppercase tracking-wider">
+                    Next Semester Coverage
+                 </Badge>
+              </div>
+            </Card>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -257,7 +257,7 @@ export function ChedMajorDisciplinesTab() {
       {message && (
         <div
           className={cn(
-            "mb-2 px-3 py-2 rounded-sm text-xs border",
+            "mb-2 px-4 py-3 rounded-2xl text-xs border shadow-sm",
             bannerVariant === "destructive"
               ? "border-destructive/50 bg-destructive/10 text-destructive"
               : "border-border bg-muted/60"
@@ -267,16 +267,16 @@ export function ChedMajorDisciplinesTab() {
         </div>
       )}
       <div className="grid grid-cols-12 gap-3 h-[560px]">
-        <div className="col-span-5 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
-          <div className="bg-emerald-700 dark:bg-emerald-900 text-white px-2 py-1.5 text-[10px] font-bold uppercase shrink-0">
+        <div className="col-span-5 flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm h-full min-h-0">
+          <div className="bg-muted/5 text-foreground px-3 py-2 text-[11px] font-semibold tracking-tight shrink-0 border-b border-border/60">
             Major discipline information
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             <div className="space-y-1">
               <Label className="text-xs">Major code</Label>
               <Input
                 className={cn(
-                  "h-8 text-sm font-mono",
+                  "h-9 rounded-xl text-sm font-mono border-border/60 shadow-sm",
                   fieldErrors.major_code &&
                     "border-destructive ring-1 ring-destructive/30"
                 )}
@@ -296,7 +296,7 @@ export function ChedMajorDisciplinesTab() {
               <Label className="text-xs">Major discipline</Label>
               <Input
                 className={cn(
-                  "h-8 text-sm",
+                  "h-9 rounded-xl text-sm border-border/60 shadow-sm",
                   fieldErrors.major_discipline &&
                     "border-destructive ring-1 ring-destructive/30"
                 )}
@@ -323,7 +323,7 @@ export function ChedMajorDisciplinesTab() {
               >
                 <SelectTrigger
                   className={cn(
-                    "h-8 text-xs",
+                    "h-9 rounded-xl text-xs border-border/60 shadow-sm",
                     fieldErrors.major_group_id &&
                       "border-destructive ring-1 ring-destructive/30"
                   )}
@@ -345,12 +345,12 @@ export function ChedMajorDisciplinesTab() {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-1.5 p-2 border-t border-border bg-muted/30 shrink-0">
+          <div className="flex flex-wrap gap-2 p-3 border-t border-border/60 bg-muted/30 shrink-0">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1"
+              className="h-9 rounded-xl text-xs font-semibold gap-2"
               disabled={saving}
               onClick={resetNew}
             >
@@ -361,7 +361,7 @@ export function ChedMajorDisciplinesTab() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1"
+              className="h-9 rounded-xl text-xs font-semibold gap-2"
               disabled={saving}
               onClick={handleSave}
             >
@@ -372,7 +372,7 @@ export function ChedMajorDisciplinesTab() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1 text-destructive"
+              className="h-9 rounded-xl text-xs font-semibold gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
               disabled={saving || !selectedId}
               onClick={handleDelete}
             >
@@ -382,18 +382,18 @@ export function ChedMajorDisciplinesTab() {
           </div>
         </div>
 
-        <div className="col-span-7 flex flex-col border border-border rounded-sm overflow-hidden bg-background h-full min-h-0">
+        <div className="col-span-7 flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm h-full min-h-0">
           <div className="overflow-auto flex-1 min-h-0">
             <table className="w-full text-xs border-collapse">
               <thead>
-                <tr className="bg-emerald-600 dark:bg-emerald-900 text-white">
-                  <th className="text-left font-bold uppercase px-2 py-1.5 border-b border-white/20 w-[38%]">
+                <tr className="bg-muted/50 text-muted-foreground sticky top-0 z-10">
+                  <th className="text-left font-semibold px-2 py-2 border-b border-border/60 w-[38%]">
                     Major group
                   </th>
-                  <th className="text-left font-bold uppercase px-2 py-1.5 border-b border-white/20 border-l border-white/20 w-[22%] font-mono">
+                  <th className="text-left font-semibold px-2 py-2 border-b border-border/60 border-l w-[22%] font-mono">
                     Major code
                   </th>
-                  <th className="text-left font-bold uppercase px-2 py-1.5 border-b border-white/20 border-l border-white/20">
+                  <th className="text-left font-semibold px-2 py-2 border-b border-border/60 border-l">
                     Major discipline
                   </th>
                 </tr>
@@ -412,14 +412,50 @@ export function ChedMajorDisciplinesTab() {
                     </td>
                   </tr>
                 ) : (
-                  tableRows.map((entry) => (
-                    <ChedDisciplineTableRow
-                      key={entry.row.id}
-                      entry={entry}
-                      isSelected={selectedId === entry.row.id}
-                      onSelect={setSelectedId}
-                    />
-                  ))
+                  tableRows.map(
+                    ({ row, groupLabel, groupRowspan, showGroup }) => (
+                      <tr key={row.id} className="premium-row">
+                        {showGroup ? (
+                          <td
+                            rowSpan={groupRowspan}
+                            className="align-top px-2 py-1.5 border-b border-border/60 border-r bg-emerald-50/80 dark:bg-emerald-950/30 text-[11px] leading-snug"
+                          >
+                            {groupLabel}
+                          </td>
+                        ) : null}
+                        <td
+                          className={cn(
+                            "px-2 py-1.5 border-b border-border/60 border-l font-mono",
+                            selectedId === row.id &&
+                              "bg-emerald-600 text-white dark:bg-emerald-700"
+                          )}
+                        >
+                          <button
+                            type="button"
+                            className="w-full text-left"
+                            onClick={() => setSelectedId(row.id)}
+                          >
+                            {row.major_code}
+                          </button>
+                        </td>
+                        <td
+                          className={cn(
+                            "px-2 py-1.5 border-b border-border/60 border-l",
+                            selectedId === row.id &&
+                              "bg-emerald-600 text-white dark:bg-emerald-700"
+                          )}
+                        >
+                          <button
+                            type="button"
+                            className="w-full text-left"
+                            onClick={() => setSelectedId(row.id)}
+                          >
+                            {row.major_discipline}
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  )
                 )}
               </tbody>
             </table>

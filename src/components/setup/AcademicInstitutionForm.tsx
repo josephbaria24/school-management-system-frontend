@@ -12,17 +12,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Save, 
-  XCircle, 
-  Printer, 
+import {
+  Save,
+  XCircle,
+  Printer,
   HelpCircle,
   Loader2,
   Building2,
-  MapPin
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Calendar,
+  ShieldCheck,
+  FileText,
+  Info,
+  Hash,
+  Landmark,
 } from "lucide-react";
 import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   initialData?: AcademicInstitution;
@@ -30,26 +42,34 @@ interface Props {
   loading: boolean;
 }
 
-interface InlineFieldProps {
+interface FieldWrapperProps {
   label: string;
   children: ReactNode;
+  icon?: ReactNode;
   note?: string;
   error?: string;
+  className?: string;
 }
 
-function InlineField({ label, children, note, error }: InlineFieldProps) {
+function FieldWrapper({ label, children, note, error, className }: FieldWrapperProps) {
   return (
-    <div className="flex items-center gap-4 group">
-      <Label className={`w-48 text-right font-medium text-muted-foreground shrink-0 pr-4 ${error ? "text-destructive" : ""}`}>
+    <div className={cn("space-y-1", className)}>
+      <Label className="text-[11px] text-muted-foreground font-medium pl-0.5">
         {label}
       </Label>
-      <div className="flex-1 flex items-center gap-4">
-        <div className="relative flex-1">
-          {children}
-          {error && <p className="absolute -bottom-4 left-0 text-[10px] font-bold text-destructive animate-bounce">{error}</p>}
-        </div>
-        {note && <span className="text-[10px] text-muted-foreground/60 italic w-48 shrink-0">{note}</span>}
+      <div className="relative group">
+        {children}
+        {error && (
+          <p className="mt-1 text-[11px] font-medium text-destructive animate-in fade-in slide-in-from-top-1">
+            {error}
+          </p>
+        )}
       </div>
+      {note && !error && (
+        <p className="text-[10px] text-muted-foreground/60 italic pl-1 leading-tight">
+          {note}
+        </p>
+      )}
     </div>
   );
 }
@@ -108,162 +128,262 @@ export function AcademicInstitutionForm({ initialData, onSubmit, loading }: Prop
   };
 
   return (
-    <Card className="w-full border-2 border-primary/20 shadow-2xl rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900">
-      {/* Legacy blue title bar */}
-      <div className="bg-emerald-700 dark:bg-emerald-900 text-white px-4 py-1.5 flex items-center justify-between border-b border-primary/30">
-        <div className="flex items-center gap-2">
-          <div className="bg-white dark:bg-slate-100 p-0.5 rounded-sm">
-            <Building2 className="h-4 w-4 text-emerald-700 dark:text-emerald-900" />
+    <Card className="w-full overflow-hidden rounded-2xl border border-border/60 bg-background shadow-[0_12px_40px_-24px_rgba(2,6,23,0.45)]">
+      <CardHeader className="border-b border-border/60 bg-background pb-4 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div className="space-y-0.5">
+              <CardTitle className="text-base font-bold tracking-tight text-emerald-950">
+                Academic Institution
+              </CardTitle>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                Setup manager • Institution profile and campuses
+              </p>
+            </div>
           </div>
-          <span className="text-xs font-bold uppercase tracking-wider">Setup - Institution and Campus</span>
+          <div className="hidden sm:flex items-center gap-2">
+            <Badge variant="secondary" className="rounded-xl">
+              Setup
+            </Badge>
+            {initialData?.id ? (
+              <Badge className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-600">
+                Saved
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="rounded-xl">
+                Not yet saved
+              </Badge>
+            )}
+          </div>
         </div>
-        <div />
-      </div>
+      </CardHeader>
 
       <CardContent className="p-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="px-4 pt-1 bg-muted/40 border-b border-border/50">
-            <TabsList className="h-9 bg-transparent p-0 gap-1">
+          <div className="px-4 pt-3 border-b border-border/60 bg-background">
+            <TabsList className="h-10 bg-muted/50 p-1 rounded-xl gap-1">
               <TabsTrigger 
                 value="institution" 
-                className="rounded-t-lg rounded-b-none border-x border-t border-border bg-muted/30 data-[state=active]:bg-background data-[state=active]:border-b-background -mb-[1px] px-6 text-xs font-bold uppercase tracking-tight transition-all duration-300"
+                className="rounded-lg px-4 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
                 Higher Educational Institution
               </TabsTrigger>
               <TabsTrigger 
                 value="campus" 
-                className="rounded-t-lg rounded-b-none border-x border-t border-border bg-muted/30 data-[state=active]:bg-background data-[state=active]:border-b-background -mb-[1px] px-6 text-xs font-bold uppercase tracking-tight transition-all duration-300 opacity-60"
+                className="rounded-lg px-4 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
                 Campus Information
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <div className="p-8 space-y-8 bg-white/70 dark:bg-slate-950/60 backdrop-blur-sm min-h-[600px]">
-            <TabsContent value="institution" className="m-0 space-y-10 mt-0 focus-visible:ring-0">
-              {/* Header section with Logo and Primary fields */}
-              <div className="flex gap-10 items-start">
+          <div className="p-6 md:p-8 space-y-8 bg-background min-h-[620px]">
+          <TabsContent value="institution" className="p-0 m-0 border-none outline-none animate-in fade-in slide-in-from-bottom-2">
+            <div className="space-y-8 p-6 lg:p-8">
+              {/* Institution Identity */}
+              <div className="flex flex-col lg:flex-row gap-8 items-start">
                 <LogoUploadField 
                   value={formData.logo_url || ""} 
                   onChange={(val) => setFormData(prev => ({ ...prev, logo_url: val }))}
                 />
 
-                <div className="flex-1 space-y-5">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase font-extrabold text-muted-foreground/60 tracking-widest pl-1">
-                      Official Name of the Higher Educational Institution
-                    </Label>
-                    <Input 
-                      name="official_name"
-                      value={formData.official_name}
-                      onChange={handleInputChange}
-                      className={`h-11 text-xl font-black italic tracking-tight rounded-sm border-2 transition-all duration-300 ${errors.official_name ? "border-destructive/50 ring-destructive/10" : "border-muted-foreground/20 focus:border-primary shadow-sm"}`}
-                      placeholder="ENTER INSTITUTION NAME"
-                    />
+                <div className="flex-1 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Landmark className="h-4 w-4" />
+                      <span className="font-semibold text-foreground">Identity</span>
+                    </div>
+                    <Separator />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FieldWrapper label="Official Name of the Institution" className="md:col-span-3">
+                        <Input 
+                          name="official_name"
+                          value={formData.official_name}
+                          onChange={handleInputChange}
+                          className={cn(
+                            "h-9 rounded-xl border-border/60 shadow-sm transition-all focus-visible:ring-emerald-500/30 font-semibold",
+                            errors.official_name && "border-destructive ring-1 ring-destructive/30"
+                          )}
+                          placeholder="e.g. Palawan National School"
+                        />
+                      </FieldWrapper>
+
+                      <FieldWrapper label="Classification">
+                        <InstitutionClassificationSelect 
+                          value={formData.classification_id?.toString() || ""}
+                          onChange={(val) => setFormData(prev => ({ ...prev, classification_id: parseInt(val) }))}
+                          error={errors.classification_id}
+                        />
+                      </FieldWrapper>
+
+                      <FieldWrapper label="Head Person">
+                        <InstitutionHeadSelect
+                          value={formData.head_person_id?.toString() || ""}
+                          onChange={(val) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              head_person_id: val ? parseInt(val, 10) : undefined,
+                            }))
+                          }
+                          error={errors.head_person_id}
+                        />
+                      </FieldWrapper>
+
+                      <FieldWrapper label="Official Title">
+                        <InstitutionHeadTitleSelect
+                          value={formData.head_title || ""}
+                          onChange={(val) => setFormData((prev) => ({ ...prev, head_title: val }))}
+                          error={errors.head_title}
+                        />
+                      </FieldWrapper>
+                    </div>
                   </div>
-
-                  <InlineField label="Classification of this Institution">
-                    <InstitutionClassificationSelect 
-                      value={formData.classification_id?.toString() || ""}
-                      onChange={(val) => setFormData(prev => ({ ...prev, classification_id: parseInt(val) }))}
-                      error={errors.classification_id}
-                    />
-                  </InlineField>
-
-                  <InlineField label="Head of the Institution">
-                    <InstitutionHeadSelect
-                      value={formData.head_person_id?.toString() || ""}
-                      onChange={(val) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          head_person_id: val ? parseInt(val, 10) : undefined,
-                        }))
-                      }
-                    />
-                  </InlineField>
-
-                  <InlineField label="Official Title of the Head of this Institution">
-                    <InstitutionHeadTitleSelect
-                      value={formData.head_title || ""}
-                      onChange={(val) => setFormData((prev) => ({ ...prev, head_title: val }))}
-                    />
-                  </InlineField>
                 </div>
               </div>
 
-              {/* Middle Section fields */}
-              <div className="space-y-4 pt-4 border-t border-dashed border-border/60">
-                <InlineField label="Institution Unique Identifier">
-                  <Input 
-                    name="institution_unique_identifier"
-                    value={formData.institution_unique_identifier || ""}
-                    onChange={handleInputChange}
-                    className="h-8 rounded-sm border-muted-foreground/30 shadow-sm"
-                  />
-                </InlineField>
+              {/* Location & Contact Section */}
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span className="font-semibold text-foreground">Location & contact</span>
+                  </div>
+                  <Separator />
 
-                <AddressFieldsGroup 
-                  formData={formData} 
-                  onChange={handleInputChange} 
-                  errors={errors} 
-                />
-
-                <div className="grid grid-cols-1 gap-4">
-                  {[
-                    { name: "telephone_no", label: "Institutional Telephone No.", note: "* Include Area Code (e.g. (02) 366-43-234 )" },
-                    { name: "fax_no", label: "Institutional Fax No.", note: "* Include Area Code" },
-                    { name: "head_telephone", label: "Institutional Head's Telephone", note: "* Include Area Code" },
-                    { name: "email_address", label: "Institutional Email Address" },
-                    { name: "website", label: "Institutional Web Site" },
-                    { name: "year_established", label: "Year Established", type: "number" },
-                    { name: "latest_sec_registration", label: "Latest SEC Registration", note: "* Enabling Law or Charter" },
-                  ].map((field: any) => (
-                    <InlineField key={field.name} label={field.label} note={field.note}>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FieldWrapper label="Institution ID">
                       <Input 
-                        type={field.type || "text"}
-                        name={field.name}
-                        value={formData[field.name] || ""}
+                        name="institution_unique_identifier"
+                        value={formData.institution_unique_identifier || ""}
                         onChange={handleInputChange}
-                        className="h-8 rounded-sm border-muted-foreground/30 shadow-sm"
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background/50 font-mono text-xs"
+                        placeholder="UID-000"
                       />
-                    </InlineField>
-                  ))}
+                    </FieldWrapper>
 
-                  <div className="flex items-center gap-4">
-                    <Label className="w-48 text-right font-medium text-muted-foreground shrink-0 pr-4">
-                      Date Granted or Approved?
-                    </Label>
-                    <div className="flex-1 flex gap-4 items-center">
+                    <FieldWrapper label="Year Established">
+                      <Input 
+                        type="number"
+                        name="year_established"
+                        value={formData.year_established || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background/50 text-xs"
+                        placeholder="YYYY"
+                      />
+                    </FieldWrapper>
+
+                    <FieldWrapper label="SEC Registration">
+                      <Input 
+                        name="latest_sec_registration"
+                        value={formData.latest_sec_registration || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background/50 text-xs"
+                        placeholder="Enabling Law or Charter"
+                      />
+                    </FieldWrapper>
+                  </div>
+
+                  <AddressFieldsGroup 
+                    formData={formData} 
+                    onChange={handleInputChange} 
+                    errors={errors} 
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FieldWrapper label="Institutional Telephone">
+                      <Input 
+                        name="telephone_no"
+                        value={formData.telephone_no || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs"
+                      />
+                    </FieldWrapper>
+                    <FieldWrapper label="Institutional Fax">
+                      <Input 
+                        name="fax_no"
+                        value={formData.fax_no || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs"
+                      />
+                    </FieldWrapper>
+                    <FieldWrapper label="Head's Telephone">
+                      <Input 
+                        name="head_telephone"
+                        value={formData.head_telephone || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs"
+                      />
+                    </FieldWrapper>
+                    <FieldWrapper label="Email Address">
+                      <Input 
+                        name="email_address"
+                        value={formData.email_address || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs"
+                        placeholder="institution@domain.edu"
+                      />
+                    </FieldWrapper>
+                    <FieldWrapper label="Web Site" className="md:col-span-2">
+                      <Input 
+                        name="website"
+                        value={formData.website || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs"
+                        placeholder="https://www.institution.edu.ph"
+                      />
+                    </FieldWrapper>
+                  </div>
+                </div>
+
+                {/* Approvals & Conversions */}
+                <div className="space-y-4 pt-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <FileText className="h-4 w-4" />
+                    <span className="font-semibold text-foreground">Approvals & Conversions</span>
+                  </div>
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FieldWrapper label="Date Granted/Approved">
                       <Input 
                         type="date"
                         name="date_granted_or_approved"
                         value={formData.date_granted_or_approved || ""}
                         onChange={handleInputChange}
-                        className="h-8 w-48 rounded-sm border-muted-foreground/30 shadow-sm"
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs font-medium"
                       />
-                      <div className="flex-1 flex items-center gap-4">
-                        <Label className="font-medium text-muted-foreground shrink-0 whitespace-nowrap">Year Converted to College</Label>
-                        <Input 
-                          type="number"
-                          name="year_converted_to_college"
-                          value={formData.year_converted_to_college || ""}
-                          onChange={handleInputChange}
-                          className="h-8 flex-1 rounded-sm border-muted-foreground/30 shadow-sm"
-                        />
-                        <Label className="font-medium text-muted-foreground shrink-0 whitespace-nowrap">Year Converted to University</Label>
-                        <Input 
-                          type="number"
-                          name="year_converted_to_university"
-                          value={formData.year_converted_to_university || ""}
-                          onChange={handleInputChange}
-                          className="h-8 flex-1 rounded-sm border-muted-foreground/30 shadow-sm"
-                        />
-                      </div>
-                    </div>
+                    </FieldWrapper>
+                    
+                    <FieldWrapper label="Converted to College">
+                      <Input 
+                        type="number"
+                        name="year_converted_to_college"
+                        value={formData.year_converted_to_college || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs"
+                        placeholder="Year"
+                      />
+                    </FieldWrapper>
+
+                    <FieldWrapper label="Converted to University">
+                      <Input 
+                        type="number"
+                        name="year_converted_to_university"
+                        value={formData.year_converted_to_university || ""}
+                        onChange={handleInputChange}
+                        className="h-9 rounded-xl border-border/60 shadow-sm bg-background text-xs"
+                        placeholder="Year"
+                      />
+                    </FieldWrapper>
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            </div>
+          </TabsContent>
 
             <TabsContent value="campus" className="m-0 mt-0 focus-visible:ring-0">
               <CampusInformationTab institutionId={initialData?.id ?? null} />
@@ -273,29 +393,31 @@ export function AcademicInstitutionForm({ initialData, onSubmit, loading }: Prop
       </CardContent>
 
       {/* Footer Action Bar */}
-      <div className="bg-slate-200 dark:bg-slate-800 border-t-2 border-white/50 dark:border-slate-700 p-4 flex items-center justify-between shadow-[inset_0_2px_4px_rgba(255,255,255,1)] dark:shadow-none">
-        <Button variant="outline" className="bg-slate-100 dark:bg-slate-900 border-slate-400 dark:border-slate-600 px-6 h-9 rounded-sm shadow-[2px_2px_0_rgba(0,0,0,0.1)] dark:shadow-none text-xs font-bold gap-2">
+      <div className="sticky bottom-0 z-10 border-t border-border/60 bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/70">
+        <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <Button variant="outline" className="h-9 rounded-xl text-xs font-semibold gap-2">
           <HelpCircle className="h-4 w-4 text-amber-500" />
           Help
         </Button>
 
-        <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
           <Button 
             onClick={() => handleSubmit()} 
             disabled={loading}
-            className="bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-800 dark:hover:bg-emerald-700 text-white px-8 h-9 rounded-sm shadow-[2px_2px_0_rgba(0,0,0,0.2)] dark:shadow-none text-xs font-bold gap-2 active:translate-y-[1px] active:shadow-none transition-all"
+            className="h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-2 shadow-sm"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save
           </Button>
-          <Button variant="outline" className="bg-slate-100 dark:bg-slate-900 border-slate-400 dark:border-slate-600 px-8 h-9 rounded-sm shadow-[2px_2px_0_rgba(0,0,0,0.1)] dark:shadow-none text-xs font-bold gap-2 transition-all hover:bg-destructive/10 hover:text-destructive">
+          <Button variant="outline" className="h-9 rounded-xl text-xs font-semibold gap-2 hover:bg-destructive/10 hover:text-destructive">
             <XCircle className="h-4 w-4" />
             Cancel
           </Button>
-          <Button variant="outline" className="bg-slate-100 dark:bg-slate-900 border-slate-400 dark:border-slate-600 px-6 h-9 rounded-sm shadow-[2px_2px_0_rgba(0,0,0,0.1)] dark:shadow-none text-xs font-bold gap-2">
+          <Button variant="outline" className="h-9 rounded-xl text-xs font-semibold gap-2">
             <Printer className="h-4 w-4" />
             Print
           </Button>
+        </div>
         </div>
       </div>
     </Card>
