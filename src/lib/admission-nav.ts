@@ -6,12 +6,6 @@ export type AdmissionNavItem = {
 export const admissionNavItems: AdmissionNavItem[] = [
   { label: "Applicant's Profile", slug: "applications/applicant-profile" },
   { label: "List of Applications", slug: "applications/list-of-applications" },
-  { label: "Admit New Student", slug: "applications/admit-new-student" },
-  { label: "Deny an Applicant", slug: "applications/deny-an-applicant" },
-  {
-    label: "Cancel Admit/Deny of Applicant",
-    slug: "applications/cancel-admit-deny-of-applicant",
-  },
   {
     label: "College Entrance Test Result Ranking",
     slug: "applications/college-entrance-test-result-ranking",

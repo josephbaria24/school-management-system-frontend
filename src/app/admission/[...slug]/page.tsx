@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getAdmissionLabelForSlug } from "@/lib/admission-nav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplicantProfileModule } from "@/components/admission/ApplicantProfileModule";
+import { ListOfApplicationsModule } from "@/components/admission/ListOfApplicationsModule";
 
 type Props = {
   params: Promise<{ slug: string[] }>;
@@ -15,6 +16,9 @@ export default async function AdmissionPage({ params }: Props) {
 
   if (slugPath === "applications/applicant-profile") {
     return <ApplicantProfileModule />;
+  }
+  if (slugPath === "applications/list-of-applications") {
+    return <ListOfApplicationsModule />;
   }
 
   return (

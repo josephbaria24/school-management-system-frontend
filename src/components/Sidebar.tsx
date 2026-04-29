@@ -104,12 +104,6 @@ const admissionNavItems: AdmissionNavItem[] = [
     items: [
       { label: "Applicant's Profile...", slug: "applications/applicant-profile" },
       { label: "List of Applications...", slug: "applications/list-of-applications" },
-      { label: "Admit New Student", slug: "applications/admit-new-student" },
-      { label: "Deny an Applicant", slug: "applications/deny-an-applicant" },
-      {
-        label: "Cancel Admit/Deny of Applicant",
-        slug: "applications/cancel-admit-deny-of-applicant",
-      },
       {
         label: "College Entrance Test Result Ranking",
         slug: "applications/college-entrance-test-result-ranking",
@@ -129,9 +123,6 @@ const admissionNavItems: AdmissionNavItem[] = [
 const admissionIconBySlug: Record<string, React.ElementType> = {
   "applications/applicant-profile": UserPlus,
   "applications/list-of-applications": FolderOpen,
-  "applications/admit-new-student": UserPlus,
-  "applications/deny-an-applicant": X,
-  "applications/cancel-admit-deny-of-applicant": ArrowLeftRight,
   "applications/college-entrance-test-result-ranking": BarChart3,
   applications: FolderOpen,
   "admission-test-scores": ClipboardCheck,
@@ -271,10 +262,10 @@ export function Sidebar() {
         scroll={false}
         onClick={handleNavItemClick}
         className={cn(
-          "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+          "w-full relative flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
           "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
           isActive
-            ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+            ? "bg-sidebar-accent/35 text-sidebar-foreground hover:bg-sidebar-accent/45 hover:text-sidebar-foreground after:content-[''] after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-6 after:w-1 after:rounded-l-full after:bg-sidebar-foreground/95"
             : "text-sidebar-foreground"
         )}
       >
@@ -341,7 +332,7 @@ export function Sidebar() {
 
       <nav
         ref={navScrollRef}
-        className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5"
+        className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5 [scrollbar-width:thin] [scrollbar-color:hsl(var(--sidebar-accent))_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-sidebar-accent/55 hover:[&::-webkit-scrollbar-thumb]:bg-sidebar-accent/80"
       >
         {navItems.map((item) => (
           <NavLink key={item.href} item={item} />

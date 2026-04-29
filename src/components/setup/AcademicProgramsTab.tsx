@@ -538,7 +538,6 @@ export function AcademicProgramsTab() {
                   {fieldErrors.college_id}
                 </p>
               )}
-              </div>
             </div>
             <div className="grid grid-cols-[1.1fr_auto_auto_auto] gap-2 items-end">
               <div className="space-y-0.5 min-w-[120px]">
