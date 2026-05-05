@@ -11,6 +11,8 @@ export const admissionNavItems: AdmissionNavItem[] = [
     slug: "applications/college-entrance-test-result-ranking",
   },
   { label: "Admission Test Scores", slug: "admission-test-scores" },
+  { label: "Individual Result", slug: "admission-test-scores/individual-result" },
+  { label: "Batch Result", slug: "admission-test-scores/batch-result" },
   { label: "Testing Schedules", slug: "testing-schedules" },
   { label: "List of Examinees for Testing", slug: "list-of-examinees-for-testing" },
   { label: "List of Examinees for Medical", slug: "list-of-examinees-for-medical" },

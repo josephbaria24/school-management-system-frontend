@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/lib/theme";
 import { setupNavGroups } from "@/lib/setup-nav";
 import { collegesNavGroups } from "@/lib/colleges-nav";
+import { registrarNavGroups } from "@/lib/registrar-nav";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -73,6 +74,18 @@ import {
   FileBarChart,
   SlidersHorizontal,
   ArrowLeftRight,
+  Image,
+  AlertTriangle,
+  AlertCircle,
+  RefreshCw,
+  PencilLine,
+  FileSearch,
+  ScrollText,
+  Sheet,
+  Tags,
+  Award,
+  FileBadge2,
+  ClipboardPen,
 } from "lucide-react";
 
 interface NavItem {
@@ -110,7 +123,13 @@ const admissionNavItems: AdmissionNavItem[] = [
       },
     ],
   },
-  { label: "Admission Test Scores", slug: "admission-test-scores" },
+  {
+    label: "Admission Test Scores",
+    items: [
+      { label: "Individual Result", slug: "admission-test-scores/individual-result" },
+      { label: "Batch Result", slug: "admission-test-scores/batch-result" },
+    ],
+  },
   { label: "Testing Schedules", slug: "testing-schedules" },
   { label: "List of Examinees for Testing", slug: "list-of-examinees-for-testing" },
   { label: "List of Examinees for Medical", slug: "list-of-examinees-for-medical" },
@@ -126,6 +145,8 @@ const admissionIconBySlug: Record<string, React.ElementType> = {
   "applications/college-entrance-test-result-ranking": BarChart3,
   applications: FolderOpen,
   "admission-test-scores": ClipboardCheck,
+  "admission-test-scores/individual-result": ClipboardCheck,
+  "admission-test-scores/batch-result": ListChecks,
   "testing-schedules": CalendarCheck2,
   "list-of-examinees-for-testing": ListChecks,
   "list-of-examinees-for-medical": Stethoscope,
@@ -165,13 +186,43 @@ const collegesIconBySlug: Record<string, React.ElementType> = {
   "list-of-reports": FileText,
 };
 
+const registrarIconBySlug: Record<string, React.ElementType> = {
+  "students-profile": UserSquare2,
+  "student-master-list": Users,
+  "upload-students-picture": Image,
+  "courses-master-list": BookOpen,
+  "subject-formations-maintenance-gs-hs": BookCopy,
+  "grading-system": ClipboardCheck,
+  "scholastic-deliquency": AlertTriangle,
+  "add-drop-change-of-courses-withdrawal": ArrowLeftRight,
+  "inventory-of-grade-sheets": ClipboardList,
+  "inventory-of-unposted-grades": ListChecks,
+  "correction-of-grades": ClipboardPen,
+  "students-with-incomplete-grade": AlertCircle,
+  "recalculate-summary-of-grades": RefreshCw,
+  "grade-encoding": PencilLine,
+  "academic-program-evaluation": FileSearch,
+  "transcript-of-records": ScrollText,
+  "report-of-grades": FileBarChart,
+  "grade-point-average-ranking": BarChart3,
+  "worksheet-for-consolidated-grades": Sheet,
+  "tag-graduating-students": Tags,
+  "graduate-candidates-for-graduation": GraduationCap,
+  certification: Award,
+  "diploma-easy": FileBadge2,
+  "ched-reports": BookMarked,
+  "list-of-reports": FileText,
+};
+
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [admissionOpen, setAdmissionOpen] = useState(false);
   const [admissionApplicationsOpen, setAdmissionApplicationsOpen] = useState(false);
+  const [admissionTestScoresOpen, setAdmissionTestScoresOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [collegesOpen, setCollegesOpen] = useState(false);
+  const [registrarOpen, setRegistrarOpen] = useState(false);
   const navScrollRef = useRef<HTMLElement | null>(null);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
@@ -192,8 +243,10 @@ export function Sidebar() {
     setCollapsed(readBool("sidebar:collapsed"));
     setAdmissionOpen(readBool("sidebar:admissionOpen"));
     setAdmissionApplicationsOpen(readBool("sidebar:admissionApplicationsOpen"));
+    setAdmissionTestScoresOpen(readBool("sidebar:admissionTestScoresOpen"));
     setSetupOpen(readBool("sidebar:setupOpen"));
     setCollegesOpen(readBool("sidebar:collegesOpen"));
+    setRegistrarOpen(readBool("sidebar:registrarOpen"));
   }, []);
 
   useEffect(() => {
@@ -212,6 +265,13 @@ export function Sidebar() {
   }, [admissionApplicationsOpen]);
 
   useEffect(() => {
+    localStorage.setItem(
+      "sidebar:admissionTestScoresOpen",
+      admissionTestScoresOpen ? "1" : "0"
+    );
+  }, [admissionTestScoresOpen]);
+
+  useEffect(() => {
     localStorage.setItem("sidebar:setupOpen", setupOpen ? "1" : "0");
   }, [setupOpen]);
 
@@ -220,10 +280,16 @@ export function Sidebar() {
   }, [collegesOpen]);
 
   useEffect(() => {
+    localStorage.setItem("sidebar:registrarOpen", registrarOpen ? "1" : "0");
+  }, [registrarOpen]);
+
+  useEffect(() => {
     if (pathname.startsWith("/admission/")) setAdmissionOpen(true);
     if (pathname.startsWith("/admission/applications/")) setAdmissionApplicationsOpen(true);
+    if (pathname.startsWith("/admission/admission-test-scores/")) setAdmissionTestScoresOpen(true);
     if (pathname.startsWith("/setup/")) setSetupOpen(true);
     if (pathname.startsWith("/colleges/")) setCollegesOpen(true);
+    if (pathname.startsWith("/registrar/")) setRegistrarOpen(true);
   }, [pathname]);
 
   useLayoutEffect(() => {
@@ -502,6 +568,52 @@ export function Sidebar() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full h-9 px-3 justify-start gap-3 rounded-md text-sm font-medium",
+                      pathname.startsWith("/registrar/")
+                        ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <ClipboardList className="h-4 w-4 shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="right">Registrar</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent side="right" align="start" className="w-72 max-h-[min(70vh,28rem)] overflow-y-auto">
+              <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
+                Registrar
+              </DropdownMenuLabel>
+              {registrarNavGroups.map((group, gi) => (
+                <div key={gi}>
+                  {gi > 0 && <DropdownMenuSeparator />}
+                  {group.items.map((item) => (
+                    <DropdownMenuItem key={item.slug} asChild>
+                      <Link
+                        href={`/registrar/${item.slug}`}
+                        scroll={false}
+                        onClick={handleNavItemClick}
+                        className="cursor-pointer flex items-center gap-2"
+                      >
+                        {(() => {
+                          const Icon = registrarIconBySlug[item.slug] ?? FileText;
+                          return <Icon className="h-3.5 w-3.5 text-muted-foreground" />;
+                        })()}
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           </>
         ) : (
           <>
@@ -529,28 +641,32 @@ export function Sidebar() {
             <CollapsibleContent className="space-y-0 pt-0.5 pb-1">
               {admissionNavItems.map((item) => {
                 if (item.items?.length) {
+                  const groupPrefix = item.label === "Applications" ? "/admission/applications/" : "/admission/admission-test-scores/";
+                  const groupOpen = item.label === "Applications" ? admissionApplicationsOpen : admissionTestScoresOpen;
+                  const setGroupOpen = item.label === "Applications" ? setAdmissionApplicationsOpen : setAdmissionTestScoresOpen;
+                  const GroupIcon = item.label === "Applications" ? FolderOpen : ClipboardCheck;
                   return (
                     <Collapsible
                       key={item.label}
-                      open={admissionApplicationsOpen}
-                      onOpenChange={setAdmissionApplicationsOpen}
+                      open={groupOpen}
+                      onOpenChange={setGroupOpen}
                     >
                       <CollapsibleTrigger asChild>
                         <Button
                           variant="ghost"
                           className={cn(
                             "w-full h-8 pl-7 pr-3 justify-start gap-2 rounded-md text-xs font-medium",
-                            pathname.startsWith("/admission/applications/")
+                            pathname.startsWith(groupPrefix)
                               ? "bg-primary/15 text-sidebar-foreground hover:bg-primary/20"
                               : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                           )}
                         >
-                          <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                          <GroupIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
                           <span className="truncate flex-1 text-left">{item.label}</span>
                           <ChevronDown
                             className={cn(
                               "h-3.5 w-3.5 shrink-0 opacity-60 transition-transform",
-                              admissionApplicationsOpen && "rotate-180"
+                              groupOpen && "rotate-180"
                             )}
                           />
                         </Button>
@@ -693,6 +809,60 @@ export function Sidebar() {
                     const href = `/colleges/${item.slug}`;
                     const active = pathname === href;
                     const Icon = collegesIconBySlug[item.slug] ?? LibraryBig;
+                    return (
+                      <Link
+                        key={item.slug}
+                        href={href}
+                        scroll={false}
+                        onClick={handleNavItemClick}
+                        className={cn(
+                          "flex items-center gap-2 pl-7 pr-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                          active
+                            ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+          <Collapsible open={registrarOpen} onOpenChange={setRegistrarOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full h-9 px-3 justify-start gap-3 rounded-md text-sm font-medium",
+                  pathname.startsWith("/registrar/")
+                    ? "bg-primary/15 text-sidebar-foreground hover:bg-primary/20"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <ClipboardList className="h-4 w-4 shrink-0" />
+                <span className="truncate flex-1 text-left">Registrar</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 shrink-0 opacity-60 transition-transform",
+                    registrarOpen && "rotate-180"
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-0 pt-0.5 pb-1">
+              {registrarNavGroups.map((group, gi) => (
+                <div key={gi} className="space-y-0.5">
+                  {gi > 0 && (
+                    <div className="my-1.5 mx-3 border-t border-sidebar-border" role="separator" />
+                  )}
+                  {group.items.map((item) => {
+                    const href = `/registrar/${item.slug}`;
+                    const active = pathname === href;
+                    const Icon = registrarIconBySlug[item.slug] ?? FileText;
                     return (
                       <Link
                         key={item.slug}
