@@ -94,16 +94,7 @@ interface NavItem {
   href: string;
 }
 
-const navItems: NavItem[] = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-  { label: "Students", icon: Users, href: "/students" },
-  { label: "Teachers", icon: GraduationCap, href: "/teachers" },
-  { label: "Classes", icon: BookOpen, href: "/classes" },
-  { label: "Attendance", icon: ClipboardList, href: "/attendance" },
-  { label: "Grades", icon: BarChart3, href: "/grades" },
-  { label: "Schedule", icon: Calendar, href: "/schedule" },
-  { label: "Settings", icon: Settings, href: "/settings" },
-];
+const navItems: NavItem[] = [];
 
 type AdmissionNavItem = {
   label: string;

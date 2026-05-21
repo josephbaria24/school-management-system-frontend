@@ -25,8 +25,6 @@ export const registrarNavGroups: RegistrarNavGroup[] = [
       { label: "Students with Incomplete Grade", slug: "students-with-incomplete-grade" },
       { label: "Recalculate Summary of Grades", slug: "recalculate-summary-of-grades" },
       { label: "Grade Encoding", slug: "grade-encoding" },
-      { label: "Academic Program Evaluation", slug: "academic-program-evaluation" },
-      { label: "Transcript of Records", slug: "transcript-of-records" },
       { label: "Report of Grades", slug: "report-of-grades" },
       { label: "Grade Point Average Ranking...", slug: "grade-point-average-ranking" },
       { label: "Worksheet for Consolidated Grades", slug: "worksheet-for-consolidated-grades" },
@@ -47,4 +45,3 @@ export function getRegistrarLabelForSlug(slug: string): string | undefined {
   }
   return undefined;
 }
-

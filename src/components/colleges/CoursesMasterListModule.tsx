@@ -133,6 +133,19 @@ const checkboxFields: Array<{ key: keyof typeof emptyForm; label: string }> = [
 
 type SubjectAreaRow = { id: number; area_code: number; area_name: string; short_name: string | null };
 type SubjectModeRow = { id: number; mode_code: number; mode_name: string; short_name: string | null };
+type CampusRow = { id: number; acronym: string; campus_name: string | null };
+type ProgramRow = { id: number; program_code: string; program_name: string };
+type CurriculumRow = { id: number; curriculum_code: string; description: string | null };
+type CurriculumSubjectRow = {
+  id: number;
+  subject_code: string;
+  descriptive_title: string;
+  laboratory_units: number | null;
+  lecture_units: number | null;
+  credited_units: number | null;
+  lecture_hours: number | null;
+  laboratory_hours: number | null;
+};
 
 function FieldRow({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
@@ -144,6 +157,7 @@ function FieldRow({ label, children, className }: { label: string; children: Rea
 }
 
 export function CoursesMasterListModule() {
+  const [activeTopTab, setActiveTopTab] = useState<"courses" | "curriculums">("courses");
   const [rows, setRows] = useState<CourseRow[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -152,6 +166,13 @@ export function CoursesMasterListModule() {
   const [subjectModes, setSubjectModes] = useState<SubjectModeRow[]>([]);
   const [maintainAreasOpen, setMaintainAreasOpen] = useState(false);
   const [maintainModesOpen, setMaintainModesOpen] = useState(false);
+  const [campuses, setCampuses] = useState<CampusRow[]>([]);
+  const [programs, setPrograms] = useState<ProgramRow[]>([]);
+  const [selectedCampusId, setSelectedCampusId] = useState<string>(LOOKUP_NONE);
+  const [selectedProgramId, setSelectedProgramId] = useState<string>(LOOKUP_NONE);
+  const [selectedCurriculumId, setSelectedCurriculumId] = useState<string>(LOOKUP_NONE);
+  const [curriculums, setCurriculums] = useState<CurriculumRow[]>([]);
+  const [curriculumSubjects, setCurriculumSubjects] = useState<CurriculumSubjectRow[]>([]);
 
   const selected = useMemo(() => rows.find((r) => r.id === selectedId) ?? null, [rows, selectedId]);
   const areaNames = useMemo(() => subjectAreas.map((a) => a.area_name), [subjectAreas]);
@@ -180,7 +201,63 @@ export function CoursesMasterListModule() {
     } catch { /* noop */ }
   };
 
-  useEffect(() => { void loadRows(); void loadSubjectLookups(); }, []);
+  const loadCurriculumLookups = async () => {
+    if (!API) return;
+    try {
+      const [campusRes, programRes] = await Promise.all([
+        fetch(`${API}/api/campuses`),
+        fetch(`${API}/api/academic-programs?status=active`),
+      ]);
+      if (campusRes.ok) {
+        const rows = (await campusRes.json()) as CampusRow[];
+        setCampuses(rows);
+        if (rows[0]) setSelectedCampusId(String(rows[0].id));
+      }
+      if (programRes.ok) {
+        const rows = (await programRes.json()) as ProgramRow[];
+        setPrograms(rows);
+      }
+    } catch {
+      // noop
+    }
+  };
+
+  useEffect(() => { void loadRows(); void loadSubjectLookups(); void loadCurriculumLookups(); }, []);
+
+  useEffect(() => {
+    const loadCurriculums = async () => {
+      if (!API) return;
+      try {
+        const q = new URLSearchParams();
+        if (selectedProgramId !== LOOKUP_NONE) q.set("academic_program_id", selectedProgramId);
+        const res = await fetch(`${API}/api/program-curriculums?${q.toString()}`);
+        if (!res.ok) return;
+        const rows = (await res.json()) as CurriculumRow[];
+        setCurriculums(rows);
+        if (rows[0]) setSelectedCurriculumId(String(rows[0].id));
+      } catch {
+        // noop
+      }
+    };
+    void loadCurriculums();
+  }, [selectedProgramId]);
+
+  useEffect(() => {
+    const loadSubjects = async () => {
+      if (!API || selectedCurriculumId === LOOKUP_NONE) {
+        setCurriculumSubjects([]);
+        return;
+      }
+      try {
+        const res = await fetch(`${API}/api/program-curriculums/${selectedCurriculumId}/subjects`);
+        if (!res.ok) return;
+        setCurriculumSubjects((await res.json()) as CurriculumSubjectRow[]);
+      } catch {
+        setCurriculumSubjects([]);
+      }
+    };
+    void loadSubjects();
+  }, [selectedCurriculumId]);
 
   useEffect(() => {
     if (!selected) return;
@@ -271,11 +348,158 @@ export function CoursesMasterListModule() {
 
   const newRecord = () => { setSelectedId(null); setForm(emptyForm); };
 
+  if (activeTopTab === "curriculums") {
+    const selectedCampus = campuses.find((c) => String(c.id) === selectedCampusId);
+    const selectedProgram = programs.find((p) => String(p.id) === selectedProgramId);
+    const selectedCurriculum = curriculums.find((c) => String(c.id) === selectedCurriculumId);
+    return (
+      <div className="h-full min-h-0 overflow-hidden p-3 flex flex-col">
+        <div className="mb-2 inline-flex w-fit max-w-max overflow-hidden rounded-xl border border-border/60 bg-background shadow-sm divide-x divide-border/60">
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-8 text-xs rounded-none"
+            onClick={() => setActiveTopTab("courses")}
+          >
+            Courses Master List
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-8 text-xs rounded-none bg-muted/40 font-semibold"
+            onClick={() => setActiveTopTab("curriculums")}
+          >
+            Program Curriculums
+          </Button>
+        </div>
+        <div className="flex-1 min-h-0 rounded-2xl border border-border/60 bg-card overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-[24rem_1fr] gap-2 h-full p-2 min-h-0">
+            <div className="rounded-xl border border-border/60 bg-card overflow-hidden flex flex-col">
+              <div className="px-3 py-2 text-xs font-semibold border-b border-border/60 bg-muted/30">General Information</div>
+              <div className="p-3 space-y-2 overflow-auto">
+                <FieldRow label="Campus">
+                  <Select value={selectedCampusId} onValueChange={setSelectedCampusId}>
+                    <SelectTrigger className="h-8 rounded-xl text-xs"><SelectValue placeholder="Select campus" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={LOOKUP_NONE}>Select campus</SelectItem>
+                      {campuses.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.acronym || c.campus_name || `Campus ${c.id}`}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </FieldRow>
+                <FieldRow label="Academic Program">
+                  <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
+                    <SelectTrigger className="h-8 rounded-xl text-xs"><SelectValue placeholder="Select program" /></SelectTrigger>
+                    <SelectContent className="max-h-72 overflow-y-auto">
+                      <SelectItem value={LOOKUP_NONE}>Select program</SelectItem>
+                      {programs.map((p) => <SelectItem key={p.id} value={String(p.id)}>{p.program_code} - {p.program_name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </FieldRow>
+                <FieldRow label="Major Discipline">
+                  <Input value="-" readOnly className="h-8 rounded-xl text-xs border-border/60 bg-muted/20" />
+                </FieldRow>
+                <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground pt-1">
+                  <div>Term: <span className="font-medium text-foreground">{selectedCampus?.acronym || "-"}</span></div>
+                  <div>No. of Years: <span className="font-medium text-foreground">4</span></div>
+                  <div>Total Terms: <span className="font-medium text-foreground">8</span></div>
+                </div>
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <FieldRow label="Curriculum Code">
+                    <Input value={selectedCurriculum?.curriculum_code || ""} readOnly className="h-8 rounded-xl text-xs border-border/60 bg-muted/20" />
+                  </FieldRow>
+                  <Button variant="outline" className="h-8 text-xs mt-6">Save as</Button>
+                </div>
+                <FieldRow label="Description">
+                  <Input value={selectedCurriculum?.description || ""} readOnly className="h-8 rounded-xl text-xs border-border/60 bg-muted/20" />
+                </FieldRow>
+                <FieldRow label="Notes">
+                  <textarea className="w-full h-16 text-xs rounded-xl border border-border/60 bg-muted/20 px-3 py-2 resize-none" readOnly />
+                </FieldRow>
+                <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                  <Checkbox />
+                  Locked Curriculum - No more modifications allowed.
+                </label>
+                <div className="rounded-xl border border-border/60 overflow-hidden">
+                  <div className="grid grid-cols-2 text-[11px] font-semibold bg-muted/30 border-b border-border/60">
+                    <div className="px-2 py-2 border-r border-border/60">Curriculum Code</div>
+                    <div className="px-2 py-2">Description</div>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {curriculums.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setSelectedCurriculumId(String(c.id))}
+                        className={cn(
+                          "w-full grid grid-cols-2 text-xs text-left border-b border-border/40 hover:bg-muted/20",
+                          String(c.id) === selectedCurriculumId && "bg-muted/30"
+                        )}
+                      >
+                        <div className="px-2 py-2 border-r border-border/40">{c.curriculum_code}</div>
+                        <div className="px-2 py-2 truncate">{c.description || ""}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <span>Total Curricular Program(s): {curriculums.length}</span>
+                  <Button variant="outline" className="h-8 text-xs">Course Outline</Button>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card overflow-hidden flex flex-col min-h-0">
+              <div className="grid grid-cols-[110px_1fr_72px_72px_72px_72px_72px] text-[11px] font-semibold bg-muted/30 border-b border-border/60">
+                {["Subject Code","Descriptive Title","Lab Unit","Lec Unit","Credit Unit","Lecture Hour","Laboratory Hour"].map((h) => (
+                  <div key={h} className="px-2 py-2 border-r border-border/60 last:border-r-0">{h}</div>
+                ))}
+              </div>
+              <ScrollArea className="flex-1 min-h-0">
+                {curriculumSubjects.map((s) => (
+                  <div key={s.id} className="grid grid-cols-[110px_1fr_72px_72px_72px_72px_72px] text-xs border-b border-border/40">
+                    <div className="px-2 py-2 border-r border-border/40">{s.subject_code}</div>
+                    <div className="px-2 py-2 border-r border-border/40 truncate">{s.descriptive_title}</div>
+                    <div className="px-2 py-2 border-r border-border/40 text-center">{s.laboratory_units ?? 0}</div>
+                    <div className="px-2 py-2 border-r border-border/40 text-center">{s.lecture_units ?? 0}</div>
+                    <div className="px-2 py-2 border-r border-border/40 text-center">{s.credited_units ?? 0}</div>
+                    <div className="px-2 py-2 border-r border-border/40 text-center">{s.lecture_hours ?? 0}</div>
+                    <div className="px-2 py-2 text-center">{s.laboratory_hours ?? 0}</div>
+                  </div>
+                ))}
+                {!curriculumSubjects.length && (
+                  <div className="px-3 py-8 text-xs text-muted-foreground">No subjects for selected curriculum.</div>
+                )}
+              </ScrollArea>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[26rem_1fr] gap-5 p-5">
+    <div className="h-full min-h-0 overflow-hidden p-3 flex flex-col">
+      <div className="mb-2 inline-flex w-fit max-w-max overflow-hidden rounded-xl border border-border/60 bg-background shadow-sm divide-x divide-border/60">
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-8 text-xs rounded-none bg-muted/40 font-semibold"
+          onClick={() => setActiveTopTab("courses")}
+        >
+          Courses Master List
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-8 text-xs rounded-none"
+          onClick={() => setActiveTopTab("curriculums")}
+        >
+          Program Curriculums
+        </Button>
+      </div>
+    <div className="grid grid-cols-1 lg:grid-cols-[26rem_1fr] gap-5 flex-1 min-h-0">
       {/* LEFT — Course Form */}
-      <div className="flex flex-col gap-0">
-        <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+      <div className="flex flex-col gap-0 min-h-0">
+        <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden h-full flex flex-col">
           <CardHeader className="pb-3 border-b border-border/40">
             <div className="flex items-center gap-2">
               <div className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
@@ -290,6 +514,7 @@ export function CoursesMasterListModule() {
             </div>
           </CardHeader>
 
+          <ScrollArea className="h-full">
           <CardContent className="p-4 space-y-5">
             {/* Basic Info */}
             <div className="space-y-3">
@@ -483,11 +708,12 @@ export function CoursesMasterListModule() {
               </Button>
             </div>
           </CardContent>
+          </ScrollArea>
         </Card>
       </div>
 
       {/* RIGHT — Course List */}
-      <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden flex flex-col">
+      <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden flex flex-col min-h-0">
         <CardHeader className="pb-3 border-b border-border/40">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -532,7 +758,7 @@ export function CoursesMasterListModule() {
         </div>
 
         {/* Table Rows */}
-        <ScrollArea className="flex-1 h-[600px]">
+        <ScrollArea className="flex-1 min-h-0">
           {filteredRows.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <BookOpen className="h-8 w-8 mb-3 opacity-30" />
@@ -565,6 +791,7 @@ export function CoursesMasterListModule() {
 
       <MaintainSubjectAreasDialog open={maintainAreasOpen} onOpenChange={setMaintainAreasOpen} onChanged={() => void loadSubjectLookups()} />
       <MaintainSubjectModesDialog open={maintainModesOpen} onOpenChange={setMaintainModesOpen} onChanged={() => void loadSubjectLookups()} />
+    </div>
     </div>
   );
 }
